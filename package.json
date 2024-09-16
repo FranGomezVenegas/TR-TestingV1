@@ -1,0 +1,25 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.42.1",
+    "@types/jquery": "^3.5.30",
+    "@types/node": "^20.11.5",
+    "eslint": "^9.10.0"
+  },
+  "dependencies": {
+    "alert": "^6.0.1",
+    "axios": "^1.6.8",
+    "csv-parse": "^5.5.6",
+    "ffmpeg-static": "^5.2.0",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^1.1.1",
+    "readline-sync": "^1.4.10"
+  }
+}

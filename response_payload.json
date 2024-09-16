@@ -1,0 +1,58 @@
+[
+  {
+    "spec_code": "Calcium Carbonate",
+    "alternative_uoms": "g",
+    "analysis_variation_name": "ALL",
+    "inventory_management": true,
+    "allow_adhoc_bulk_addition": true,
+    "check_lot_and_bulks_quantity_matches": "true",
+    "name": "Calcium Carbonate ALL",
+    "bulk_sampling_default_algorithm": "FIX1",
+    "spec_code_version": 1,
+    "perform_bulk_control": true,
+    "default_uom": "kg",
+    "sampling_algorithm": "FIX1"
+  },
+  {
+    "spec_code": "Calcium Carbonate",
+    "alternative_uoms": "g",
+    "analysis_variation_name": "EP",
+    "inventory_management": true,
+    "allow_adhoc_bulk_addition": true,
+    "check_lot_and_bulks_quantity_matches": "true",
+    "name": "Calcium Carbonate EP",
+    "bulk_sampling_default_algorithm": "FIX1",
+    "spec_code_version": 1,
+    "perform_bulk_control": true,
+    "default_uom": "kg",
+    "sampling_algorithm": "ALL_ACCEPTED_BULKS"
+  },
+  {
+    "spec_code": "Calcium Carbonate",
+    "alternative_uoms": "g",
+    "analysis_variation_name": "USP",
+    "inventory_management": true,
+    "allow_adhoc_bulk_addition": true,
+    "check_lot_and_bulks_quantity_matches": "true",
+    "name": "Calcium Carbonate USP",
+    "bulk_sampling_default_algorithm": "FIX1",
+    "spec_code_version": 1,
+    "perform_bulk_control": true,
+    "default_uom": "kg",
+    "sampling_algorithm": "ALL_ACCEPTED_BULKS"
+  },
+  {
+    "spec_code": "MateriaDemo1",
+    "alternative_uoms": "g",
+    "analysis_variation_name": "USP",
+    "inventory_management": true,
+    "allow_adhoc_bulk_addition": true,
+    "check_lot_and_bulks_quantity_matches": "true",
+    "name": "MP1",
+    "bulk_sampling_default_algorithm": "ALL",
+    "spec_code_version": 1,
+    "perform_bulk_control": true,
+    "default_uom": "kg",
+    "sampling_algorithm": "ALL_ACCEPTED_BULKS"
+  }
+]

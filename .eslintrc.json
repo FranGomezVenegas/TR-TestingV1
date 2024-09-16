@@ -1,0 +1,22 @@
+{
+  "env": {
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "rules": {
+    "quotes": ["error", "double", { "avoidEscape": true }],
+    "comma-dangle": ["error", "never"]
+  },
+  "overrides": [
+    {
+      "files": ["*.json", "*.js", "*.ts"],
+      "rules": {
+        "quotes": ["error", "double"],
+        "comma-dangle": ["error", "never"]
+      }
+    }
+  ]
+}
