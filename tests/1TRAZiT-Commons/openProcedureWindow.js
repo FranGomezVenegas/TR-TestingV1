@@ -20,13 +20,16 @@ export class OpenProcedureWindow {
                 throw new Error("platformMenuNames.procedure.main.pageElementName es undefined.");
             }
 
+            await page.pause();
+            await page.pause();
+            await page.pause();
             // Hacer clic en el elemento del menú principal
-            await page.locator(platformMenuNames.procedure.main.pageElementName).click();
+            await page.locator(platformMenuNames.procedure.main.pageElementName).hover();
             console.log("Clicked on main page element name");
 
             // Captura de pantalla después de hacer clic
             // await testInfo.attach(platformMenuNames.procedure.main.screenShotsName, {
-            //     body: await page.screenshot({ fullPage: true }),
+            //     body: await page.screenshot(),
             //     contentType: ConfigSettings.screenShotsContentType
             // });
             await page.pause();
@@ -45,7 +48,7 @@ export class OpenProcedureWindow {
             // Captura de pantalla después de hacer clic en el elemento de procedimiento
             await page.pause();
             // await testInfo.attach(procedureInfo.screenShotsName, {
-            //     body: await page.screenshot({ fullPage: true }),
+            //     body: await page.screenshot(),
             //     contentType: ConfigSettings.screenShotsContentType
             // });
 
@@ -68,10 +71,10 @@ export class OpenProcedureWindow {
                 await page.waitForTimeout(3000);
 
                 // Captura de pantalla de la ventana
-                await testInfo.attach(windowInfo.screenShotsName, {
-                    body: await page.screenshot({ fullPage: true }),
-                    contentType: ConfigSettings.screenShotsContentType
-                });
+                // await testInfo.attach(windowInfo.screenShotsName, {
+                //     body: await this.page.screenshot(),
+                //     contentType: ConfigSettings.screenShotsContentType
+                // });
             } else {
                 console.error("windowInfo.pageElement es undefined");
                 throw new Error("La URL de la ventana es undefined.");
@@ -128,7 +131,7 @@ export class OpenProcedureWindow {
             // Adjunto una captura de pantalla del menú desplegado 'Procedure' en móvil
             console.log("Adjuntando captura de pantalla del menú desplegado 'Procedure' en móvil");
             // await testInfo.attach(procedureInfo.screenShotsName, {
-            //     body: await page.screenshot({ fullPage: true }),
+            //     body: await page.screenshot(),
             //     contentType: ConfigSettings.screenShotsContentType
             // });
             await page.pause();
@@ -147,7 +150,7 @@ export class OpenProcedureWindow {
 
             // Adjunto una captura de pantalla de la página de configuración en móvil
             // await testInfo.attach(procedureInfo.screenShotsNameIncident, {
-            //     body: await page.screenshot({ fullPage: true }),
+            //     body: await page.screenshot(),
             //     contentType: ConfigSettings.screenShotsContentType
             // });
             await page.pause();
@@ -166,7 +169,7 @@ export class OpenProcedureWindow {
 
             // Adjunto una captura de pantalla final de la ventana en móvil
             await testInfo.attach(windowInfo.screenShotsName, {
-                body: await page.screenshot({ fullPage: true }),
+                body: await page.screenshot(),
                 contentType: ConfigSettings.screenShotsContentType
             });
             await page.pause();
@@ -185,7 +188,7 @@ export class OpenProcedureWindow {
             await page.locator(platformMenuNames.procedure.main.pageElementName).click();
             await page.pause();
             await testInfo.attach(platformMenuNames.procedure.main.screenShotsName, {
-                body: await page.screenshot({ fullPage: true }),
+                body: await page.screenshot(),
                 contentType: ConfigSettings.screenShotsContentType
             });
             await page.pause();
@@ -195,7 +198,7 @@ export class OpenProcedureWindow {
             await page.pause();
 
             // await testInfo.attach(procedureInfo.screenShotsName, {
-            //     body: await page.screenshot({ fullPage: true }),
+            //     body: await page.screenshot(),
             //     contentType: ConfigSettings.screenShotsContentType
             // });
             const fullPagrUrl = `${ConfigSettings.platformUrl.replace(/\/+$/, '')}/${windowInfo.pageElement.replace(/^\/+/, '')}`;
@@ -207,7 +210,7 @@ export class OpenProcedureWindow {
             await page.pause();
             await page.waitForTimeout(3000);
             await testInfo.attach(windowInfo.screenShotsName, {
-                body: await page.screenshot({ fullPage: true }),
+                body: await page.screenshot(),
                 contentType: ConfigSettings.screenShotsContentType
             });
             await page.pause();

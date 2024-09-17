@@ -9,7 +9,10 @@ export const UpdateInstrumentFamily={
     "screenShotsFormFilled": "Filled Form",
     "screenShotsButtonAccept": "Accept",
 
-    
+    "textInNotif1": "updated",
+    "textInNotif2": "with",
+    "textInNotif3": "sucess",
+
     "endpoints":{
         "Queries":[""],
         "endpointsActions":["CONFIG_UPDATE_INSTRUMENT_FAMILY"]

@@ -72,7 +72,7 @@ export class LogIntoPlatform {
 
         await test.step('Attach a screenshot', async () => {
             await testInfo.attach('Access', {
-                body: await page.screenshot({ fullPage: true }),
+                body: await page.screenshot(),
                 contentType: ConfigSettingsAlternative.screenShotsContentType
             });
         });
@@ -84,7 +84,7 @@ export class LogIntoPlatform {
         console.log('Home');
         await test.step('Attach a screenshot', async () => {
             await testInfo.attach('Home', {
-                body: await page.screenshot({ fullPage: true }),
+                body: await page.screenshot(),
                 contentType: ConfigSettingsAlternative.screenShotsContentType
             });
         });
