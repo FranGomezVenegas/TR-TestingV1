@@ -1,5 +1,5 @@
 import { ConfigSettings } from '../../trazit-config';
-import { expect } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { platformMenuNames } from '../../trazit-config';
 
 export class NotificationWitness {
@@ -12,7 +12,7 @@ export class NotificationWitness {
 
         // Comprobación de modo y acción correspondiente
         if (mode === 'desktop') {
-            console.log('Modo: Desktop');
+            console.log('Modo: Desktop O TV');
             notificationElement = await this.page.locator(platformMenuNames.Notification.main.pageElement);
             
             if (notificationElement) {
@@ -158,28 +158,38 @@ export class NotificationWitness {
         const viewportWidth = await this.page.evaluate(() => {
             return Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
         });
-        await this.page.pause();
-        await this.page.pause();
-        await this.page.pause();
-        await this.page.pause();
-        await this.page.pause();
-        await this.page.pause();
-
+        console.log(`Viewport width: ${viewportWidth}`);
     
-        console.log('Ancho del viewport:', viewportWidth);
+        
+        // const viewportWidth = await this.page.evaluate(() => {
+        //     return Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        // });
+        await test.step(ReportNotificationPhase.phasePauses, async () => {
+            await this.page.pause();
+            await this.page.pause();
+            await this.page.pause();
+            await this.page.pause();
+            await this.page.pause();
+            await this.page.pause();
+        });
+        
+
+        // console.log('Ancho del viewport:', viewportWidth);
         if (viewportWidth >= 1024) {
             // Modo escritorio o tablet en modo paisaje
             const notificationSelector = platformMenuNames.Notification.main.pageElement;
             await this.page.waitForSelector(notificationSelector, { timeout: 15000 });
             const notificationElement = await this.page.locator(notificationSelector);
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
+            await test.step(ReportNotificationPhase.phasePauses, async () => {
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+            });
             // Verificar si el elemento es visible antes de intentar interactuar
             if (await notificationElement.isVisible()) {
                 console.log('Elemento de notificación localizado, pasando el mouse sobre él.');
@@ -188,13 +198,15 @@ export class NotificationWitness {
                 let hoverSuccess = false;
                 const maxAttempts = 3;
                 const waitTime = 10000; // Tiempo de espera entre intentos en milisegundos
-                await this.page.pause();
-                await this.page.pause();
-                await this.page.pause();
-                await this.page.pause();
-                await this.page.pause();
-                await this.page.pause();
-        
+                await test.step(ReportNotificationPhase.phasePauses, async () => {
+                    await this.page.pause();
+                    await this.page.pause();
+                    await this.page.pause();
+                    await this.page.pause();
+                    await this.page.pause();
+                    await this.page.pause();
+                });
+                
                 for (let attempt = 0; attempt < maxAttempts; attempt++) {
                     try {
                         if (await notificationElement.isVisible()) {
@@ -230,14 +242,16 @@ export class NotificationWitness {
             });
             
             const notificationDiv = await this.page.locator(platformMenuNames.notification.main.pageElementNameDiv).first();
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-
+            await test.step(ReportNotificationPhase.phasePauses, async () => {
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+            });
+            
             await this.page.waitForSelector(platformMenuNames.notification.main.pageElementNameDiv, { timeout: 35000 });
             if (notificationDiv) {
                 await testInfo.attach(platformMenuNames.notification.main.screenShotsName, {
@@ -250,12 +264,14 @@ export class NotificationWitness {
         } else if (viewportWidth >= 768 && viewportWidth < 1024) {
                 // Verifica si el botón del menú está visible y habilitado
     const menuButton = this.page.locator(platformMenuNames.notification.mobile.pageElementMenu);
-    await this.page.pause();
-    await this.page.pause();
-    await this.page.pause();
-    await this.page.pause();
-    await this.page.pause();
-
+    await test.step(ReportNotificationPhase.phasePauses, async () => {
+        await this.page.pause();
+        await this.page.pause();
+        await this.page.pause();
+        await this.page.pause();
+        await this.page.pause();    
+    });
+    
     if (await menuButton.isVisible() && await menuButton.isEnabled()) {
         console.log('Botón del menú visible, haciendo clic.');
         await menuButton.click();
@@ -263,9 +279,12 @@ export class NotificationWitness {
         console.log('Botón del menú no visible o no habilitado.');
         return 'Botón del menú no encontrado';
     }
-    await this.page.pause();
-    await this.page.pause();
-    await this.page.pause();
+    await test.step(ReportNotificationPhase.phasePauses, async () => {
+        await this.page.pause();
+        await this.page.pause();
+        await this.page.pause(); 
+    });
+    
 
     await testInfo.attach(platformMenuNames.notification.mobile.screenShotsMenu, {
         body: await this.page.screenshot(),
@@ -275,12 +294,16 @@ export class NotificationWitness {
     // Espera y verifica el botón de notificaciones
     try {
         await this.page.waitForSelector(platformMenuNames.notification.mobile.pageElement, { timeout: 15000 });
-        await this.page.pause();
-        await this.page.pause();
-        await this.page.pause();
+        await test.step(ReportNotificationPhase.phasePauses, async () => {
+            await this.page.pause();
+            await this.page.pause();
+            await this.page.pause(); 
+        });
         const notificationButton = this.page.locator(platformMenuNames.notification.mobile.pageElement);
-        await this.page.pause();
-        await this.page.pause();
+        await test.step(ReportNotificationPhase.phasePauses, async () => {
+            await this.page.pause();
+            await this.page.pause();
+        });
 
         if (await notificationButton.isVisible() && await notificationButton.isEnabled()) {
             console.log('Botón de notificación localizado, haciendo clic.');
@@ -289,13 +312,16 @@ export class NotificationWitness {
             console.log('Botón de notificación no visible o no habilitado.');
             return 'Botón de notificación no encontrado';
         }
-        await this.page.pause();
-        await this.page.pause();
-        await this.page.pause();
-        await this.page.pause();
-        await this.page.pause();
-        await this.page.pause();
-        await this.page.pause();
+        await test.step(ReportNotificationPhase.phasePauses, async () => {    
+            await this.page.pause();
+            await this.page.pause();
+            await this.page.pause();
+            await this.page.pause();
+            await this.page.pause();
+            await this.page.pause();
+            await this.page.pause();
+        });
+
 
         await testInfo.attach(platformMenuNames.notification.mobile.screenShotsName, {
             body: await this.page.screenshot(),
@@ -311,20 +337,24 @@ export class NotificationWitness {
         } else {
             // Modo móvil
             await this.page.click(platformMenuNames.notification.mobile.pageElementMenu);
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
-
+            await test.step(ReportNotificationPhase.phasePauses, async () => {    
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();    
+            });
+            
             await testInfo.attach(platformMenuNames.notification.mobile.screenShotsMenu, {
                 body: await this.page.screenshot(),
                 contentType: ConfigSettings.screenShotsContentType
             });
             await this.page.waitForSelector(platformMenuNames.notification.mobile.pageElement, { timeout: 10000 });
-            await this.page.pause();
-            await this.page.pause();
-            await this.page.pause();
+            await test.step(ReportNotificationPhase.phasePauses, async () => {    
+                await this.page.pause();
+                await this.page.pause();
+                await this.page.pause();
+            });
             
             // Asegúrate de que el elemento sea visible y habilitado antes del clic
             const notificationButton = await this.page.locator(platformMenuNames.notification.mobile.pageElement);
@@ -342,4 +372,11 @@ export class NotificationWitness {
             return 'mobilePortrait';
         }
     }
+}
+
+
+export const ReportNotificationPhase={
+    "phraseCaptureNotification": "Capture notification witness",
+    "phrasePauses": "Execution Pauses"
+    
 }

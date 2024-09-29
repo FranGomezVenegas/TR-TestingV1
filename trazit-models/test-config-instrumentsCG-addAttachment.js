@@ -1,38 +1,38 @@
 export const addAttachment={
-    "desktopMode": {
-      "pageElementName": "sp-action-menu#dashboardprocedures",
+    "desktopMode":{
+        "pageElementName": "sp-action-menu#dashboardprocedures",
         "screenShotsName": "window open procedure",
-        "label":"Stock Control",
-        "view":"Stock",
-        "viewScreenShotLabel":"Stock",
+        "label":"Intruments Control",
+        "view":"Instruments",
+        "viewScreenShotLabel":"Instruments",
 
-        "pageElement": "dashboard/procedures?procName=stock&viewName=InventoryLotsGeneral&filterName=",
-        "screenShotName": "Active Inventory Lots"  
+        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstrumentsCG&filterName=",
+        "screenShotName": "Active Instruments CG"    
     },
     "mobileMode":{
         "pageElementName": "md-list-item#dashboardmyprocedures",
         "clickMenu": "md-filled-icon-button.menu",
         "screenShotsName": "Opening the Procedure Menu",
-        "label": ".stock",
-        "viewScreenShotLabel": "Stock",
+        "label": ".instruments",
+        "viewScreenShotLabel": "Instruments",
 
-        "pageElement": "dashboard/procedures?procName=stock&viewName=InventoryLotsGeneral&filterName=",
-        "screenShotName": "Active Inventory Lots"  
+        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstrumentsCG&filterName=",
+        "screenShotName": "Active Instruments CG"  
     },
 
     "tabletRetratoMode": {
         "pageElementName": "sp-action-menu#dashboardprocedures",
         "screenShotsName": "window open procedure",
-        "label":"Stock Control",
-        "view":"Stock",
-        "viewScreenShotLabel":"Stock",
+        "label":"Intruments Control",
+        "view":"Instruments",
+        "viewScreenShotLabel":"Instruments",
 
-        "pageElement": "dashboard/procedures?procName=stock&viewName=InventoryLotsGeneral&filterName=",
-        "screenShotName": "Active Inventory Lots"
+        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstrumentsCG&filterName=",
+        "screenShotName": "Active Instruments CG"
 
     },
 
-    "selectName": "SS.010505",
+    "selectName": "CG001",
     "phraseSelect": "Select Element",
 
     "buttonName": {
@@ -49,7 +49,7 @@ export const addAttachment={
         "value": "TRAZiT"
     },
 
-    "fldJustificationPhrase": {
+    "zzzfldJustificationPhrase": {
         "label": "Justification Phrase",
         "value": "testing"
     },
@@ -68,10 +68,6 @@ export const addAttachment={
     "textInNotif2": "added",
     "textInNotif3": "",
 
-    "endpoints":{
-        "Queries":[""],
-        "endpointsActions":["ADD_ATTACHMENT"]
-    },
 
     "phrasePauses": "Execution Pauses",
     "phraseScreenShots": "Attach ScreenShots"

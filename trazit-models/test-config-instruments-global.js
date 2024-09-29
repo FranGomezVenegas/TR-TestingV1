@@ -41,7 +41,7 @@ export const MenuInstrumentsControl={
         EventInProgress: {
         //pageElement: "vaadin-grid-cell-content:nth-child(18)",
             pageElement: "dashboard/procedures?procName=instruments&viewName=EventsInProgress&filterName=",
-            screenShotsName: "my Events In Progress Menu Open",
+            screenShotsName: "Events In Progress",
         },
 
         deviations: {
@@ -60,7 +60,16 @@ export const MenuInstrumentsControl={
             pageElement: "dashboard/procedures?procName=instruments&viewName=PlatformInstrumentsBalanzas&filterName=",
             screenShotsName: "active Instruments Balances",
 
+        },
+
+        InstrumentCG: {
+            pageElement: "dashboard/procedures?procName=instruments&viewName=PlatformInstrumentsCG&filterName=",
+            screenShotsName: "Active Instruments CG",
+
         }
+
+
+
        
     
     },

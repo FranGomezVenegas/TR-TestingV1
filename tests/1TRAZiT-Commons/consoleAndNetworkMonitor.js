@@ -1,5 +1,5 @@
 // Clase Logger para capturar y almacenar diferentes tipos de mensajes de la consola.
-class Logger {
+export class Logger {
   constructor() {
     this.errors = [];      // Almacena errores capturados de la consola.
     this.logs = [];        // Almacena mensajes generales de la consola.
@@ -52,7 +52,7 @@ class Logger {
   }
 }
 
-class NetworkInterceptor {
+export class NetworkInterceptor {
   constructor() {
     this.actionRequests = [];   // Almacena solicitudes de red relacionadas con "actions".
     this.queryRequests = [];    // Almacena solicitudes de red relacionadas con "queries".
@@ -134,27 +134,53 @@ class NetworkInterceptor {
   }
 
   // Método para verificar respuestas con cuerpo nulo, excluyendo imágenes
-  verifyNonImageNullResponses() {
-    const nonImageNullResponses = this.responses.filter(response => {
-      const contentType = response.headers?.['content-type'] || '';
-      const isImage = contentType.includes('image') || 
-                      response.url.endsWith('.svg') || 
-                      response.url.endsWith('.png') || 
-                      response.url.endsWith('.jpg') || 
-                      response.url.endsWith('.jpeg');
-      return response.body === null && !isImage;
-    });
+  // verifyNonImageNullResponses() {
+  //   const nonImageNullResponses = this.responses.filter(response => {
+  //     const contentType = response.headers?.['content-type'] || '';
+  //     const isImage = contentType.includes('image') || 
+  //                     response.url.endsWith('.svg') || 
+  //                     response.url.endsWith('.png') || 
+  //                     response.url.endsWith('.jpg') || 
+  //                     response.url.endsWith('.jpeg');
+  //     return response.body === null && !isImage;
+  //   });
 
-    if (nonImageNullResponses.length > 0) {
-      console.error('Responses with null body found (excluding images):');
-      nonImageNullResponses.forEach((response, index) => {
-        console.error(`Response ${index + 1}:`, response);
+  //   if (nonImageNullResponses.length > 0) {
+  //     console.error('Responses with null body found (excluding images):');
+  //     nonImageNullResponses.forEach((response, index) => {
+  //       console.error(`Response ${index + 1}:`, response);
+  //     });
+  //   }
+
+  //   // Retorna el número de respuestas con cuerpo nulo no relacionadas con imágenes
+  //   return nonImageNullResponses.length;
+  // }
+  verifyNonImageNullResponses() {
+      const nonImageNullResponses = this.responses.filter(response => {
+        const contentType = response.headers?.['content-type'] || '';
+        const isImage = contentType.includes('image') || 
+                        response.url.endsWith('.svg') || 
+                        response.url.endsWith('.png') || 
+                        response.url.endsWith('.jpg') || 
+                        response.url.endsWith('.jpeg') ||
+                        response.url.endsWith('.json') ||
+                        response.url.endsWith('.woff2')||
+                        response.url.endsWith('.gif');
+
+        return response.body === null && !isImage;
       });
+  
+      if (nonImageNullResponses.length > 0) {
+        console.error('Responses with null body found (excluding images):');
+        nonImageNullResponses.forEach((response, index) => {
+          console.error(`Response ${index + 1}:`, response);
+        });
+      }
+  
+      // Retorna el número de respuestas con cuerpo nulo no relacionadas con imágenes
+      return nonImageNullResponses.length;
     }
 
-    // Retorna el número de respuestas con cuerpo nulo no relacionadas con imágenes
-    return nonImageNullResponses.length;
-  }
 
   // Método para imprimir en consola las solicitudes separadas y las respuestas capturadas.
   printNetworkData() {
@@ -163,5 +189,24 @@ class NetworkInterceptor {
     // console.log('\nResponses captured:', this.responses);
   }
 }
+export class ResponseValidator {
+  constructor(responses) {
+    this.responses = responses; // Almacena las respuestas capturadas
+  }
 
-module.exports = { Logger, NetworkInterceptor };
+  // Método para validar si hay respuestas
+  validateResponses() {
+    if (this.responses.length === 0) {
+      throw new Error('No network responses captured.'); // Lanza un error si no hay respuestas
+    }
+  }
+}
+
+//module.exports = { Logger, NetworkInterceptor, ResponseValidator };
+
+export const phraseReport={
+  "phraseError": "Verify no console errors",
+  "phraseNetworkInterceptionAndLogger": "Attach Logger and NetworkInterceptor to the page",
+  "phraseVerifyNetwork": "Verify network responses",
+
+}

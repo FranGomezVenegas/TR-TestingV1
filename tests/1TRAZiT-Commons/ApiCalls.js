@@ -71,4 +71,3 @@ export async function callApiRunCompletion(data, testStatus, trazitTestName, tes
     console.error('API Call Failed:', 'url', apiEndpointRequest, 'error', error);
   }
 }
-

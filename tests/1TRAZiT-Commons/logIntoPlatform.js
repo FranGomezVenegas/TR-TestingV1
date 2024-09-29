@@ -70,7 +70,7 @@ export class LogIntoPlatform {
             await page.waitForTimeout(3000); 
         });
 
-        await test.step('Attach a screenshot', async () => {
+        await test.step('Credentials just entered', async () => {
             await testInfo.attach('Access', {
                 body: await page.screenshot(),
                 contentType: ConfigSettingsAlternative.screenShotsContentType
@@ -81,13 +81,13 @@ export class LogIntoPlatform {
             await page.waitForTimeout(3000); 
         }); 
 
-        console.log('Home');
-        await test.step('Attach a screenshot', async () => {
-            await testInfo.attach('Home', {
-                body: await page.screenshot(),
-                contentType: ConfigSettingsAlternative.screenShotsContentType
-            });
-        });
+        // console.log('Home');
+        // await test.step('Attach a screenshot', async () => {
+        //     await testInfo.attach('Home', {
+        //         body: await page.screenshot(),
+        //         contentType: ConfigSettingsAlternative.screenShotsContentType
+        //     });
+        // });
 
         return ConfigSettings;
     }
