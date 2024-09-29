@@ -1,31 +1,34 @@
 #!/bin/bash
 
 # Verificar si se ha pasado un argumento para el nombre del bucket
-if [ -z "$1" ]; then
-    echo "Error: Debes proporcionar el nombre del bucket de AWS como argumento."
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]; then
+    echo "Error: Debes proporcionar el nombre del bucket de AWS, TRAZIT_TEST_NAME, PLAYWRIGHT_FILENAME y PLAYWRIGHT_TESTNAME como argumentos."
     exit 1
 fi
 
 # El nombre del bucket es pasado como argumento al script
 AWS_BUCKET="$1"
+TRAZIT_TEST_NAME="$2"
+PLAYWRIGHT_FILENAME="$3"
+PLAYWRIGHT_TESTNAME="$4"
+
+# Definir el perfil y el directorio de reportes
 profile='default'
 playwright_reports_dir='playwright_reports'
 
 # Definir los directorios base y nuevo nombre
-REPORTS_DIR="/D/FrontE-Testing-master/htmlreport"
+REPORTS_DIR="/C/Users\paula/OneDrive/Documentos/Trazit/FE-Testing/FrontE-Testing-master/FrontE-Testing-master/htmlreport"
+# REPORTS_DIR="C:/Users/paula/OneDrive/Documentos/Trazit/FE-Testing/FrontE-Testing-master/FrontE-Testing-master/htmlreport"
+
 CURRENT_FILE_NAME="filename"
 CURRENT_TEST_NAME="testname"
-
-# Definir los nuevos nombres basados en las pruebas ejecutadas
-NEW_FILE_NAME="UpdateInstrumentFamily"
-NEW_TEST_NAME="UpdateInstrumentFamily"
 
 # Rutas actuales y nuevas
 CURRENT_OUTER_DIR="${REPORTS_DIR}/${CURRENT_FILE_NAME}"
 CURRENT_INNER_DIR="${CURRENT_OUTER_DIR}/${CURRENT_TEST_NAME}"
 
-NEW_OUTER_DIR="${REPORTS_DIR}/${NEW_FILE_NAME}"
-NEW_INNER_DIR="${NEW_OUTER_DIR}/${NEW_TEST_NAME}"
+NEW_OUTER_DIR="${REPORTS_DIR}/${TRAZIT_TEST_NAME}"
+NEW_INNER_DIR="${NEW_OUTER_DIR}/${PLAYWRIGHT_TESTNAME}"
 
 # Mostrar la configuración inicial
 echo "Configuración inicial:"
@@ -35,8 +38,8 @@ echo "Playwright Reports Directory: $playwright_reports_dir"
 echo "Report Directory: $REPORTS_DIR"
 echo "Current File Name: $CURRENT_FILE_NAME"
 echo "Current Test Name: $CURRENT_TEST_NAME"
-echo "New File Name: $NEW_FILE_NAME"
-echo "New Test Name: $NEW_TEST_NAME"
+echo "New File Name: $TRAZIT_TEST_NAME"
+echo "New Test Name: $PLAYWRIGHT_TESTNAME"
 echo "Rutas actuales:"
 echo "Current Outer Directory: $CURRENT_OUTER_DIR"
 echo "Current Inner Directory: $CURRENT_INNER_DIR"
@@ -61,7 +64,7 @@ if [ -d "$CURRENT_INNER_DIR" ]; then
 
     # Mover el directorio exterior a la nueva ubicación
     rmdir "$CURRENT_OUTER_DIR"
-    mv "$NEW_INNER_DIR" "$NEW_OUTER_DIR/$NEW_TEST_NAME"
+    mv "$NEW_INNER_DIR" "$NEW_OUTER_DIR/$PLAYWRIGHT_TESTNAME"
     echo "Carpeta exterior renombrada: $CURRENT_OUTER_DIR -> $NEW_OUTER_DIR"
 
     # Subir a AWS
@@ -69,11 +72,11 @@ if [ -d "$CURRENT_INNER_DIR" ]; then
     
     # Borrar la carpeta existente en S3 que tenga el mismo nombre
     echo "Eliminando carpeta existente en S3 si la hay..."
-    aws --profile $profile s3 rm s3://$AWS_BUCKET/$playwright_reports_dir/$NEW_FILE_NAME --recursive
+    aws --profile $profile s3 rm s3://$AWS_BUCKET/$playwright_reports_dir/$TRAZIT_TEST_NAME --recursive
     
     # Subir la nueva carpeta de reportes
     echo "Sincronizando el nuevo reporte a S3..."
-    aws --profile $profile s3 sync "$NEW_OUTER_DIR" s3://$AWS_BUCKET/$playwright_reports_dir/$NEW_FILE_NAME --delete --sse AES256 --cache-control no-cache
+    aws --profile $profile s3 sync "$NEW_OUTER_DIR" s3://$AWS_BUCKET/$playwright_reports_dir/$TRAZIT_TEST_NAME/$PLAYWRIGHT_TESTNAME --delete --sse AES256 --cache-control no-cache
     read -p "Presiona Enter para continuar..."
     echo "Reporte subido exitosamente a AWS Bucket: $AWS_BUCKET"
 else
