@@ -17,8 +17,9 @@ profile='default'
 playwright_reports_dir='playwright_reports'
 
 # Definir los directorios base y nuevo nombre
-REPORTS_DIR="/C/Users\paula/OneDrive/Documentos/Trazit/FE-Testing/FrontE-Testing-master/FrontE-Testing-master/htmlreport"
+# REPORTS_DIR="/C/Users\paula/OneDrive/Documentos/Trazit/FE-Testing/FrontE-Testing-master/FrontE-Testing-master/htmlreport"
 # REPORTS_DIR="C:/Users/paula/OneDrive/Documentos/Trazit/FE-Testing/FrontE-Testing-master/FrontE-Testing-master/htmlreport"
+REPORTS_DIR="./htmlreport"
 
 CURRENT_FILE_NAME="filename"
 CURRENT_TEST_NAME="testname"

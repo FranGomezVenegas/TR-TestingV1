@@ -127,9 +127,9 @@ export const justificationPhrase = async (page, timeout = 30000, testInfo) => {
                 return;
             }
 
-            // await test.step("Attach screenshot before filling", async () => {
-            //     await attachScreenshot(testInfo, "Empty Justification Phrase", page, ConfigSettingsAlternative.screenShotsContentType);
-            // });
+            await test.step("Attach screenshot before filling", async () => {
+                await attachScreenshot(testInfo, "Empty Justification Phrase", page, ConfigSettingsAlternative.screenShotsContentType);
+            });
 
             await test.step("Pause execution before clicking on the field", async () => {
                 await page.pause();  // Pausa antes de la acción
@@ -147,9 +147,9 @@ export const justificationPhrase = async (page, timeout = 30000, testInfo) => {
                 await page.getByRole('textbox', { name: phraseBox }).fill("Testing");
             });
 
-            // await test.step("Attach screenshot after filling", async () => {
-            //     await attachScreenshot(testInfo, "Filled Justification Phrase", page, ConfigSettingsAlternative.screenShotsContentType);
-            // });
+            await test.step("Attach screenshot after filling", async () => {
+                await attachScreenshot(testInfo, "Filled Justification Phrase", page, ConfigSettingsAlternative.screenShotsContentType);
+            });
 
             await test.step("Pause execution after filling the field", async () => {
                 await page.pause();  // Pausa después de llenar el campo
@@ -230,7 +230,7 @@ export const clickAcceptButton = async (page, timeout = 30000) => {
             
             if (isVisible) {
                 await test.step("Click 'Accept' button", async () => {
-                    await page.getByRole('button', { name: 'Accept' }).nth(1).click({ timeout });
+                    await page.getByRole('button', { name: 'Accept' }).first().click({ timeout });
                 });
             }
         });

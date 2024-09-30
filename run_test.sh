@@ -4,7 +4,7 @@
 AWS_BUCKET="demov0.9.2.testing"
 
 # Definir las variables
-TRAZIT_TEST_NAME="EventsInProgressAddAttachment"
+TRAZIT_TEST_NAME="ActiveInventoryCultureMediaLotsAddAttachment"
 PLAYWRIGHT_FILENAME="AddAttachment.spec.ts"
 PLAYWRIGHT_TESTNAME="AddAttachmentAccept"
 

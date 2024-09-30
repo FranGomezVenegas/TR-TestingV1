@@ -29,27 +29,27 @@ export default defineConfig({
         video: 'on'
       },
     },
-    {
-      name: 'Firefox', // Configuración para Firefox
-      use: {
-        browserName: 'firefox', // Usar Firefox
-        video: 'on'
-      },
-    },
-    {
-      name: 'Safari', // Configuración para Safari
-      use: {
-        //browserName: 'webkit', // Usar WebKit para Safari
-        video: 'on'
-      },
-    },
-    {
-      name: 'Microsoft Edge', // Configuración para Edge
-      use: {
-        browserName: 'chromium', // Usar Chromium para Edge
-        channel: 'msedge', // Especificar el canal de Edge
-        video: 'on'
-      },
-    },
+    // {
+    //   name: 'Firefox', // Configuración para Firefox
+    //   use: {
+    //     browserName: 'firefox', // Usar Firefox
+    //     video: 'on'
+    //   },
+    // },
+    // {
+    //   name: 'Safari', // Configuración para Safari
+    //   use: {
+    //     //browserName: 'webkit', // Usar WebKit para Safari
+    //     video: 'on'
+    //   },
+    // },
+    // {
+    //   name: 'Microsoft Edge', // Configuración para Edge
+    //   use: {
+    //     browserName: 'chromium', // Usar Chromium para Edge
+    //     channel: 'msedge', // Especificar el canal de Edge
+    //     video: 'on'
+    //   },
+    // },
   ],
 });

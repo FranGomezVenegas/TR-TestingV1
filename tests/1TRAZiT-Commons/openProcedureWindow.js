@@ -10,9 +10,19 @@ export class OpenProcedureWindow {
     async openWindowForDesktop(page, testInfo, ConfigSettings) {
         console.log("openWindowForDesktop - ConfigSettings:", ConfigSettings);
 //        let dataForTest=JSON.parse(ConfigSettings.dataForTest)
-        let dataForTest;        
+        let dataForTest={};        
         if (ConfigSettings.dataForTest) {
-            dataForTest = JSON.parse(ConfigSettings.dataForTest);
+            // dataForTest = JSON.parse(ConfigSettings.dataForTest);
+            let unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
+            try {
+                dataForTest = JSON.parse(unescapedString);
+              } catch (error) {
+                console.error("Error parsing JSON:", error);
+              }            
+            // dataForTest = JSON.parse(unescapedString);
+            dataForTest = JSON.parse(dataForTest.testDataGame)
+           // dataForTest = ConfigSettings.dataForTest.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
+
         } else {
             throw new Error("ConfigSettings.dataForTest está indefinido o vacío");
         }
@@ -89,12 +99,23 @@ export class OpenProcedureWindow {
 
     async openWindowForMobile(page, testInfo, ConfigSettings) {
         console.log("openWindowForMobile - ConfigSettings:", ConfigSettings);
-        let dataForTest;        
+        let dataForTest={};        
         if (ConfigSettings.dataForTest) {
-            dataForTest = JSON.parse(ConfigSettings.dataForTest);
+            // dataForTest = JSON.parse(ConfigSettings.dataForTest);
+            let unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
+            try {
+                dataForTest = JSON.parse(unescapedString);
+              } catch (error) {
+                console.error("Error parsing JSON:", error);
+              }            
+            // dataForTest = JSON.parse(unescapedString);
+            dataForTest = JSON.parse(dataForTest.testDataGame)
+           // dataForTest = ConfigSettings.dataForTest.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
+
         } else {
             throw new Error("ConfigSettings.dataForTest está indefinido o vacío");
         }
+
         try {
             console.log(dataForTest); // Asegúrate de que contiene mobileMode
             console.log(dataForTest.mobileMode); // Asegúrate de que contiene clickMenu
@@ -176,12 +197,23 @@ export class OpenProcedureWindow {
 
     async openWindowForTabletsModeRetrato(page, testInfo, ConfigSettings) {
         console.log("openWindowForMobile - ConfigSettings:", ConfigSettings);
-        let dataForTest;        
+        let dataForTest={};        
         if (ConfigSettings.dataForTest) {
-            dataForTest = JSON.parse(ConfigSettings.dataForTest);
+            // dataForTest = JSON.parse(ConfigSettings.dataForTest);
+            let unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
+            try {
+                dataForTest = JSON.parse(unescapedString);
+              } catch (error) {
+                console.error("Error parsing JSON:", error);
+              }            
+            // dataForTest = JSON.parse(unescapedString);
+            dataForTest = JSON.parse(dataForTest.testDataGame)
+           // dataForTest = ConfigSettings.dataForTest.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
+
         } else {
             throw new Error("ConfigSettings.dataForTest está indefinido o vacío");
         }
+        
         
         try {
             await test.step("Check platformMenuNames.procedure.main.pageElementName is defined", async () => {

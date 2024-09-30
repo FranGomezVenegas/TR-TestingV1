@@ -3,12 +3,7 @@ import { test, expect } from '@playwright/test';
 import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config';
 import { LogIntoPlatform } from '../1TRAZiT-Commons/logIntoPlatform';
 // Instruments:
-// import { Turn as dataForTestFromFile} from '../../trazit-models/test-config-instruments-activate';
-// import { Turn as dataForTestFromFile} from '../../trazit-models/tests-config-instruments-deactivate';
-// import { Turn as dataForTestFromFile} from '../../trazit-models/test-config-instrumentsBalances-activate';
-// import { Turn as dataForTestFromFile} from '../../trazit-models/test-config-instrumentsBalances-deactivate';
-// import { Turn as dataForTestFromFile} from '../../trazit-models/test-config-instrumentsCG-activate';
-import { Turn as dataForTestFromFile} from '../../trazit-models/test-config-instrumentsCG-deactivate';
+ import { Turn as dataForTestFromFile} from '../../trazit-models/test-config-instruments-activate';
 
 import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls';
 import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';

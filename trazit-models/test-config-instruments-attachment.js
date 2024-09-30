@@ -1,5 +1,6 @@
 export const addAttachment={
     "desktopMode":{
+        "local":true,
         "pageElementName": "sp-action-menu#dashboardprocedures",
         "screenShotsName": "window open procedure",
         "label":"Intruments Control",
