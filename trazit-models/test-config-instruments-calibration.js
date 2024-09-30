@@ -1,4 +1,4 @@
-export const Turn={
+export const Button={
     "desktopMode":{
         "pageElementName": "sp-action-menu#dashboardprocedures",
         "screenShotsName": "window open procedure",
@@ -32,24 +32,22 @@ export const Turn={
 
     },
 
-
-    "buttonName": "Turn online",
-    "selectName": "prueba2024-09-22T15:16:05.550242",
+    "selectName": "VI-384729",
+    "buttonName": "Start Calibration",
     "buttonAccept": "Accept",
     "buttonCancel": "Cancel",
-    
-    "screenShotsButtonName": "Click a Button",
+   
     "screenShotsSelect": "Select Element",
+    "screenShotsButtonName": "Click a Button",
     "screenShotsAccept": "Accept",
     "screenShotsCancel": "Cancel",
 
-    "phrasePauses": "Execution Pauses",
     "phraseScreenShots": "Attach ScreenShot",
+    "phrasePauses": "Execution Pauses",
     "phraseButtonName": "Click a Button",
     "phraseButtonAccept": "Click Accept",
 
-    
-    "textInNotif1": "Turned",
-    "textInNotif2": "on",
+    "textInNotif1": "Calibration",
+    "textInNotif2": "started",
     "textInNotif3": "success"
 }

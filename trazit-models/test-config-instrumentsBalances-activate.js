@@ -6,8 +6,8 @@ export const Turn={
         "view":"Instruments",
         "viewScreenShotLabel":"Instruments",
 
-        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstruments&filterName=",
-        "screenShotName": "Active Inventory Lots"    
+        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstrumentsBalanzas&filterName=",
+        "screenShotName": "Active Instruments Balances"    
     },
     "mobileMode":{
         "pageElementName": "md-list-item#dashboardmyprocedures",
@@ -16,8 +16,8 @@ export const Turn={
         "label": ".instruments",
         "viewScreenShotLabel": "Instruments",
 
-        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstruments&filterName=",
-        "screenShotName": "Active Inventory Lots"  
+       "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstrumentsBalanzas&filterName=",
+        "screenShotName": "Active Instruments Balances" 
     },
 
     "tabletRetratoMode": {
@@ -27,14 +27,14 @@ export const Turn={
         "view":"Instruments",
         "viewScreenShotLabel":"Instruments",
 
-        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstruments&filterName=",
-        "screenShotName": "Active Inventory Lots"
+       "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstrumentsBalanzas&filterName=",
+        "screenShotName": "Active Instruments Balances" 
 
     },
 
 
     "buttonName": "Turn online",
-    "selectName": "prueba2024-09-22T15:16:05.550242",
+    "selectName": "PE-102124",
     "buttonAccept": "Accept",
     "buttonCancel": "Cancel",
     

@@ -1,25 +1,56 @@
-export const deactivate={
-    selectInstrument: "testingg",
-    fldButtonDeactivate:{label:"Turn off-line"},
-    fldJustificationDeactivate:{label:"Justification Phrase", value:"testing"},
-    buttonAccept:{label:"Accept"},
-    buttonCancel:{label:"Cancel"},
+export const Turn={
+    "desktopMode":{
+        "pageElementName": "sp-action-menu#dashboardprocedures",
+        "screenShotsName": "window open procedure",
+        "label":"Intruments Control",
+        "view":"Instruments",
+        "viewScreenShotLabel":"Instruments",
 
-    screenShotsClickInstruments: "Click Instrument",
-    screenShotsClickButtonDeactivate: "Click Deactivate",
-    screenShotsJustification: "Justification Phrase",
-    screenShotsClickAccept: "Click The Button Accept",
-    screenShotsClickCancel: "Click The Button Cancel",
-    
-    endpoints: {
-        actions: {
-            TurnOffLine: "TURN_OFF_LINE",
-        }, 
+        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstruments&filterName=",
+        "screenShotName": "Active Inventory Lots"    
+    },
+    "mobileMode":{
+        "pageElementName": "md-list-item#dashboardmyprocedures",
+        "clickMenu": "md-filled-icon-button.menu",
+        "screenShotsName": "Opening the Procedure Menu",
+        "label": ".instruments",
+        "viewScreenShotLabel": "Instruments",
+
+        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstruments&filterName=",
+        "screenShotName": "Active Inventory Lots"  
     },
 
-    textInNotif1: "turn",
-    textInNotif2: "off",
-    textInNotif3: "success",
-}
+    "tabletRetratoMode": {
+        "pageElementName": "sp-action-menu#dashboardprocedures",
+        "screenShotsName": "window open procedure",
+        "label":"Intruments Control",
+        "view":"Instruments",
+        "viewScreenShotLabel":"Instruments",
+
+        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstruments&filterName=",
+        "screenShotName": "Active Inventory Lots"
+
+    },
+
+
+    "buttonName": "Turn off-line",
+    "selectName": "prueba2024-09-22T15:16:05.550242",
+    "buttonAccept": "Accept",
+    "buttonCancel": "Cancel",
     
+    "screenShotsButtonName": "Click a Button",
+    "screenShotsSelect": "Select Element",
+    "screenShotsAccept": "Accept",
+    "screenShotsCancel": "Cancel",
+
+    "phrasePauses": "Execution Pauses",
+    "phraseScreenShots": "Attach ScreenShot",
+    "phraseButtonName": "Click a Button",
+    "phraseButtonAccept": "Click Accept",
+
+    
+    "textInNotif1": "Turned",
+    "textInNotif2": "on",
+    "textInNotif3": "success"
+}
 

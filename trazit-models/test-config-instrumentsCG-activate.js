@@ -6,8 +6,8 @@ export const Turn={
         "view":"Instruments",
         "viewScreenShotLabel":"Instruments",
 
-        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstruments&filterName=",
-        "screenShotName": "Active Inventory Lots"    
+       "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstrumentsCG&filterName=",
+        "screenShotName": "Active Instruments CG"     
     },
     "mobileMode":{
         "pageElementName": "md-list-item#dashboardmyprocedures",
@@ -16,8 +16,8 @@ export const Turn={
         "label": ".instruments",
         "viewScreenShotLabel": "Instruments",
 
-        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstruments&filterName=",
-        "screenShotName": "Active Inventory Lots"  
+        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstrumentsCG&filterName=",
+        "screenShotName": "Active Instruments CG"    
     },
 
     "tabletRetratoMode": {
@@ -27,14 +27,14 @@ export const Turn={
         "view":"Instruments",
         "viewScreenShotLabel":"Instruments",
 
-        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstruments&filterName=",
-        "screenShotName": "Active Inventory Lots"
+        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstrumentsCG&filterName=",
+        "screenShotName": "Active Instruments CG"    
 
     },
 
 
     "buttonName": "Turn online",
-    "selectName": "prueba2024-09-22T15:16:05.550242",
+    "selectName": "CG-283941",
     "buttonAccept": "Accept",
     "buttonCancel": "Cancel",
     
