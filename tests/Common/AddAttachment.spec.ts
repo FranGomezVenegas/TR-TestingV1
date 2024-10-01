@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickElementByText, justificationPhrase, fillUserCredentials, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { clickElementByText, clickElement, justificationPhrase, fillUserCredentials, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => { 
@@ -52,6 +52,37 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         };
 
         const notificationWitness = new NotificationWitness(page);
+
+        if (addAttachment.tab1) {
+            await test.step(addAttachment.phraseTab1, async () => {
+                await clickElement(page, addAttachment.tab1);
+                console.log('Clicked on Tab1'); 
+            });
+            await test.step(addAttachment.phrasePauses, async () => {
+                await page.pause();
+            });
+            await test.step(addAttachment.phraseScreenShots, async () => {
+                await attachScreenshot(testInfo, addAttachment.screenShotTab1, page, ConfigSettingsAlternative.screenShotsContentType);
+                await test.step(addAttachment.phasePauses, async () => {
+                    await page.pause();
+                });
+            });
+        } else if (addAttachment.tab2) {
+            await test.step(addAttachment.phraseTab2, async () => {
+                await clickElement(page, addAttachment.tab2);
+                console.log('Clicked on Tab2'); 
+            });
+            await test.step(addAttachment.phrasePauses, async () => {
+                await page.pause();
+            });
+            await test.step(addAttachment.phraseScreenShots, async () => {
+                await attachScreenshot(testInfo, addAttachment.screenShotTab2, page, ConfigSettingsAlternative.screenShotsContentType);
+                await test.step(addAttachment.phasePauses, async () => {
+                    await page.pause();
+                });
+            });
+        }
+        
 
         await test.step(addAttachment.phraseSelect, async () => {
             await clickElementByText(page, addAttachment.selectName);
