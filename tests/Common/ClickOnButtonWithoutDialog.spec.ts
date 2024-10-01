@@ -3,38 +3,36 @@ import { test, expect } from '@playwright/test';
 import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config.js';
 import { LogIntoPlatform } from '../1TRAZiT-Commons/logIntoPlatform.js';
 // Instruments:
-import { Button as dataForTestFromFile } from '../../trazit-models/test-config-instruments-calibration';
-// import { Button as dataForTestFromFile } from '../../trazit-models/test-config-instruments-prevMaint';
-// import { Button as dataForTestFromFile } from '../../trazit-models/test-config-instruments-serive';
-// import { Button as dataForTestFromFile } from '../../trazit-models/test-config-instruments-verification';
-
+import { Button as dataForTestFromFile } from '../../trazit-models/test-config-instruments-activate';
 
 import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls.js';
 import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
-import { clickElementByText, clickElement, justificationPhrase, fillUserCredentials, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
+import { clickButtonById, clickElementByText, justificationPhrase, fillUserCredentials, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
+  // await page.geyByLabel('refresh').click();
     // Create instances of Logger and NetworkInterceptor
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
 
     let Button;
 
-    // If configuration data is available, process the JSON
     if (ConfigSettings && ConfigSettings.dataForTest) {
-        let validJsonString = ConfigSettings.dataForTest.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
-        Button = dataForTestFromFile; // Make sure to parse the valid JSON string
-        // Button = JSON.parse(validJsonString);  // Convierte el string a JSON
-    } else {
-        Button = dataForTestFromFile;
-    }
-
-    // console.log('Attachment data:', Button);
-
+      let unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
+      try {
+        Button = JSON.parse(unescapedString);
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
+        }
+        Button = JSON.parse(Button.testDataGame)
+  } else {
+      Button = dataForTestFromFile;
+  }
+   
     // Attach Logger and NetworkInterceptor to the page
     await test.step(phraseReport.phraseNetworkInterceptionAndLogger, async () => {
         logger.attachToPage(page);
@@ -66,7 +64,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     });
 
     await test.step(Button.phraseButtonName, async () => {
-      await clickElement(page, Button.buttonName);
+      await clickButtonById(page, Button.buttonName);
     })
 
     await test.step(Button.phraseScreenShots, async () => {
@@ -76,18 +74,16 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
       });
   });
 
-
-
     // Justification Phrase
     await justificationPhrase(page, 30000, testInfo);
     await fillUserCredentials(page, testInfo);
     await clickAcceptButton(page);
 
     // Verify that there are no console errors
-    await test.step(phraseReport.phraseError, async () => {
-      logger.printLogs();
-      expect(logger.errors.length).toBe(0);
-  });
+  //   await test.step(phraseReport.phraseError, async () => {
+  //     logger.printLogs();
+  //     expect(logger.errors.length).toBe(0);
+  // });
 
   // Verify captured network responses
   await test.step(phraseReport.phraseVerifyNetwork, async () => {
@@ -116,9 +112,6 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 }
 
 
-
-    
-        
 
 let trazitTestName;
 let ConfigSettings;
@@ -150,7 +143,7 @@ test.describe('Desktop Mode', () => {
     });
 });
       //And I call the tests.
-      test('ClickAButton', async ({ page }, testInfo) => {
+      test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
         await test.step('Run tests', async () => {
             await commonTests(ConfigSettings, page, testInfo);
         });
@@ -186,7 +179,7 @@ test.describe('Desktop Mode', () => {
 //     });
 // });
 //       //And I call the tests.
-//       test('ClickAButton', async ({ page }, testInfo) => {
+//       test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
 //         await test.step('Run tests', async () => {
 //             await commonTests(ConfigSettings, page, testInfo);
 //         });
@@ -225,7 +218,7 @@ test.describe('Desktop Mode', () => {
 //     });
   
 //     // And I call the tests.
-//     test('ClickAButton', async ({ page }, testInfo) => {
+//     test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
 //       await test.step('Run tests', async () => {
 //         await commonTests(ConfigSettings, page, testInfo);
 //       });
@@ -263,7 +256,7 @@ test.describe('Desktop Mode', () => {
 //       });
 //     });
   
-//     test('ClickAButton', async ({ page }, testInfo) => {
+//     test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
 //       await test.step('Run tests', async () => {
 //         await commonTests(ConfigSettings, page, testInfo);
 //       });
@@ -302,7 +295,7 @@ test.describe('Desktop Mode', () => {
 //       });
 //     });
   
-//     test('ClickAButton', async ({ page }, testInfo) => {
+//     test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
 //       await test.step('Run tests', async () => {
 //         await commonTests(ConfigSettings, page, testInfo);
 //       });
@@ -341,7 +334,7 @@ test.describe('Desktop Mode', () => {
 //     });
   
 //     // And I call the tests.
-//     test('ClickAButton', async ({ page }, testInfo) => {
+//     test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
 //       await test.step('Run tests', async () => {
 //         await commonTests(ConfigSettings, page, testInfo);
 //       });

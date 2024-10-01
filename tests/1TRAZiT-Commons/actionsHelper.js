@@ -28,6 +28,20 @@ export const clickElement = async (page, selector, timeout = 30000) => {
     }
 };
 
+export const clickButtonById = async (page, id, timeout = 30000) => {
+    try {
+        // Usa getById para seleccionar el elemento por su id
+        const element = page.locator(`#${id}`);
+
+        // Espera a que el elemento esté visible y haz clic
+        await element.click({ timeout });
+    } catch (error) {
+        console.error(`Error al hacer clic en el elemento con id: '${id}'. Detalles del error:`, error);
+        throw error;
+    }
+};
+
+
 // Escribe el texto en un elemento.
 export const fillField = async (page, label, value) => {
     try {
