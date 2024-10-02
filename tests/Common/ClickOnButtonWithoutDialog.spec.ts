@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
-import { clickButtonById, clickElementByText, justificationPhrase, fillUserCredentials, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
+import { clickButtonById, clickElement, clickElementByText, justificationPhrase, fillUserCredentials, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
@@ -21,17 +21,18 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
     let Button;
 
-    if (ConfigSettings && ConfigSettings.dataForTest) {
-      let unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
-      try {
-        Button = JSON.parse(unescapedString);
-        } catch (error) {
-          console.error("Error parsing JSON:", error);
+        // If configuration data is available, process the JSON
+        if (ConfigSettings && ConfigSettings.dataForTest) {
+            let unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
+            try {
+              Button = JSON.parse(unescapedString);
+              } catch (error) {
+                console.error("Error parsing JSON:", error);
+              }
+              Button = JSON.parse(Button.testDataGame)
+        } else {
+            Button = dataForTestFromFile;
         }
-        Button = JSON.parse(Button.testDataGame)
-  } else {
-      Button = dataForTestFromFile;
-  }
    
     // Attach Logger and NetworkInterceptor to the page
     await test.step(phraseReport.phraseNetworkInterceptionAndLogger, async () => {
@@ -47,6 +48,23 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     };
 
     const notificationWitness = new NotificationWitness(page);
+
+
+    if (Button.tab) {
+      await test.step(Button.phraseTab, async () => {
+          await clickElement(page, Button.tab);
+          console.log('Clicked on Tab1'); 
+      });
+      await test.step(Button.phrasePauses, async () => {
+          await page.pause();
+      });
+      await test.step(Button.phraseScreenShots, async () => {
+          await attachScreenshot(testInfo, Button.screenShotTab, page, ConfigSettingsAlternative.screenShotsContentType);
+          await test.step(Button.phasePauses, async () => {
+              await page.pause();
+          });
+      });
+  }
 
     await test.step(Button.phraseSelect, async () => {
         await clickElementByText(page, Button.selectName);
