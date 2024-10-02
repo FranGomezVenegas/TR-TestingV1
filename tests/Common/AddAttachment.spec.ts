@@ -12,6 +12,8 @@ import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
 import { clickElementByText, clickElement, justificationPhrase, fillUserCredentials, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 
+import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
+
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => { 
         // Create instances of Logger and NetworkInterceptor
@@ -53,36 +55,19 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
         const notificationWitness = new NotificationWitness(page);
 
-        if (addAttachment.tab1) {
-            await test.step(addAttachment.phraseTab1, async () => {
-                await clickElement(page, addAttachment.tab1);
-                console.log('Clicked on Tab1'); 
-            });
-            await test.step(addAttachment.phrasePauses, async () => {
-                await page.pause();
-            });
-            await test.step(addAttachment.phraseScreenShots, async () => {
-                await attachScreenshot(testInfo, addAttachment.screenShotTab1, page, ConfigSettingsAlternative.screenShotsContentType);
-                await test.step(addAttachment.phasePauses, async () => {
-                    await page.pause();
-                });
-            });
-        } else if (addAttachment.tab2) {
-            await test.step(addAttachment.phraseTab2, async () => {
-                await clickElement(page, addAttachment.tab2);
-                console.log('Clicked on Tab2'); 
-            });
-            await test.step(addAttachment.phrasePauses, async () => {
-                await page.pause();
-            });
-            await test.step(addAttachment.phraseScreenShots, async () => {
-                await attachScreenshot(testInfo, addAttachment.screenShotTab2, page, ConfigSettingsAlternative.screenShotsContentType);
-                await test.step(addAttachment.phasePauses, async () => {
-                    await page.pause();
-                });
-            });
-        }
-        
+        // if (addAttachment.tab) {
+        //     await test.step(addAttachment.phraseTab, async () => {
+        //         await clickElement(page, addAttachment.tab);
+        //         console.log('Clicked on Tab'); 
+        //     });
+        //     await test.step(addAttachment.phrasePauses, async () => {
+        //         await page.pause();
+        //     });
+        //     await test.step(addAttachment.phraseScreenShots, async () => {
+        //         await attachScreenshot(testInfo, addAttachment.screenShotTab, page, ConfigSettingsAlternative.screenShotsContentType);
+        //     });
+        // }
+        await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, addAttachment);
 
         await test.step(addAttachment.phraseSelect, async () => {
             await clickElementByText(page, addAttachment.selectName);

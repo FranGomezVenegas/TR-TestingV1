@@ -12,6 +12,8 @@ import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
 import { clickButtonById, clickElement, clickElementByText, justificationPhrase, fillUserCredentials, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
 
+import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
+
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
   // await page.geyByLabel('refresh').click();
@@ -50,21 +52,23 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     const notificationWitness = new NotificationWitness(page);
 
 
-    if (Button.tab) {
-      await test.step(Button.phraseTab, async () => {
-          await clickElement(page, Button.tab);
-          console.log('Clicked on Tab1'); 
-      });
-      await test.step(Button.phrasePauses, async () => {
-          await page.pause();
-      });
-      await test.step(Button.phraseScreenShots, async () => {
-          await attachScreenshot(testInfo, Button.screenShotTab, page, ConfigSettingsAlternative.screenShotsContentType);
-          await test.step(Button.phasePauses, async () => {
-              await page.pause();
-          });
-      });
-  }
+  //   if (Button.tab) {
+  //     await test.step(Button.phraseTab, async () => {
+  //         await clickElement(page, Button.tab);
+  //         console.log('Clicked on Tab'); 
+  //     });
+  //     await test.step(Button.phrasePauses, async () => {
+  //         await page.pause();
+  //     });
+  //     await test.step(Button.phraseScreenShots, async () => {
+  //         await attachScreenshot(testInfo, Button.screenShotTab, page, ConfigSettingsAlternative.screenShotsContentType);
+  //         await test.step(Button.phasePauses, async () => {
+  //             await page.pause();
+  //         });
+  //     });
+  // }
+  await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, Button);
+
 
     await test.step(Button.phraseSelect, async () => {
         await clickElementByText(page, Button.selectName);
