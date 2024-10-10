@@ -175,6 +175,82 @@ export const justificationPhrase = async (page, timeout = 30000, testInfo) => {
     }
 };
 
+
+export const fillUserField = async (page, testInfo, timeout = 30000) => {
+    const userCredentialSettings = {
+        fldUser: { label: "User", value: "admin" }
+    };
+
+    try {
+        // Comprobar si el campo 'User' es visible
+        const isUserVisible = await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).isVisible({ timeout }).catch(() => false);
+        
+        if (isUserVisible) {
+            await test.step("Start - Fill 'User' field", async () => {
+                await test.step("Click on 'User' field", async () => {
+                    await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).click();
+                    await page.pause(); // Pausa después de hacer clic
+                });
+
+                // await test.step("Attach screenshot before filling 'User'", async () => {
+                //     await attachScreenshot(testInfo, "Before filling User field", page, ConfigSettingsAlternative.screenShotsContentType);
+                // });
+
+                await test.step("Fill in 'User' field", async () => {
+                    await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).fill(userCredentialSettings.fldUser.value);
+                });
+
+                // await test.step("Attach screenshot after filling 'User'", async () => {
+                //     await attachScreenshot(testInfo, "Filled User field", page, ConfigSettingsAlternative.screenShotsContentType);
+                // });
+            });
+        }
+
+    } catch (error) {
+        console.error("An unexpected error occurred while trying to fill the 'User' field:", error);
+        throw error; 
+    }
+};
+
+export const fillPasswordField = async (page, testInfo, timeout = 30000) => {
+    const userCredentialSettings = {
+        fldPss: { label: "Password", value: "trazit", id: "pwd" }
+    };
+
+    try {
+        // Comprobar si el campo 'Password' es visible usando el id 'pwd'
+        const isPasswordVisible = await page.locator(`#${userCredentialSettings.fldPss.id}`).isVisible({ timeout }).catch(() => false);
+        
+        if (isPasswordVisible) {
+            await test.step("Start - Fill 'Password' field", async () => {
+                await test.step("Click on 'Password' field", async () => {
+                    // Hacer clic en el campo con el id 'pwd'
+                    await page.locator(`#${userCredentialSettings.fldPss.id}`).click();
+                    await page.pause(); // Pausa después de hacer clic para ver la acción en tiempo real (opcional)
+                });
+
+                // Esperar a que el campo interno de input esté disponible y luego rellenar
+                await test.step("Fill in 'Password' field", async () => {
+                    // Seleccionar el input interno y rellenarlo
+                    const inputLocator = page.locator(`#${userCredentialSettings.fldPss.id} input[type="password"]`);
+                    await inputLocator.fill(userCredentialSettings.fldPss.value);
+                });
+
+                // Pausa opcional después de rellenar el campo
+                await test.step("Pause after filling 'Password'", async () => {
+                    await page.pause();
+                });
+            });
+        }
+
+    } catch (error) {
+        console.error("An unexpected error occurred while trying to fill the 'Password' field:", error);
+        throw error; 
+    }
+};
+
+
+
 export const fillUserCredentials = async (page, testInfo, timeout = 30000) => {
     const userCredentialSettings = {
         fldUser: { label: "User", value: "admin" },
