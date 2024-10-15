@@ -10,10 +10,11 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
-import { clickButtonById, clickElement, clickElementByText, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
+import { justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper.js';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions';
+import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions.js';
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
@@ -97,32 +98,9 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     }
     
     console.log("El resultado fue falso, continuando con el flujo normal...");
+    
     // Si `handleDragDropBoxesInteraction` no fue exitoso, continuar con el flujo normal
-    await test.step(Button.phraseSelect, async () => {
-        await clickElementByText(page, Button.selectName);
-    });
-
-    await test.step(Button.phrasePauses, async () => {
-        await page.pause();
-    });
-
-    await test.step(Button.phraseScreenShots, async () => {
-        await attachScreenshot(testInfo, Button.screenShotsSelect, page, ConfigSettingsAlternative.screenShotsContentType);
-        await test.step(Button.phrasePauses, async () => {
-            await page.pause();
-        });
-    });
-
-    await test.step(Button.phraseButtonName, async () => {
-        await clickButtonById(page, Button.buttonName);
-    });
-
-    await test.step(Button.phraseScreenShots, async () => {
-        await attachScreenshot(testInfo, Button.screenShotsButtonName, page, ConfigSettingsAlternative.screenShotsContentType);
-        await test.step(Button.phrasePauses, async () => {
-            await page.pause();
-        });
-    });
+    await handleActionNameInteraction(page, testInfo, Button);
 
     // Justification Phrase
     await fillUserField(page, testInfo); // Rellena el campo de "User"
@@ -178,7 +156,7 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-      trazitTestName = process.env.TRAZIT_TEST_NAME || 'RevisionLocationReviewSample' ;
+      trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution' ;
   
       await test.step('Perform common setup', async () => {
         ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName);
@@ -205,6 +183,199 @@ test.describe('Desktop Mode', () => {
     });
   });
 
+
+  
+
+//   test.describe('Television Mode Full HD', () => {
+//     test.beforeEach(async ({ page }, testInfo) => {
+//       await test.step('Set viewport size for Full HD (1920x1080)', async () => {
+//         // Establece el tamaño de la pantalla en Full HD
+//         await page.setViewportSize({ width: 1920, height: 1080 });
+//       });
+  
+//       const logPlat = new LogIntoPlatform({ page });
+//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution' ;
+  
+//       await test.step('Perform common setup', async () => {
+//         ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName);
+//       });
+  
+//       await test.step('Wait for 3 seconds', async () => {
+//         await page.waitForTimeout(3000);
+//       });
+  
+//       const openWindow = new OpenProcedureWindow({ page });
+  
+//       await test.step('Open procedure window for TV', async () => {
+//         await test.step('Wait for 3 seconds', async () => {
+//           await page.waitForTimeout(3000);
+//         });
+//         await openWindow.openWindowForDesktop(page, testInfo, ConfigSettings);
+//     });
+// });
+//       //And I call the tests.
+//       test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
+//         await test.step('Run tests', async () => {
+//             await commonTests(ConfigSettings, page, testInfo);
+//         });
+//     });
+//   });
+
+
+// // Mobile Mode 
+// test.describe('Mobile mode', () => {
+//     test.beforeEach(async ({ page }, testInfo) => {
+//       // Size of the viewport of a mobile device
+//       await test.step('Set mobile viewport size', async () => {
+//         await page.setViewportSize({ width: 385, height: 812 });
+//       });
+      
+//       // Common configuration for both modes.
+//       const logPlat = new LogIntoPlatform({ page });
+//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+  
+//       await test.step('Perform common setup', async () => {
+//         ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName);
+//       });
+  
+//       await test.step('Wait for 3 seconds', async () => {
+//         await page.waitForTimeout(3000);
+//       });
+  
+//       const openWindow = new OpenProcedureWindow({ page });
+  
+//       await test.step('Open procedure window for TV', async () => {
+//         await test.step('Wait for 3 seconds', async () => {
+//           await page.waitForTimeout(3000);
+//         });
+//         await openWindow.openWindowForMobile(page, testInfo, ConfigSettings);
+//       });
+//     });
+  
+//     // And I call the tests.
+//     test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
+//       await test.step('Run tests', async () => {
+//         await commonTests(ConfigSettings, page, testInfo);
+//       });
+//     });
+//   });
+  
+
+// // // // Mobile Mode - Retrato
+// test.describe('Mobile mode Retrato', () => {
+//     test.beforeEach(async ({ page }, testInfo) => {
+//       // Tamaño del viewport para móviles en modo retrato
+//       await test.step('Set mobile portrait viewport size', async () => {
+//         await page.setViewportSize({ width: 812, height: 385 });
+//       });
+  
+//       // Configuración común para ambos modos.
+//       const logPlat = new LogIntoPlatform({ page });
+//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+  
+//       await test.step('Perform common setup', async () => {
+//         ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName);
+//       });
+  
+//       await test.step('Wait for 3 seconds', async () => {
+//         await page.waitForTimeout(3000);
+//       });
+  
+//       const openWindow = new OpenProcedureWindow({ page });
+  
+//       await test.step('Open procedure window for mobile', async () => {
+//         await test.step('Wait for 3 seconds', async () => {
+//           await page.waitForTimeout(3000);
+//         });
+//         await openWindow.openWindowForMobile(page, testInfo, ConfigSettings);
+//       });
+//     });
+  
+//     test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
+//       await test.step('Run tests', async () => {
+//         await commonTests(ConfigSettings, page, testInfo);
+//       });
+//     });
+//   });
+  
+
+
+// // Tablets Mode
+// test.describe('Tablets mode', () => {
+//     test.beforeEach(async ({ page }, testInfo) => {
+//       // Tamaño del viewport para tablets
+//       await test.step('Set tablet viewport size', async () => {
+//         await page.setViewportSize({ width: 768, height: 1024 });
+//       });
+  
+//       // Configuración común para ambos modos.
+//       const logPlat = new LogIntoPlatform({ page });
+//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+  
+//       await test.step('Perform common setup', async () => {
+//         ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName);
+//       });
+  
+//       await test.step('Wait for 3 seconds', async () => {
+//         await page.waitForTimeout(3000);
+//       });
+  
+//       const openWindow = new OpenProcedureWindow({ page });
+  
+//       await test.step('Open procedure window for mobile', async () => {
+//         await test.step('Wait for 3 seconds', async () => {
+//           await page.waitForTimeout(3000);
+//         });
+//         await openWindow.openWindowForMobile(page, testInfo, ConfigSettings);
+//       });
+//     });
+  
+//     test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
+//       await test.step('Run tests', async () => {
+//         await commonTests(ConfigSettings, page, testInfo);
+//       });
+//     });
+//   });
+  
+
+// // Tablets Mode - Retrato
+// test.describe('Tablets mode Retrato', () => {
+//     test.beforeEach(async ({ page }, testInfo) => {
+//       // Tamaño del viewport para tablets en modo retrato
+//       await test.step('Set tablet portrait viewport size', async () => {
+//         await page.setViewportSize({ width: 1024, height: 768 });
+//       });
+  
+//       // Configuración común para ambos modos.
+//       const logPlat = new LogIntoPlatform({ page });
+//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+  
+//       await test.step('Perform common setup', async () => {
+//         ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName);
+//       });
+  
+//       await test.step('Wait for 3 seconds', async () => {
+//         await page.waitForTimeout(3000);
+//       });
+  
+//       const openWindow = new OpenProcedureWindow({ page });
+  
+//       await test.step('Open procedure window for desktop', async () => {
+//         await test.step('Wait for 3 seconds', async () => {
+//           await page.waitForTimeout(3000);
+//         });
+//         await openWindow.openWindowForDesktop(page, testInfo, ConfigSettings);
+//       });
+//     });
+  
+//     // And I call the tests.
+//     test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
+//       await test.step('Run tests', async () => {
+//         await commonTests(ConfigSettings, page, testInfo);
+//       });
+//     });
+//   });
+  
   
 
 const { test:pwTest, afterEach } = require('@playwright/test');

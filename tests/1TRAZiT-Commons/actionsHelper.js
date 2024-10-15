@@ -2,18 +2,35 @@ import { test, expect } from '@playwright/test';
 import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config';
 
 
-// seleccionar elementos y hacer scroll si no es visible.
 export const clickElementByText = async (page, text, timeout = 30000) => {
     try {
-        const element = page.getByText(text, { exact: true });
+        let element = page.getByText(text, { exact: true });
 
+        // Si el elemento no es visible, intentar hacer scroll para verlo
         if (!(await element.isVisible())) {
-            await element.scrollIntoViewIfNeeded({timeout});
+            await element.scrollIntoViewIfNeeded({ timeout });
         }
+
+        // Intentar hacer clic en el primer elemento encontrado
         await element.click({ timeout });
+
     } catch (error) {
-        console.error(`Error al hacer clic en el elemento con texto: '${text}'. Detalles del error:`, error);
-        throw error;
+        console.warn(`No se pudo hacer clic en el primer elemento con texto: '${text}'. Intentando con nth(1).`);
+
+        try {
+            // Intentar con el segundo elemento si el primero falla
+            const elementNth = page.getByText(text, { exact: true }).nth(1);
+
+            if (!(await elementNth.isVisible())) {
+                await elementNth.scrollIntoViewIfNeeded({ timeout });
+            }
+
+            await elementNth.click({ timeout });
+
+        } catch (nthError) {
+            console.error(`Error al hacer clic en el segundo elemento con texto: '${text}'. Detalles del error:`, nthError);
+            throw nthError; // Propagar el error si ambos intentos fallan
+        }
     }
 };
 
@@ -250,7 +267,7 @@ export const fillPasswordField = async (page, testInfo, timeout = 30000) => {
 };
 
 
-
+// Eliminar esta y usar las dos anteriores.
 export const fillUserCredentials = async (page, testInfo, timeout = 30000) => {
     const userCredentialSettings = {
         fldUser: { label: "User", value: "admin" },

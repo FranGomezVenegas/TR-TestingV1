@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
-import fs from 'fs';
 
 import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config.js';
 import { LogIntoPlatform } from '../1TRAZiT-Commons/logIntoPlatform.js';
 // Instruments:
 import { buttonWithDialog as dataForTestFromFile } from '../../trazit-models/test-config-instruments-newInstrument';
+
 import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls.js';
 import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 
