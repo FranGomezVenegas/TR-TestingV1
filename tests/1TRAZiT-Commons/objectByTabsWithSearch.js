@@ -24,7 +24,21 @@ export async function handleObjectByTabsWithSearchInteraction(page, testInfo, co
         await test.step(button.phrasePauses, async () => {
             await page.pause();
         });
-        
+
+        await test.step(button.phraseSearch, async () => {
+            await page.getByRole('button', { name: button.search.press }).click();
+        });
+
+        await test.step(button.phrasePauses, async () => {
+            await page.pause();
+            await page.pause();
+            await page.pause();
+            await page.pause();
+            await test.step('Wait 3 seconds for the page to load completely.', async () => {
+                await page.waitForTimeout(3000); 
+            }); 
+        });
+
         await test.step(button.phraseScreenShots, async () => {
             await attachScreenshot(testInfo, button.screenShotSearch, page, configSettings.screenShotsContentType);
         });
