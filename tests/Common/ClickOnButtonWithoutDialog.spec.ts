@@ -14,7 +14,8 @@ import { justificationPhrase, fillUserField, fillPasswordField, clickAcceptButto
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions';
-import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions.js';
+import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions';
+import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
@@ -54,6 +55,10 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
     // Llamadas a interacciones previas
     await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, Button);
+
+    // Llamo a la funcion para comprobar si un objectByTabs tiene un search. Essta funcion solo controla el search
+    // clica en este y añada el campo que se desea buscar.
+    await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, Button);
     
     // Llamada a handleDragDropBoxesInteraction y captura si se ejecutó correctamente
     const rowActions = await handleRowActionsInteraction(page, Button, testInfo); 
