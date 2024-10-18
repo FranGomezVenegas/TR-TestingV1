@@ -5,30 +5,35 @@ import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config
 import { clickButtonById, clickElementByText, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
 
 export const handleActionNameInteraction = async (page, testInfo, Button) => {
+    // Sino salgo de la función
     if (!Button.buttonName) {
-        return; // Si no es verdadero, salgo de la función
+        return;
     }
 
     try {
-        // Paso 1: Hago clic en el selector de frase
-        await test.step(Button.phraseSelect, async () => {
-            await clickElementByText(page, Button.selectName);
-        });
+        // Paso 1: Hago clic en el elemento solo si selectName está definido
+        if (Button.selectName) {
+            await test.step(Button.phraseSelect, async () => {
+                await clickElementByText(page, Button.selectName);
+            });
+        }
 
         // Paso 2: Pauso la ejecución
         await test.step(Button.phrasePauses, async () => {
             await page.pause();
         });
 
-        // Paso 3: Captura de pantalla
-        await test.step(Button.phraseScreenShots, async () => {
+        if (Button.screenShotsSelect) {
+            // Paso 3: Captura de pantalla
+            await test.step(Button.phraseScreenShots, async () => {
             await attachScreenshot(testInfo, Button.screenShotsSelect, page, ConfigSettingsAlternative.screenShotsContentType);
             // Sub-paso: Pauso después de la captura de pantalla
             await test.step(Button.phrasePauses, async () => {
                 await page.pause();
             });
         });
-
+        }
+        
         // Paso 4: Hago clic en el botón
         await test.step(Button.phraseButtonName, async () => {
             await clickButtonById(page, Button.buttonName);
