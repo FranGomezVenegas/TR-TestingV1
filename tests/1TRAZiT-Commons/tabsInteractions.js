@@ -6,6 +6,7 @@ export async function handleTabInteraction(page, testInfo, configSettings, butto
     if (button.tab) {
         await test.step(button.phraseTab, async () => {
             await clickElement(page, button.tab);
+            await clickElement(page, button.tab);
             console.log('Clicked on Tab'); 
         });
         

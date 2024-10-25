@@ -9,9 +9,17 @@ export const handleAuditAndSign = async (page, Button, test, testInfo) => {
     }
 
     try {
+        // Audit más pequeños para que el botón de aceptar no se vea como invisible y se pueda cerrar.
+        await page.evaluate(() => {
+            const element = document.querySelector('.mdc-dialog__surface');
+            if (element) {
+                element.style.transform = 'scale(0.9)';
+                element.style.marginTop = '10px';
+            }
+        });
+
         await test.step(Button.phraseSearchElement, async () => {
             let locator = Button.sign.locator.startsWith('#tooltip-') ? Button.sign.locator : `#tooltip-${Button.sign.locator}`;
-
             let element = page.locator(locator).getByText(Button.sign.text);
 
             await test.step(Button.phraseElementVisible, async () => {
@@ -41,27 +49,34 @@ export const handleAuditAndSign = async (page, Button, test, testInfo) => {
             });
 
             await test.step(Button.phraseElementVisible, async () => {
-                if (!(await element.isVisible())) {
-                    await element.scrollIntoViewIfNeeded({ timeout: 30000 });
+                // Forzar scroll hasta que el elemento sea visible
+                let isVisible = await element.isVisible();
+                const scrollIncrement = 30; // Incremento de desplazamiento
+                const maxScrollAttempts = 10; // Número máximo de intentos de desplazamiento
+                let attempts = 0;
 
-                    await test.step(Button.phrasePauses, async () => {
-                        await page.waitForTimeout(500);
-                        await page.pause();
-                    });
-
-                    await test.step(Button.phraseAdditionalScroll, async () => {
-                        await page.evaluate(() => {
-                            window.scrollBy(0, 30);
-                        });
-                    });
-
-                    await test.step(Button.phraseScreenShots, async () => {
-                        await attachScreenshot(testInfo, Button.screenShotsVisibleElement, page, ConfigSettingsAlternative.screenShotsContentType);
-                        if (Button.phrasePauses) {
-                            await page.pause();
-                        }
-                    });
+                while (!isVisible && attempts < maxScrollAttempts) {
+                    await page.evaluate((increment) => {
+                        window.scrollBy(0, increment);
+                    }, scrollIncrement);
+                    await page.waitForTimeout(300); 
+                    // Verifico la visibilidad del elemento después de hacer scroll
+                    isVisible = await element.isVisible();
+                    attempts++;
                 }
+
+                if (!isVisible) {
+                    console.log('El elemento sigue sin ser visible tras varios intentos de scroll.');
+                } else {
+                    console.log('El elemento es visible tras el scroll.');
+                }
+
+                await test.step(Button.phraseScreenShots, async () => {
+                    await attachScreenshot(testInfo, Button.screenShotsVisibleElement, page, ConfigSettingsAlternative.screenShotsContentType);
+                    if (Button.phrasePauses) {
+                        await page.pause();
+                    }
+                });
             });
 
             await test.step(Button.phraseClickOnButton, async () => {
@@ -91,7 +106,7 @@ export const handleAuditAndSign = async (page, Button, test, testInfo) => {
             }
         } catch (fallbackError) {
             console.log("Error al intentar con getByText:", fallbackError);
-            throw fallbackError; // Lanzar el error si también falla el intento con getByText
+            throw fallbackError; // Lanzo el error si también falla el intento con getByText
         }
     }
 };

@@ -81,10 +81,10 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     // Try clicking the first element
     
     try {
-      // Intentar hacer clic en el primer elemento Instruments
+      // Intento hacer clic en el primer elemento Instruments
       const firstElement = page.locator('mwc-icon.corner[dialogaction="decline"]:has-text("close"):visible');
   
-      // Comprobar si el primer elemento existe y es visible
+      // Si el primer elemento existe y es visible
       if (await firstElement.count() > 0) {
           await firstElement.click();
       } else {
@@ -94,7 +94,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
       console.log('El primer intento falló. Intentando con el segundo elemento dentro del shadow DOM.');
   
       try {
-          // Acceder manualmente al segundo elemento dentro de múltiples shadow DOMs Stock
+          // Accedo manualmente al segundo elemento dentro de múltiples shadow DOMs Stock
           const secondElement = await page.evaluateHandle(() => {
               return document.querySelector("body > sp-theme > tr-app")
                   ?.shadowRoot?.querySelector("tr-dashboard")
