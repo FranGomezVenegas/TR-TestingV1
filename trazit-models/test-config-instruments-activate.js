@@ -1,55 +1,7 @@
-export const Turn={
-    "desktopMode":{
-        "pageElementName": "sp-action-menu#dashboardprocedures",
-        "screenShotsName": "window open procedure",
-        "label":"Intruments Control",
-        "view":"Instruments",
-        "viewScreenShotLabel":"Instruments",
+export const Button={
+    "testDataGame": "{\"desktopMode\":{\"local\":true,\"pageElementName\":\"sp-action-menu#dashboardprocedures\",\"screenShotsName\":\"window open procedure\",\"label\":\"Lots\",\"view\":\"Lots\",\"viewScreenShotLabel\":\"Lots\",\"pageElement\":\"dashboard/procedures?procName=inspection_lot&viewName=LotView&filterName=\",\"screenShotName\":\"Lot View\"},\"mobileMode\":{\"pageElementName\":\"md-list-item#dashboardmyprocedures\",\"clickMenu\":\"md-filled-icon-button.menu\",\"screenShotsName\":\"Opening the Procedure Menu\",\"label\":\".inspection_lot\",\"viewScreenShotLabel\":\"Lots\",\"pageElement\":\"dashboard/procedures?procName=inspection_lot&viewName=LotView&filterName=\",\"screenShotName\":\"Lot View\"},\"tabletRetratoMode\":{\"pageElementName\":\"sp-action-menu#dashboardprocedures\",\"screenShotsName\":\"window open procedure\",\"label\":\"Lots\",\"view\":\"Lots\",\"viewScreenShotLabel\":\"Lots\",\"pageElement\":\"dashboard/procedures?procName=inspection_lot&viewName=LotView&filterName=\",\"screenShotName\":\"Lot View\"},\"phraseTab\":\"Click on Tab\",\"tab\":\"Summary\",\"screenShotTab\":\"Summary\",\"buttonName\":\"LOT_BULK_ADJUST_SAMPLE_QUANTITY\",\"positionButton\":2,\"buttonAccept\":\"Accept\",\"buttonCancel\":\"Cancel\",\"screenShotsSelect\":\"Select Name\",\"screenShotsAccept\":\"Accept\",\"screenShotsCancel\":\"Cancel\",\"textInNotif1\":\"inventory\",\"textInNotif2\":\"received\",\"textInNotif3\":\"success\",\"phrasePauses\":\"Execution Pauses\",\"phraseScreenShots\":\"Attach ScreenShots\",\"screenShotsElement\":\"Select Element\",\"screenShotsButtonName\":\"Click on Button\",\"phraseClickSearch\":\"Click on Search\",\"search\":{\"label\":\"* Lot to get\",\"value\":\"lot3\", \"press\":\"Search\"},\"phraseSearch\":\"Search\", \"phraseFillField\":\"Fill Field\",\"screenShotSearch\":\"Search\"}"
+  }
 
-        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstruments&filterName=",
-        "screenShotName": "Active Inventory Lots"    
-    },
-    "mobileMode":{
-        "pageElementName": "md-list-item#dashboardmyprocedures",
-        "clickMenu": "md-filled-icon-button.menu",
-        "screenShotsName": "Opening the Procedure Menu",
-        "label": ".instruments",
-        "viewScreenShotLabel": "Instruments",
-
-        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstruments&filterName=",
-        "screenShotName": "Active Inventory Lots"  
-    },
-
-    "tabletRetratoMode": {
-        "pageElementName": "sp-action-menu#dashboardprocedures",
-        "screenShotsName": "window open procedure",
-        "label":"Intruments Control",
-        "view":"Instruments",
-        "viewScreenShotLabel":"Instruments",
-
-        "pageElement": "dashboard/procedures?procName=instruments&viewName=PlatformInstruments&filterName=",
-        "screenShotName": "Active Inventory Lots"
-
-    },
-
-
-    "buttonName": "Turn online",
-    "selectName": "prueba2024-09-22T15:16:05.550242",
-    "buttonAccept": "Accept",
-    "buttonCancel": "Cancel",
-    
-    "screenShotsButtonName": "Click a Button",
-    "screenShotsSelect": "Select Element",
-    "screenShotsAccept": "Accept",
-    "screenShotsCancel": "Cancel",
-
-    "phrasePauses": "Execution Pauses",
-    "phraseScreenShots": "Attach ScreenShot",
-    "phraseButtonName": "Click a Button",
-    "phraseButtonAccept": "Click Accept",
-
-    
-    "textInNotif1": "Turned",
-    "textInNotif2": "on",
-    "textInNotif3": "success"
-}
+  export const Export={
+    "testDataGame": "{\"desktopMode\":{\"local\":true,\"pageElementName\":\"sp-action-menu#dashboardprocedures\",\"screenShotsName\":\"window open procedure\",\"label\":\"Lots\",\"view\":\"Lots\",\"viewScreenShotLabel\":\"Lots\",\"pageElement\":\"dashboard/procedures?procName=inspection_lot&viewName=LotView&filterName=\",\"screenShotName\":\"Lot View\"},\"mobileMode\":{\"pageElementName\":\"md-list-item#dashboardmyprocedures\",\"clickMenu\":\"md-filled-icon-button.menu\",\"screenShotsName\":\"Opening the Procedure Menu\",\"label\":\".inspection_lot\",\"viewScreenShotLabel\":\"Lots\",\"pageElement\":\"dashboard/procedures?procName=inspection_lot&viewName=LotView&filterName=\",\"screenShotName\":\"Lot View\"},\"tabletRetratoMode\":{\"pageElementName\":\"sp-action-menu#dashboardprocedures\",\"screenShotsName\":\"window open procedure\",\"label\":\"Lots\",\"view\":\"Lots\",\"viewScreenShotLabel\":\"Lots\",\"pageElement\":\"dashboard/procedures?procName=inspection_lot&viewName=LotView&filterName=\",\"screenShotName\":\"Lot View\"},\"phraseTab\":\"Click on Tab\",\"tab\":\"Summary\",\"screenShotTab\":\"Summary\",\"buttonName\":\"LOT_BULK_ADJUST_SAMPLE_QUANTITY\",\"positionButton\":2,\"buttonAccept\":\"Accept\",\"buttonCancel\":\"Cancel\",\"screenShotsSelect\":\"Select Name\",\"screenShotsAccept\":\"Accept\",\"screenShotsCancel\":\"Cancel\",\"textInNotif1\":\"inventory\",\"textInNotif2\":\"received\",\"textInNotif3\":\"success\",\"phrasePauses\":\"Execution Pauses\",\"phraseScreenShots\":\"Attach ScreenShots\",\"screenShotsElement\":\"Select Element\",\"screenShotsButtonName\":\"Click on Button\",\"phraseClickSearch\":\"Click on Search\",\"search\":{\"label\":\"* Lot to get\",\"value\":\"lot3\", \"press\":\"Search\"},\"phraseSearch\":\"Search\", \"phraseFillField\":\"Fill Field\",\"screenShotSearch\":\"Search\"}"
+  }
