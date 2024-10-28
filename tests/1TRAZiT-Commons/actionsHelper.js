@@ -51,7 +51,7 @@ export const clickButtonById = async (page, id, timeout = 30000) => {
         const element = page.locator(`#${id}`);
 
         // Espera a que el elemento esté visible y haz clic
-        await element.click({ timeout });
+        await element.dblclick({ timeout });
     } catch (error) {
         console.error(`Error al hacer clic en el elemento con id: '${id}'. Detalles del error:`, error);
         throw error;

@@ -9,7 +9,7 @@ export const handleAuditAndSign = async (page, Button, test, testInfo) => {
     }
 
     try {
-        // Audit más pequeños para que el botón de aceptar no se vea como invisible y se pueda cerrar.
+        // Ajuste del tamaño del diálogo para mejor visibilidad
         await page.evaluate(() => {
             const element = document.querySelector('.mdc-dialog__surface');
             if (element) {
@@ -20,27 +20,23 @@ export const handleAuditAndSign = async (page, Button, test, testInfo) => {
 
         await test.step(Button.phraseSearchElement, async () => {
             let locator = Button.sign.locator.startsWith('#tooltip-') ? Button.sign.locator : `#tooltip-${Button.sign.locator}`;
-            let element = page.locator(locator).getByText(Button.sign.text);
-
+            
+            // Modificado para manejar múltiples elementos
+            let elements = page.locator(locator).filter({ hasText: Button.sign.text });
+            
             await test.step(Button.phraseElementVisible, async () => {
-                const isVisible = await element.isVisible();
-                if (!isVisible) {
-                    console.log(`El elemento con ${locator} no es visible. Intentando sin guion.`);
+                const count = await elements.count();
+                console.log(`Se encontraron ${count} elementos coincidentes`);
 
-                    // Intentar con el mismo locator pero sin el guion
+                if (count === 0) {
+                    // Intenta sin guión si no se encuentran elementos
                     locator = locator.replace('#tooltip-', '#tooltip');
-                    element = page.locator(locator).getByText(Button.sign.text);
-
-                    if (!(await element.isVisible())) {
-                        console.log(`El elemento no es visible con ${locator}.`);
-                    } else {
-                        console.log('El elemento es visible sin guion.');
-                    }
-                } else {
-                    console.log('El elemento es visible con guion.');
+                    elements = page.locator(locator).filter({ hasText: Button.sign.text });
+                    console.log(`Reintentando con locator modificado: ${locator}`);
                 }
             });
 
+            // Captura de pantalla antes de cualquier interacción
             await test.step(Button.phraseScreenShots, async () => {
                 await attachScreenshot(testInfo, Button.screenShotsButton, page, ConfigSettingsAlternative.screenShotsContentType);
                 if (Button.phrasePauses) {
@@ -49,27 +45,32 @@ export const handleAuditAndSign = async (page, Button, test, testInfo) => {
             });
 
             await test.step(Button.phraseElementVisible, async () => {
-                // Forzar scroll hasta que el elemento sea visible
-                let isVisible = await element.isVisible();
-                const scrollIncrement = 30; // Incremento de desplazamiento
-                const maxScrollAttempts = 10; // Número máximo de intentos de desplazamiento
-                let attempts = 0;
-
-                while (!isVisible && attempts < maxScrollAttempts) {
-                    await page.evaluate((increment) => {
-                        window.scrollBy(0, increment);
-                    }, scrollIncrement);
-                    await page.waitForTimeout(300); 
-                    // Verifico la visibilidad del elemento después de hacer scroll
-                    isVisible = await element.isVisible();
-                    attempts++;
+                const count = await elements.count();
+                if (count === 0) {
+                    throw new Error(`No se encontraron elementos con el locator ${locator} y texto "${Button.sign.text}"`);
                 }
 
-                if (!isVisible) {
-                    console.log('El elemento sigue sin ser visible tras varios intentos de scroll.');
-                } else {
-                    console.log('El elemento es visible tras el scroll.');
+                // Buscar el primer elemento visible
+                let elementoObjetivo = null;
+                let indiceObjetivo = -1;
+
+                for (let i = 0; i < count; i++) {
+                    const element = elements.nth(i);
+                    const isVisible = await element.isVisible();
+                    if (isVisible) {
+                        // Asegurar que el elemento esté en el viewport
+                        await element.scrollIntoViewIfNeeded();
+                        elementoObjetivo = element;
+                        indiceObjetivo = i;
+                        break;
+                    }
                 }
+
+                if (elementoObjetivo === null) {
+                    throw new Error('No se encontraron elementos visibles que coincidan con los criterios');
+                }
+
+                console.log(`Seleccionado elemento en el índice ${indiceObjetivo}`);
 
                 await test.step(Button.phraseScreenShots, async () => {
                     await attachScreenshot(testInfo, Button.screenShotsVisibleElement, page, ConfigSettingsAlternative.screenShotsContentType);
@@ -77,36 +78,43 @@ export const handleAuditAndSign = async (page, Button, test, testInfo) => {
                         await page.pause();
                     }
                 });
-            });
 
-            await test.step(Button.phraseClickOnButton, async () => {
-                await element.click({ timeout: 30000 });
-            });
+                // Hacer clic en el elemento seleccionado
+                await test.step(Button.phraseClickOnButton, async () => {
+                    await elementoObjetivo.click({ timeout: 30000 });
+                });
 
-            await test.step(Button.phraseScreenShots, async () => {
-                await attachScreenshot(testInfo, Button.screenShotsSign, page, ConfigSettingsAlternative.screenShotsContentType);
-                if (Button.phrasePauses) {
-                    await page.pause();
-                }
+                await test.step(Button.phraseScreenShots, async () => {
+                    await attachScreenshot(testInfo, Button.screenShotsSign, page, ConfigSettingsAlternative.screenShotsContentType);
+                    if (Button.phrasePauses) {
+                        await page.pause();
+                    }
+                });
             });
         });
     } catch (err) {
-        // console.error("Error en handleAuditAndSign:", err);
+        console.error("HandleAuditAndSign:", err);
 
-        // En caso de que el primer intento falle, intentar solo con getByText
+        // Plan B: búsqueda por texto simple
         try {
-            console.log("Intentando con getByText directamente...");
-            const element = await page.getByText(Button.sign.text);
+            console.log("Intentando encontrar el elemento solo por contenido de texto...");
+            const elements = page.getByText(Button.sign.text, { exact: true });
+            const count = await elements.count();
 
-            // Asegurarse de que el elemento sea visible antes de hacer clic
-            if (await element.isVisible()) {
-                await element.click({ timeout: 30000 });
-            } else {
-                console.log("El elemento no es visible al intentar con getByText.");
+            if (count > 0) {
+                // Hacer clic en la primera instancia visible
+                for (let i = 0; i < count; i++) {
+                    const element = elements.nth(i);
+                    if (await element.isVisible()) {
+                        await element.click({ timeout: 30000 });
+                        return;
+                    }
+                }
             }
+            throw new Error(`No se encontraron elementos visibles con el texto "${Button.sign.text}"`);
         } catch (fallbackError) {
-            console.log("Error al intentar con getByText:", fallbackError);
-            throw fallbackError; // Lanzo el error si también falla el intento con getByText
+            console.log("El intento alternativo falló:", fallbackError);
+            throw fallbackError;
         }
     }
 };

@@ -10,17 +10,19 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
     }
 
     try {
-        // Pasos 1-3 seleccionar el elemento si es necesario, y si es necesario aladir la captura de pantalla.
         if (Button.selectName) {
             await test.step(Button.phraseSelect, async () => {
-                await clickElementByText(page, Button.selectName);
+                // Selecciona el elemento en la posición especificada por positionSelectElement o el primer elemento (0) si no está definido
+                const position = Button.positionSelectElement !== undefined ? Button.positionSelectElement : 0;
+                await page.getByText(Button.selectName).nth(position).click();
             });
+
             if (Button.phrasePauses) {
                 await test.step(Button.phrasePauses, async () => {
                     await page.pause();
                 });
             }
-    
+
             if (Button.screenShotsSelect) {
                 await test.step(Button.phraseScreenShots, async () => {
                     await attachScreenshot(testInfo, Button.screenShotsSelect, page, ConfigSettingsAlternative.screenShotsContentType);
