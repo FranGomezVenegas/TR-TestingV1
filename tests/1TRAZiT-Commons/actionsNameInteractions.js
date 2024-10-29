@@ -58,7 +58,7 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
                     // Intento hacer clic con diferentes estrategias
                     try {
                         // Intento 1: Clic directo
-                        await elementos.nth(indice).click({ timeout: timeout })
+                        await elementos.nth(indice).dblclick({ timeout: timeout })
                         console.log(`Clic correctamente nth(${indice})`);
                         return;
                     } catch (clickError) {
@@ -68,7 +68,7 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
                         await page.evaluate((selector, index) => {
                             const elementos = document.querySelectorAll(selector);
                             if (elementos[index]) {
-                                elementos[index].click();
+                                elementos[index].dblclick();
                             }
                         }, selectorBoton, indice);
                         console.log(`Clic correctamente `);
@@ -92,7 +92,7 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
                         
                         if (cantidadAlternativos > 0) {
                             const indice = Button.positionButton || 0;
-                            await elementosAlternativos.nth(indice).click();
+                            await elementosAlternativos.nth(indice).dblclick();
                             console.log(`Clic exitoso usando selector alternativo: ${selector}`);
                             return;
                         }

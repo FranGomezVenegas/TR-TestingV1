@@ -342,13 +342,21 @@ export const clickAcceptButton = async (page, timeout = 30000) => {
             const isVisible = await page.getByRole('button', { name: 'Accept' }).isVisible({ timeout }).catch(() => false);
             
             if (isVisible) {
-                await test.step("Click 'Accept' button", async () => {
-                    await page.getByRole('button', { name: 'Accept' }).first().click({ timeout });
+                await test.step("Click 'Accept' button using first element", async () => {
+                    try {
+                        await page.getByRole('button', { name: 'Accept' }).first().click({ timeout });
+                    } catch (error) {
+                        console.warn("Failed to click 'Accept' button using first element. Trying nth(1)...");
+                        await test.step("Click 'Accept' button using nth(1) element", async () => {
+                            await page.getByRole('button', { name: 'Accept' }).nth(1).click({ timeout });
+                        });
+                    }
                 });
             }
         });
     } catch (error) {
-        throw error; 
+        console.error("Error while attempting to click 'Accept' button:", error);
+        throw error;
     }
 };
 

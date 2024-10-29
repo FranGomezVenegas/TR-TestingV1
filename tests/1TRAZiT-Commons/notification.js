@@ -177,7 +177,7 @@ export class NotificationWitness {
         // console.log('Ancho del viewport:', viewportWidth);
         if (viewportWidth >= 1024) {
             // Modo escritorio o tablet en modo paisaje
-            await this.page.waitForTimeout(3000)
+            await this.page.waitForTimeout(4500)
             const notificationSelector = platformMenuNames.Notification.main.pageElement;
             await this.page.waitForSelector(notificationSelector, { timeout: 15000 });
             const notificationElement = await this.page.locator(notificationSelector);
@@ -379,5 +379,4 @@ export class NotificationWitness {
 export const ReportNotificationPhase={
     "phraseCaptureNotification": "Capture notification witness",
     "phrasePauses": "Execution Pauses"
-    
 }
