@@ -38,12 +38,18 @@ export const clickElementByText = async (page, text, timeout = 30000) => {
 // Clic a un elemento para luego escribir o hacer click a un botón.
 export const clickElement = async (page, selector, timeout = 30000) => {
     try {
-        await page.getByLabel(selector, {exact: true}).click({ timeout });
+        await page.getByLabel(selector, { exact: true }).click({ timeout });
     } catch (error) {
-        console.error(`Error al hacer clic en el elemento: '${selector}'. Detalles del error:`, error);
-        throw error;
+        console.log(`Primer intento fallido para hacer clic en el elemento: '${selector}'. Intentando con el primer elemento.`);
+        try {
+            await page.getByLabel(selector, { exact: true }).first().click({ timeout });
+        } catch (secondError) {
+            console.error(`Error al hacer clic en el primer elemento: '${selector}'. Detalles del error:`, secondError);
+            throw secondError;
+        }
     }
 };
+
 
 export const clickButtonById = async (page, id, timeout = 30000) => {
     try {

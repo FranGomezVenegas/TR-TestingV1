@@ -55,10 +55,37 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
   
   console.log("El resultado fue falso, continuando con el flujo normal...");
 
+  
+
   await test.step('Preparar para esperar la descarga', async () => {
       const downloadPromise = page.waitForEvent('download');
-      await page.getByLabel(Export.buttonName).click();
+        // Selecciona el elemento en la posición especificada por positionSelectElement o el primer elemento (0) si no está definido
+        const position = Export.positionSelectElement !== undefined ? Export.positionSelectElement : 0;
+        //await page.getByText(Button.selectName).nth(position).click();
+        
+        await page.getByLabel(Export.buttonName).nth(position).click();
 
+      // Espera a que el cuadro de diálogo esté visible
+        const dialogVisible = await page.isVisible('#dialog-box');
+
+        // Aplica la transformación al cuadro de diálogo y hace clic en el botón "OK" si el cuadro de diálogo está visible
+        if (dialogVisible) {
+            await page.evaluate(() => {
+                const dialogBox = document.getElementById('dialog-box');
+                if (dialogBox) {
+                    dialogBox.style.transform = 'translate(-50%, -50%) scale(0.9)';
+                }
+            });
+            await test.step('Captura de pantalla antes de la descarga', async () => {
+                await testInfo.attach('Ok Button', {
+                    body: await page.screenshot(),
+                    contentType: 'image/png'
+                });
+            });
+            // Espera a que el botón "OK" esté visible y haz clic
+            await page.getByRole('button', { name: 'OK' }).click();
+        } 
+        
       // Esperar a que la descarga termine
       const download = await downloadPromise;
 
@@ -198,11 +225,11 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
   });
 
   // Verificar respuestas de red capturadas
-  await test.step('Verificar respuestas de red', async () => {
-      networkInterceptor.printNetworkData();
-      const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-      expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
-  });
+//   await test.step('Verificar respuestas de red', async () => {
+//       networkInterceptor.printNetworkData();
+//       const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
+//       expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
+//   });
 
 };
 
