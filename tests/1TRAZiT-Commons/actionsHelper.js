@@ -274,66 +274,66 @@ export const fillPasswordField = async (page, testInfo, timeout = 30000) => {
 
 
 // Eliminar esta y usar las dos anteriores.
-export const fillUserCredentials = async (page, testInfo, timeout = 30000) => {
-    const userCredentialSettings = {
-        fldUser: { label: "User", value: "admin" },
-        fldPss: { label: "Password", value: "trazit", actionName: "Enter" }
-    };
+// export const fillUserCredentials = async (page, testInfo, timeout = 30000) => {
+//     const userCredentialSettings = {
+//         fldUser: { label: "User", value: "admin" },
+//         fldPss: { label: "Password", value: "trazit", actionName: "Enter" }
+//     };
 
-    try {
-        // Comprobar si el campo 'User' es visible
-        const isUserVisible = await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).isVisible({ timeout }).catch(() => false);
+//     try {
+//         // Comprobar si el campo 'User' es visible
+//         const isUserVisible = await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).isVisible({ timeout }).catch(() => false);
         
-        if (isUserVisible) {
-            await test.step("Start - Fill 'User' field", async () => {
-                await test.step("Click on 'User' field", async () => {
-                    await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).click();
-                    await page.pause(); // Pausa después de hacer clic
-                });
+//         if (isUserVisible) {
+//             await test.step("Start - Fill 'User' field", async () => {
+//                 await test.step("Click on 'User' field", async () => {
+//                     await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).click();
+//                     await page.pause(); // Pausa después de hacer clic
+//                 });
 
-                // await test.step("Attach screenshot before filling 'User'", async () => {
-                //     await attachScreenshot(testInfo, "Before filling User field", page, ConfigSettingsAlternative.screenShotsContentType);
-                // });
+//                 // await test.step("Attach screenshot before filling 'User'", async () => {
+//                 //     await attachScreenshot(testInfo, "Before filling User field", page, ConfigSettingsAlternative.screenShotsContentType);
+//                 // });
 
-                await test.step("Fill in 'User' field", async () => {
-                    await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).fill(userCredentialSettings.fldUser.value);
-                });
+//                 await test.step("Fill in 'User' field", async () => {
+//                     await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).fill(userCredentialSettings.fldUser.value);
+//                 });
                 
-                // await test.step("Attach screenshot after filling 'User'", async () => {
-                //     await attachScreenshot(testInfo, "Filled User field", page, ConfigSettingsAlternative.screenShotsContentType);
-                // });
-            });
-        }
+//                 // await test.step("Attach screenshot after filling 'User'", async () => {
+//                 //     await attachScreenshot(testInfo, "Filled User field", page, ConfigSettingsAlternative.screenShotsContentType);
+//                 // });
+//             });
+//         }
 
-        // Comprobar si el campo 'Password' es visible
-        const isPasswordVisible = await page.getByLabel(userCredentialSettings.fldPss.label).isVisible({ timeout }).catch(() => false);
+//         // Comprobar si el campo 'Password' es visible
+//         const isPasswordVisible = await page.getByLabel(userCredentialSettings.fldPss.label).isVisible({ timeout }).catch(() => false);
         
-        if (isPasswordVisible) {
-            await test.step("Start - Fill 'Password' field", async () => {
-                await test.step("Click on 'Password' field", async () => {
-                    await page.getByLabel(userCredentialSettings.fldPss.label).click();
-                    await page.pause(); // Pausa después de hacer clic
-                });
+//         if (isPasswordVisible) {
+//             await test.step("Start - Fill 'Password' field", async () => {
+//                 await test.step("Click on 'Password' field", async () => {
+//                     await page.getByLabel(userCredentialSettings.fldPss.label).click();
+//                     await page.pause(); // Pausa después de hacer clic
+//                 });
 
-                // await test.step("Attach screenshot before filling 'Password'", async () => {
-                //     await attachScreenshot(testInfo, "Before filling Password field", page, ConfigSettingsAlternative.screenShotsContentType);
-                // });
+//                 // await test.step("Attach screenshot before filling 'Password'", async () => {
+//                 //     await attachScreenshot(testInfo, "Before filling Password field", page, ConfigSettingsAlternative.screenShotsContentType);
+//                 // });
 
-                await test.step("Fill in 'Password' field", async () => {
-                    await page.getByLabel(userCredentialSettings.fldPss.label).fill(userCredentialSettings.fldPss.value);
-                });
+//                 await test.step("Fill in 'Password' field", async () => {
+//                     await page.getByLabel(userCredentialSettings.fldPss.label).fill(userCredentialSettings.fldPss.value);
+//                 });
 
-                // await test.step("Attach screenshot after filling 'Password'", async () => {
-                //     await attachScreenshot(testInfo, "Filled Password field", page, ConfigSettingsAlternative.screenShotsContentType);
-                // });
-            });
-        }
+//                 // await test.step("Attach screenshot after filling 'Password'", async () => {
+//                 //     await attachScreenshot(testInfo, "Filled Password field", page, ConfigSettingsAlternative.screenShotsContentType);
+//                 // });
+//             });
+//         }
 
-    } catch (error) {
-        console.error("An unexpected error occurred while trying to fill user credentials:", error);
-        throw error; 
-    }
-};
+//     } catch (error) {
+//         console.error("An unexpected error occurred while trying to fill user credentials:", error);
+//         throw error; 
+//     }
+// };
 
 
 export const clickAcceptButton = async (page, timeout = 30000) => {

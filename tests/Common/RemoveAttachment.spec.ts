@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickElementByText, clickElement, fillUserField,fillPasswordField, justificationPhrase, fillUserCredentials, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { clickElementByText, clickElement, fillUserField,fillPasswordField, justificationPhrase, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions';

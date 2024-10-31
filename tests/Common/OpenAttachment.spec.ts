@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickElementByText, clickElement, fillUserField,fillPasswordField, justificationPhrase, fillUserCredentials, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { clickElementByText, clickElement, fillUserField,fillPasswordField, justificationPhrase, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions';
@@ -126,8 +126,12 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         });
 
         // Continuar con el flujo
-        await justificationPhrase(page1, 30000, testInfo); // Justification Phrase en `page1`
-        await fillUserCredentials(page1, testInfo); // Rellenar credenciales de usuario en `page1`
+        // Justification Phrase
+        await fillUserField(page1, testInfo); // Rellena el campo de "User"
+        await fillPasswordField(page1, testInfo); // Rellena el campo de "Password"
+
+        // Continuar con la justificación y otras acciones
+        await justificationPhrase(page1, 30000, testInfo);    
         await clickAcceptButton(page1);
         
         const acceptButton = page1.getByRole('button', { name: openAttachment.buttonAccept }).nth(1);
