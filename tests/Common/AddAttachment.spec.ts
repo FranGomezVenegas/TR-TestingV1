@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickElementByText, clickElement, justificationPhrase, fillUserCredentials, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { clickElementByText, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 
@@ -55,18 +55,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
         const notificationWitness = new NotificationWitness(page);
 
-        // if (addAttachment.tab) {
-        //     await test.step(addAttachment.phraseTab, async () => {
-        //         await clickElement(page, addAttachment.tab);
-        //         console.log('Clicked on Tab'); 
-        //     });
-        //     await test.step(addAttachment.phrasePauses, async () => {
-        //         await page.pause();
-        //     });
-        //     await test.step(addAttachment.phraseScreenShots, async () => {
-        //         await attachScreenshot(testInfo, addAttachment.screenShotTab, page, ConfigSettingsAlternative.screenShotsContentType);
-        //     });
-        // }
+        
         await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, addAttachment);
 
         await test.step(addAttachment.phraseSelect, async () => {
@@ -141,10 +130,18 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
         // Justification Phrase
         await justificationPhrase(page, 30000, testInfo); // Puedes ajustar el timeout según sea necesario
-        await fillUserCredentials(page, testInfo);
+        await fillUserField(page, testInfo);
+        await fillPasswordField(page, testInfo);
         await clickAcceptButton(page);
 
-        
+         // Justification Phrase
+        //await fillUserField(page, testInfo); // Rellena el campo de "User"
+        //await fillPasswordField(page, testInfo); // Rellena el campo de "Password"
+
+        // Continuar con la justificación y otras acciones
+        //await justificationPhrase(page, 30000, testInfo);    
+        //await clickAcceptButton(page);
+            
         // Verify that there are no console errors
         // await test.step(phraseReport.phraseError, async () => {
         //     logger.printLogs();
