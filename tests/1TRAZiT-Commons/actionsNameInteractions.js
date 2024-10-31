@@ -107,8 +107,13 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
             }
 
             throw new Error(`No se pudo hacer clic en ningún elemento con ID: ${Button.buttonName}`);
-        });
+            
 
+        });
+        await page.pause();
+        await page.pause();
+        await page.pause();
+        await page.waitForTimeout(3000);
         // Paso 5 Captura de pantalla al hacer una clic en el botón.
         if (Button.screenShotsButtonName) {
             await test.step(Button.phraseScreenShots, async () => {

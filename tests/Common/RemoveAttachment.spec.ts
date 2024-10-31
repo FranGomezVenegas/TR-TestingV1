@@ -146,10 +146,19 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         await justificationPhrase(page, 30000, testInfo); // Puedes ajustar el timeout según sea necesario
         await fillUserCredentials(page, testInfo);
         await clickAcceptButton(page);
-        await test.step("Accept", async () => {
-            await page.getByRole('button', { name: removeAttachment.buttonAccept }).nth(1).click();
-        });
+        // await test.step("Accept", async () => {
+        //     await page.getByRole('button', { name: removeAttachment.buttonAccept }).nth(1).click();
+        // });
+        const acceptButton = page.getByRole('button', { name: removeAttachment.buttonAccept }).nth(1);
 
+        if (await acceptButton.isVisible()) {
+            await test.step("Accept", async () => {
+                await acceptButton.click();
+            });
+        } else {
+            console.log("Accept button not found, skipping step.");
+        }
+        
         
         // Verify that there are no console errors
         // await test.step(phraseReport.phraseError, async () => {

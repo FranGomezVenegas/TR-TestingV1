@@ -15,7 +15,7 @@ export const clickElementByText = async (page, text, timeout = 30000) => {
         await element.click({ timeout });
 
     } catch (error) {
-        console.warn(`No se pudo hacer clic en el primer elemento con texto: '${text}'. Intentando con nth(1).`);
+        console.log(`No se pudo hacer clic en el primer elemento con texto: '${text}'. Intentando con nth(1).`);
 
         try {
             // Intentar con el segundo elemento si el primero falla
