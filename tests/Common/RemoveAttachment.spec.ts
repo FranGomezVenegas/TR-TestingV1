@@ -143,9 +143,11 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         });
 
         // Justification Phrase
-        await justificationPhrase(page, 30000, testInfo); // Puedes ajustar el timeout según sea necesario
-        await fillUserCredentials(page, testInfo);
+        await fillUserField(page, testInfo);
+        await fillPasswordField(page, testInfo);
+        await justificationPhrase(page, 30000, testInfo); 
         await clickAcceptButton(page);
+
         // await test.step("Accept", async () => {
         //     await page.getByRole('button', { name: removeAttachment.buttonAccept }).nth(1).click();
         // });
