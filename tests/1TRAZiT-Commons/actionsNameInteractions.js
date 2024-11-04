@@ -110,9 +110,11 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
             
 
         });
-        await page.pause();
-        await page.pause();
-        await page.pause();
+        await test.step(Button.phrasePauses, async () => {
+            await page.pause();
+            await page.pause();
+            await page.pause();
+        })
         await page.waitForTimeout(3000);
         // Paso 5 Captura de pantalla al hacer una clic en el botón.
         if (Button.screenShotsButtonName) {

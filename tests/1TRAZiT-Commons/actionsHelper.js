@@ -44,7 +44,7 @@ export const clickElement = async (page, selector, timeout = 30000) => {
         try {
             await page.getByLabel(selector, { exact: true }).first().click({ timeout });
         } catch (secondError) {
-            console.error(`Error al hacer clic en el primer elemento: '${selector}'. Detalles del error:`, secondError);
+            console.log(`Error al hacer clic en el primer elemento: '${selector}'. Detalles del error:`, secondError);
             throw secondError;
         }
     }
@@ -76,36 +76,49 @@ export const fillField = async (page, label, value) => {
 };
 
 // Selecciona un elemento de una lista. 
-export const selectOption = async (page, optionName, timeout = 30000) => {
+export const clickOption = async (page, optionName, timeout = 30000) => {
     try {
-        await page.getByRole('option', { name: optionName, exact: true }).click({ timeout });
+        const option = page.getByRole('option', { name: optionName, exact: true });
+        if (await option.isVisible()) {
+            await option.click({ timeout });
+        } else {
+            console.log(`La opción con nombre '${optionName}' no es visible.`);
+        }
     } catch (error) {
-        console.error(`Error al seleccionar la opción: '${optionName}'. Detalles del error:`, error);
+        console.log(`Error al hacer clic en la opción: '${optionName}'. Detalles del error:`, error);
         throw error;
     }
 };
 
+
 // Escribe en un campo que ha sido seleccionado.
 export const clickTextbox = async (page, textboxName, timeout = 30000) => {
     try {
+        // Buscar el textbox con el nombre exacto proporcionado
         const textbox = page.getByRole('textbox', { name: textboxName, exact: true });
+
+        // Comprobar si el textbox es visible
         if (await textbox.isVisible()) {
+            // Hacer clic en el textbox
             await textbox.click({ timeout });
         } else {
-            console.warn(`El textbox con nombre '${textboxName}' no es visible.`);
+            // Advertir si el textbox no es visible
+            console.log(`El textbox con nombre '${textboxName}' no es visible.`);
         }
     } catch (error) {
+        // Manejar errores al hacer clic en el textbox
         console.error(`Error al hacer clic en el textbox: '${textboxName}'. Detalles del error:`, error);
-        throw error;
+        throw error; // Vuelve a lanzar el error para manejarlo en un nivel superior
     }
 };
+
 
 // Escribe en un campo de in elemento.
 export const fillTextbox = async (page, textboxName, text, timeout = 30000) => {
     try {
         await page.getByRole('textbox', { name: textboxName, exact: true }).fill(text, { timeout });
     } catch (error) {
-        console.error(`Error al llenar el textbox: '${textboxName}' con el texto '${text}'. Detalles del error:`, error);
+        console.log(`Error al llenar el textbox: '${textboxName}' con el texto '${text}'. Detalles del error:`, error);
         throw error;
     }
 };
