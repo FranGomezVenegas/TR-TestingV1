@@ -42,16 +42,23 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     const capturedMessages = new Set<string>();
 
     page.on('console', async (msg) => {
-        if (msg.type() === 'log' && msg.text().includes('actionBeingPerformedModel')) {
+        // Verificar si el tipo de mensaje es 'log' y si contiene las palabras clave
+        if (msg.type() === 'log' && 
+            (msg.text().includes('actionBeingPerformedModel') || 
+            msg.text().includes('actionMethod'))) {
+            
+            // Obtener los argumentos del mensaje
             const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
             const jsonOutput = JSON.stringify(args, null, 2);
 
+            // Verificar si el mensaje ya fue capturado
             if (!capturedMessages.has(jsonOutput)) {
                 capturedMessages.add(jsonOutput);
-                console.log(`\nCaptured actionBeingPerformedModel: ${jsonOutput}`);
+                console.log(`\nCaptured actionBeingPerformedModel or actionMethod: ${jsonOutput}`);
             }
         }
     });
+
 
     // Notification Handling
     const afterEachData = {
