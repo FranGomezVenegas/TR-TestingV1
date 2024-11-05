@@ -68,7 +68,8 @@ export const clickButtonById = async (page, id, timeout = 30000) => {
 // Escribe el texto en un elemento.
 export const fillField = async (page, label, value) => {
     try {
-        await page.getByLabel(label).fill(value);
+        //await page.getByLabel(label).fill(value);
+        await page.getByLabel(label, { exact: true }).fill(value);
     } catch (error) {
         console.error(`Error al llenar el campo: '${label}' con valor: '${value}'. Detalles del error:`, error);
         throw error;

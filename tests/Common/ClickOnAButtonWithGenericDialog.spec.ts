@@ -44,7 +44,7 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     page.on('console', async (msg) => {
         // Verificar si el tipo de mensaje es 'log' y si contiene las palabras clave
         if (msg.type() === 'log' && 
-            (msg.text().includes('actionBeingPerformedModel') || 
+            (msg.text().includes('actionBeingPerformedModel') ||   
             msg.text().includes('actionMethod'))) {
             
             // Obtener los argumentos del mensaje
@@ -71,6 +71,14 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
 
     // Click button by name
     await handleActionNameInteraction(page, testInfo, buttonWithDialog);
+
+    // Aplicar el transform scale al contenedor del diálogo
+    await page.evaluate(() => {
+        const dialogSurface = document.querySelector('.mdc-dialog__surface') as HTMLElement; // Aserción de tipo
+        if (dialogSurface) {
+            dialogSurface.style.transform = 'scale(0.9)';
+        }
+    });
 
     // Handle dialog interaction
     const dialogInfo = buttonWithDialog.dialogInfo;
@@ -120,6 +128,10 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
             await processTestData(page, parsedMessages, JSON.stringify(buttonWithDialog));
         }
     });
+
+    await test.step(buttonWithDialog.phrasePauses, async () => {
+        await page.waitForTimeout(1000);
+    })
 
     // Screenshot handling
     await test.step(buttonWithDialog.phraseScreenShots, async () => {
