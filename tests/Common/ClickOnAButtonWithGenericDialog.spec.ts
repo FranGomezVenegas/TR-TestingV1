@@ -259,12 +259,21 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     await justificationPhrase(page, 30000, testInfo);
     await clickAcceptButton(page);
 
+    const acceptButton = page.getByRole('button', { name: 'Accept' }).nth(1);
+        if (await acceptButton.isVisible()) {
+            await test.step("Aceptar", async () => {
+                await acceptButton.click();
+            });
+        } else {
+            console.log("Botón de Aceptar no encontrado, omitiendo paso.");
+        }
+
     // Network response validation
-    // await test.step(phraseReport.phraseVerifyNetwork, async () => {
-    //     networkInterceptor.printNetworkData();
-    //     const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-    //     expect(nullResponsesCount).toBe(0);
-    // });
+    await test.step(phraseReport.phraseVerifyNetwork, async () => {
+        networkInterceptor.printNetworkData();
+        const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
+        expect(nullResponsesCount).toBe(0);
+    });
 
     // Response validation
     await test.step(phraseReport.phraseVerifyNetwork, async () => {
