@@ -69,10 +69,17 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
 
     const notificationWitness = new NotificationWitness(page);
 
-    // Click button by name
-    await handleActionNameInteraction(page, testInfo, buttonWithDialog);
+    await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, buttonWithDialog);
+ 
+    // rowActions rowButtons
+    const rowActions = await handleRowActionsInteraction(page, buttonWithDialog, testInfo); 
+    console.log("Resultado de handleRowActionsInteraction:", rowActions);
 
-    // Aplicar el transform scale al contenedor del diálogo
+    // Si `handleRowActionsInteraction` se ejecutó correctamente, omite las secciones específicas
+    if (rowActions) {
+        console.log("El resultado fue verdadero, realizando acciones adicionales...");
+        // Si rowActions es true, realiza las acciones deseadas
+        // Aplicar el transform scale al contenedor del diálogo
     await page.evaluate(() => {
         const dialogSurface = document.querySelector('.mdc-dialog__surface') as HTMLElement; // Aserción de tipo
         if (dialogSurface) {
@@ -164,6 +171,112 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         }
     });
 
+    // Notification handling post-action
+    const mode = await notificationWitness.getDeviceMode(testInfo);
+    await test.step(ReportNotificationPhase.phraseCaptureNotification, async () => {
+        const capturedObjectName = await notificationWitness.addNotificationWitness(testInfo, afterEachData, mode);
+        console.log('Captured Object Name:', capturedObjectName);
+    });
+        
+        return
+    }
+    
+    // Click button by name
+    await handleActionNameInteraction(page, testInfo, buttonWithDialog);
+
+    // Aplicar el transform scale al contenedor del diálogo
+    await page.evaluate(() => {
+        const dialogSurface = document.querySelector('.mdc-dialog__surface') as HTMLElement; // Aserción de tipo
+        if (dialogSurface) {
+            dialogSurface.style.transform = 'scale(0.9)';
+        }
+    });
+
+    // Handle dialog interaction
+    const dialogInfo = buttonWithDialog.dialogInfo;
+    await test.step('Handle dialog fields', async () => {
+        if (dialogInfo && dialogInfo.fields) {
+            for (const field of dialogInfo.fields) {
+                const fieldKey = Object.keys(field)[0];
+                const fieldData = field[fieldKey];
+
+                if (fieldData.label_en) {
+                    const selector = `input[name="${fieldData.selObjectPropertyName || fieldKey}"]`;
+
+                    try {
+                        await page.waitForSelector(selector, { state: 'visible', timeout: 3000 });
+                        await page.fill(selector, fieldData.defaultValue || '');
+                        console.log(`Filled field "${fieldData.label_en}" with value: ${fieldData.defaultValue}`);
+                    } catch (error) {
+                        console.error(`Failed to fill field "${fieldData.label_en}":`, error);
+                    }
+                }
+            }
+        }
+    });
+
+    // Validate and process captured messages
+    await test.step('Validate captured messages', async () => {
+        const validCapturedMessages = Array.from(capturedMessages).filter(msg => {
+            try {
+                JSON.parse(msg);
+                return true;
+            } catch {
+                console.warn(`Invalid JSON message: ${msg}`);
+                return false;
+            }
+        });
+
+        const parsedMessages = validCapturedMessages.map(msg => {
+            try {
+                return JSON.parse(msg);
+            } catch (error) {
+                console.error(`Error parsing JSON: ${msg}`, error);
+                return null;
+            }
+        }).filter(Boolean);
+
+        if (parsedMessages.length > 0) {
+            await processTestData(page, parsedMessages, JSON.stringify(buttonWithDialog));
+        }
+    });
+
+    await test.step(buttonWithDialog.phrasePauses, async () => {
+        await page.waitForTimeout(1000);
+    })
+
+    // Screenshot handling
+    await test.step(buttonWithDialog.phraseScreenShots, async () => {
+        await attachScreenshot(testInfo, buttonWithDialog.screenShotsFilledForm, page, ConfigSettingsAlternative.screenShotsContentType);
+        if (buttonWithDialog.phrasePauses) {
+            await page.pause();
+        }
+    });
+
+    // Justification Phrase
+    await fillUserField(page, testInfo);
+    await fillPasswordField(page, testInfo);
+    await justificationPhrase(page, 30000, testInfo);
+    await clickAcceptButton(page);
+
+    // Network response validation
+    // await test.step(phraseReport.phraseVerifyNetwork, async () => {
+    //     networkInterceptor.printNetworkData();
+    //     const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
+    //     expect(nullResponsesCount).toBe(0);
+    // });
+
+    // Response validation
+    await test.step(phraseReport.phraseVerifyNetwork, async () => {
+        const responseValidator = new ResponseValidator(networkInterceptor.responses);
+        try {
+            await responseValidator.validateResponses();
+        } catch (error) {
+            console.log("Error validating responses:", error);
+        }
+    });
+
+    await page.waitForTimeout(1000);
     // Notification handling post-action
     const mode = await notificationWitness.getDeviceMode(testInfo);
     await test.step(ReportNotificationPhase.phraseCaptureNotification, async () => {
