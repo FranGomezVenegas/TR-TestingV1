@@ -82,6 +82,8 @@ export const decisionInvestigation={
     
 }
 
-
+export const addAttachmentAWS={
+    
+}
 
 
