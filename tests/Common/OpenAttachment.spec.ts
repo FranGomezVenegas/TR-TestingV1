@@ -163,6 +163,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 };
 
 let trazitTestName;
+let procInstanceName;
 let ConfigSettings;
 
     
@@ -173,15 +174,19 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-      trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution' ;
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
   
-      await test.step('Perform common setup', async () => {
-        ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName);
-      });
+        // Define procInstanceName antes de pasarlo
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
   
-      await test.step('Wait for 3 seconds', async () => {
-        await page.waitForTimeout(3000);
-      });
+        await test.step('Perform common setup', async () => {
+            // Ahora pasas procInstanceName al llamar a commonBeforeEach
+            ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
+        });
+  
+        await test.step('Wait for 1 seconds', async () => {
+            await page.waitForTimeout(1000);
+        });
   
       const openWindow = new OpenProcedureWindow({ page });
   
@@ -201,7 +206,7 @@ test.describe('Desktop Mode', () => {
   });
 
 
-// Mobile Mode 
+// // Mobile Mode 
 // test.describe('Mobile mode', () => {
 //     test.beforeEach(async ({ page }, testInfo) => {
 //       // Size of the viewport of a mobile device
@@ -211,15 +216,19 @@ test.describe('Desktop Mode', () => {
       
 //       // Common configuration for both modes.
 //       const logPlat = new LogIntoPlatform({ page });
-//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+//         trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
   
-//       await test.step('Perform common setup', async () => {
-//         ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName);
-//       });
+//         // Define procInstanceName antes de pasarlo
+//         procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
   
-//       await test.step('Wait for 3 seconds', async () => {
-//         await page.waitForTimeout(3000);
-//       });
+//         await test.step('Perform common setup', async () => {
+//             // Ahora pasas procInstanceName al llamar a commonBeforeEach
+//             ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
+//         });
+  
+//         await test.step('Wait for 1 seconds', async () => {
+//             await page.waitForTimeout(1000);
+//         });
   
 //       const openWindow = new OpenProcedureWindow({ page });
   
@@ -250,15 +259,19 @@ test.describe('Desktop Mode', () => {
   
 //       // Configuración común para ambos modos.
 //       const logPlat = new LogIntoPlatform({ page });
-//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+//         trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
   
-//       await test.step('Perform common setup', async () => {
-//         ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName);
-//       });
+//         // Define procInstanceName antes de pasarlo
+//         procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
   
-//       await test.step('Wait for 3 seconds', async () => {
-//         await page.waitForTimeout(3000);
-//       });
+//         await test.step('Perform common setup', async () => {
+//             // Ahora pasas procInstanceName al llamar a commonBeforeEach
+//             ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
+//         });
+  
+//         await test.step('Wait for 1 seconds', async () => {
+//             await page.waitForTimeout(1000);
+//         });
   
 //       const openWindow = new OpenProcedureWindow({ page });
   
@@ -289,15 +302,19 @@ test.describe('Desktop Mode', () => {
   
 //       // Configuración común para ambos modos.
 //       const logPlat = new LogIntoPlatform({ page });
-//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+//         trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
   
-//       await test.step('Perform common setup', async () => {
-//         ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName);
-//       });
+//         // Define procInstanceName antes de pasarlo
+//         procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
   
-//       await test.step('Wait for 3 seconds', async () => {
-//         await page.waitForTimeout(3000);
-//       });
+//         await test.step('Perform common setup', async () => {
+//             // Ahora pasas procInstanceName al llamar a commonBeforeEach
+//             ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
+//         });
+  
+//         await test.step('Wait for 1 seconds', async () => {
+//             await page.waitForTimeout(1000);
+//         });
   
 //       const openWindow = new OpenProcedureWindow({ page });
   
@@ -327,15 +344,19 @@ test.describe('Desktop Mode', () => {
   
 //       // Configuración común para ambos modos.
 //       const logPlat = new LogIntoPlatform({ page });
-//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+//         trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
   
-//       await test.step('Perform common setup', async () => {
-//         ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName);
-//       });
+//         // Define procInstanceName antes de pasarlo
+//         procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
   
-//       await test.step('Wait for 3 seconds', async () => {
-//         await page.waitForTimeout(3000);
-//       });
+//         await test.step('Perform common setup', async () => {
+//             // Ahora pasas procInstanceName al llamar a commonBeforeEach
+//             ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
+//         });
+  
+//         await test.step('Wait for 1 seconds', async () => {
+//             await page.waitForTimeout(1000);
+//         });
   
 //       const openWindow = new OpenProcedureWindow({ page });
   
@@ -370,7 +391,8 @@ afterEach(async ({}, testInfo) => {
     };
   
     const testStatus = testInfo.status;
-    await callApiRunCompletion(data, testStatus, trazitTestName, testInfo)
+    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; 
+    await callApiRunCompletion(data, testStatus, trazitTestName, testInfo, procInstanceName)
   });
 
    
