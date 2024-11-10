@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Verificar si se ha pasado un argumento para el nombre del bucket
-if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]; then
-    echo "Error: Debes proporcionar el nombre del bucket de AWS, TRAZIT_TEST_NAME, PLAYWRIGHT_FILENAME y PLAYWRIGHT_TESTNAME como argumentos."
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ] || [ -z "$5" ]; then
+    echo "Error: Debes proporcionar el nombre del bucket de AWS, TRAZIT_TEST_NAME, PLAYWRIGHT_FILENAME, PLAYWRIGHT_TESTNAME y PROC_INSTANCE_NAME como argumentos."
     exit 1
 fi
 
@@ -11,14 +11,13 @@ AWS_BUCKET="$1"
 TRAZIT_TEST_NAME="$2"
 PLAYWRIGHT_FILENAME="$3"
 PLAYWRIGHT_TESTNAME="$4"
+PROC_INSTANCE_NAME="$5"  # Recibiendo el procInstanceName como el quinto parámetro
 
 # Definir el perfil y el directorio de reportes
 profile='default'
 playwright_reports_dir='playwright_reports'
 
 # Definir los directorios base y nuevo nombre
-# REPORTS_DIR="/C/Users\paula/OneDrive/Documentos/Trazit/FE-Testing/FrontE-Testing-master/FrontE-Testing-master/htmlreport"
-# REPORTS_DIR="C:/Users/paula/OneDrive/Documentos/Trazit/FE-Testing/FrontE-Testing-master/FrontE-Testing-master/htmlreport"
 REPORTS_DIR="./htmlreport"
 
 CURRENT_FILE_NAME="filename"
@@ -41,6 +40,7 @@ echo "Current File Name: $CURRENT_FILE_NAME"
 echo "Current Test Name: $CURRENT_TEST_NAME"
 echo "New File Name: $TRAZIT_TEST_NAME"
 echo "New Test Name: $PLAYWRIGHT_TESTNAME"
+echo "Proc Instance Name: $PROC_INSTANCE_NAME"  # Mostrar procInstanceName
 echo "Rutas actuales:"
 echo "Current Outer Directory: $CURRENT_OUTER_DIR"
 echo "Current Inner Directory: $CURRENT_INNER_DIR"
