@@ -1,25 +1,35 @@
 import { test, expect } from '@playwright/test';
 import { clickElement, attachScreenshot, fillField } from '../1TRAZiT-Commons/actionsHelper.js';
 
-// Función para manejar la interacción con los objectByTabs que tienen un search en la parte izquierda, para filtrar.
+// Función de envoltura para manejar el selector con comodín si es necesario
+export const clickElementWithWildcard = async (page, selector, useWildcard = false, timeout = 2500) => {
+    const modifiedSelector = useWildcard ? `* ${selector}` : selector;
+    await clickElement(page, modifiedSelector, timeout);
+};
+export const fillFieldWithWildcard = async (page, selector, value, useWildcard = false) => {
+    const modifiedSelector = useWildcard ? `* ${selector}` : selector;
+    await fillField(page, modifiedSelector, value);
+};
 
+// Ejemplo de uso en handleObjectByTabsWithSearchInteraction
 export async function handleObjectByTabsWithSearchInteraction(page, testInfo, configSettings, button) {
     if (button.search) {
-        console.log('Found the Search...'); 
+        console.log('Se encontró el buscador...'); 
         await test.step(button.phraseClickSearch, async () => {
-            await clickElement(page, button.search.label); 
-            console.log('Clicked on Search...'); 
-
+            // Utiliza clickElementWithWildcard con el parámetro adicional para agregar el comodín si es necesario
+            await clickElementWithWildcard(page, button.search.label, true); // useWildcard en true
+            console.log('Hizo clic en el buscador...'); 
         });
         
         await test.step(button.phrasePauses, async () => {
             await page.pause();
         });
+
         await test.step(button.phraseFillField, async () => { 
-            await fillField(page, button.search.label, button.search.value);
-            console.log('Writing in the Search...'); 
-        })
-        
+            // Uso de fillFieldWithWildcard para escribir en el campo con la opción de comodín activada
+            await fillFieldWithWildcard(page, button.search.label, button.search.value, true); // useWildcard en true
+            console.log('Escribiendo en el buscador...'); 
+        });
         
         await test.step(button.phrasePauses, async () => {
             await page.pause();
@@ -34,7 +44,7 @@ export async function handleObjectByTabsWithSearchInteraction(page, testInfo, co
             await page.pause();
             await page.pause();
             await page.pause();
-            await test.step('Wait 3 seconds for the page to load completely.', async () => {
+            await test.step('Esperar 3 segundos para que la página cargue completamente.', async () => {
                 await page.waitForTimeout(3000); 
             }); 
         });
@@ -42,7 +52,5 @@ export async function handleObjectByTabsWithSearchInteraction(page, testInfo, co
         await test.step(button.phraseScreenShots, async () => {
             await attachScreenshot(testInfo, button.screenShotSearch, page, configSettings.screenShotsContentType);
         });
-
-        
     }
 }

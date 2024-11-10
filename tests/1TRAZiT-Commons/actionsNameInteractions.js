@@ -14,7 +14,16 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
             await test.step(Button.phraseSelect, async () => {
                 // Selecciona el elemento en la posición especificada por positionSelectElement o el primer elemento (0) si no está definido
                 const position = Button.positionSelectElement !== undefined ? Button.positionSelectElement : 0;
-                await page.getByText(Button.selectName).nth(position).click();
+                
+                try {
+                    // Primer intento: hacer clic con exactitud en el texto especificado
+                    await page.getByText(Button.selectName, { exact: true }).nth(position).click();
+                } catch (exactClickError) {
+                    console.log(`Error en clic exacto: ${exactClickError.message}`);
+                    
+                    // Si falla, intenta el clic sin { exact: true }
+                    await page.getByText(Button.selectName).nth(position).click();
+                }
             });
 
             if (Button.phrasePauses) {
@@ -33,7 +42,6 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
             }
         }
 
-
         // Paso 4: Clic en el botón
         await test.step(Button.phraseButtonName, async () => {
             const selectorBoton = `#${Button.buttonName}`;
@@ -45,20 +53,20 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
                 console.log(`Encontrados ${cantidad} elementos con el ID ${Button.buttonName}`);
 
                 if (cantidad > 0) {
-                    // Si hay múltiples elementos, usamos la posición especificada o el primero por defecto
+                    // Si hay múltiples elementos, usa la posición especificada o el primero por defecto
                     const indice = Button.positionButton || 0;
                     
                     if (indice >= cantidad) {
                         throw new Error(`Índice ${indice} fuera de rango. Solo hay ${cantidad} elementos disponibles.`);
                     }
 
-                    // Espero a que el elemento específico sea visible
-                    await elementos.nth(indice).waitFor({ state: 'visible', timeout: timeout })
+                    // Espera a que el elemento específico sea visible
+                    await elementos.nth(indice).waitFor({ state: 'visible', timeout: timeout });
                     
                     // Intento hacer clic con diferentes estrategias
                     try {
                         // Intento 1: Clic directo
-                        await elementos.nth(indice).dblclick({ timeout: timeout })
+                        await elementos.nth(indice).dblclick({ timeout: timeout });
                         console.log(`Clic correctamente nth(${indice})`);
                         return;
                     } catch (clickError) {
@@ -71,7 +79,7 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
                                 elementos[index].dblclick();
                             }
                         }, selectorBoton, indice);
-                        console.log(`Clic correctamente `);
+                        console.log(`Clic correctamente`);
                         return;
                     }
                 }
@@ -107,16 +115,14 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
             }
 
             throw new Error(`No se pudo hacer clic en ningún elemento con ID: ${Button.buttonName}`);
-            
-
         });
+
         await test.step(Button.phrasePauses, async () => {
             await page.pause();
-            await page.pause();
-            await page.pause();
-        })
+        });
+
+        // Espera y captura de pantalla
         await page.waitForTimeout(3000);
-        // Paso 5 Captura de pantalla al hacer una clic en el botón.
         if (Button.screenShotsButtonName) {
             await test.step(Button.phraseScreenShots, async () => {
                 await attachScreenshot(testInfo, Button.screenShotsButtonName, page, ConfigSettingsAlternative.screenShotsContentType);
@@ -126,7 +132,6 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
             });
         }
     } catch (error) {
-        // Si falla lanzo un error.
         console.error("Error en handleActionNameInteraction:", error);
         throw error;
     }
