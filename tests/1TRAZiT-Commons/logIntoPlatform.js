@@ -36,14 +36,20 @@ export class LogIntoPlatform {
             // Realiza login
             await test.step('Login in the platform', async () => {
                 await test.step('Click and add the user', async () => {
+                    await this.withTimeout(page.getByLabel(ConfigSettings.login.fldUser.label).fill(ConfigSettingsAlternative.login.fldUser.value), 5000);
+                    // await page.locator('input[type="text"]').click({timeout: 5000});
+                    // await page.locator('input[type="text"]').fill(ConfigSettingsAlternative.login.fldUser.value);
                     await page.getByLabel(ConfigSettings.login.fldUser.label).fill(ConfigSettingsAlternative.login.fldUser.value);
                 });
 
                 await test.step('Click and add the password', async () => {
-                    await page.getByLabel(ConfigSettings.login.fldPss.label).fill(ConfigSettingsAlternative.login.fldPss.value);
+                    await page.locator('input[type="password"]').click();
+                    await page.locator('input[type="password"]').fill("trazit");
+                    // await page.getByLabel(ConfigSettings.login.fldPss.label).fill(ConfigSettingsAlternative.login.fldPss.value);
                 });
 
                 await test.step('Enter the Platform', async () => {
+                    // await page.locator('#access span').first().click();
                     await page.getByLabel(ConfigSettings.login.fldPss.label).press(ConfigSettings.login.fldPss.actionName);
                 });
             });
@@ -71,5 +77,13 @@ export class LogIntoPlatform {
             console.error('Error during commonBeforeEach:', error);
             throw new Error('Failed to execute commonBeforeEach: ' + error.message);
         }
+    }
+
+    // Método auxiliar para agregar timeout a las promesas
+    async withTimeout(promise, timeout) {
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout reached')), timeout)
+        );
+        return Promise.race([promise, timeoutPromise]);
     }
 }

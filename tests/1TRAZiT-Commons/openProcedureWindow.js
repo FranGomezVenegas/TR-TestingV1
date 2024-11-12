@@ -40,43 +40,89 @@ export class OpenProcedureWindow {
                     throw new Error("dataForTest.desktopMode.pageElementName es undefined.");
                 }
             });
+            await test.step("Take screenshot of session label element", async () => {
+                const sessionLabelElement = page.locator('#sessionLabel').first();
+                await testInfo.attach("User Session Details", {
+                    body: await sessionLabelElement.screenshot(),
+                    contentType: ConfigSettings.screenShotsContentType
+                });
+            });
+            await page.waitForTimeout(500);
 
             await test.step("Click on the main page element", async () => {
-                await page.locator(dataForTest.desktopMode.pageElementName).click();
+                // await page.getByRole('button', { name: dataForTest.desktopMode.pageElementName }).click({timeout: 5000});
+                await page.waitForTimeout(500);
+                await page.locator(dataForTest.desktopMode.pageElementName).click({timeout:15000})
                 console.log("Clicked on main page element name");
             });
 
-            // await test.step("Take screenshot after clicking main element", async () => {
-            //     await testInfo.attach(dataForTest.desktopMode.screenShotsName, {
-            //         body: await page.screenshot(),
-            //         contentType: ConfigSettings.screenShotsContentType
-            //     });
-            // });
+            await test.step("Take screenshot after hover main element", async () => {
+                await testInfo.attach(dataForTest.desktopMode.screenShotsName, {
+                    body: await page.screenshot(),
+                    contentType: ConfigSettings.screenShotsContentType
+                });
+            });
 
             await page.pause();
 
+            // await test.step("Verify dataForTest and dataForTest.pageElement.label are defined", async () => {
+            //     if (dataForTest && dataForTest.desktopMode && dataForTest.desktopMode.label) {
+            //         // await page.getByRole('button', { name: dataForTest.desktopMode.label }).click({timeout:5000})
+            //         await page.waitForTimeout(3000);
+            //         // opcion 1:
+            //         await page.getByRole('menuitem', { name: dataForTest.desktopMode.label }).locator('span').click({timeout:5000})
+            //         // opción 2:
+            //         await page.getByRole('button', { name: dataForTest.desktopMode.label }).click({timeout: 5000});
+                    
+            //         console.log("Clicked on procedure page element label");
+            //     } else {
+            //         console.error("dataForTest.desktopMode.label is undefined");
+            //         throw new Error("El nombre del elemento de procedimiento es undefined.");
+            //     }
+            // });
             await test.step("Verify dataForTest and dataForTest.pageElement.label are defined", async () => {
                 if (dataForTest && dataForTest.desktopMode && dataForTest.desktopMode.label) {
-                    await page.getByRole('menuitem', { name: dataForTest.desktopMode.label }).locator('span').click();
-                    console.log("Clicked on procedure page element label");
+                    try {
+                        // Primer intento: Opción 1 (1 segundo de timeout)
+                        await page.getByRole('menuitem', { name: dataForTest.desktopMode.label })
+                            .locator('span')
+                            .click({ timeout: 1000 });
+                        
+                        console.log("Clicked on procedure page element label (Opción 1)");
+                    } catch (error) {
+                        console.log("Opción 1 no encontrada, intentando Opción 2...");
+                        try {
+                            // Segundo intento: Opción 2 (1.5 segundos de timeout)
+                            await page.getByRole('button', { name: dataForTest.desktopMode.label })
+                                .click({ timeout: 1500 });
+                            
+                            console.log("Clicked on procedure page element label (Opción 2)");
+                        } catch (error) {
+                            // Si ambas opciones fallan, lanza un error
+                            console.error("No se encontró ninguna de las opciones para el elemento de procedimiento.");
+                            throw new Error("El nombre del elemento de procedimiento es undefined.");
+                        }
+                    }
                 } else {
                     console.error("dataForTest.desktopMode.label is undefined");
                     throw new Error("El nombre del elemento de procedimiento es undefined.");
                 }
             });
+            
 
             await page.pause();
-            // await test.step("Take screenshot after clicking procedure element", async () => {
-            //     await testInfo.attach(dataForTest.desktopMode.viewScreenShotLabel, {
-            //         body: await page.screenshot(),
-            //         contentType: ConfigSettings.screenShotsContentType
-            //     });
-            // });
+            await test.step("Take screenshot after clicking procedure element", async () => {
+                await testInfo.attach(dataForTest.desktopMode.viewScreenShotLabel, {
+                    body: await page.screenshot(),
+                    contentType: ConfigSettings.screenShotsContentType
+                });
+            });
 
             await test.step("Navigate to window URL", async () => {
                 if (dataForTest.desktopMode.pageElement && dataForTest.desktopMode.pageElement) {
                     const fullPagrUrl = `${ConfigSettings.platformUrl.replace(/\/+$/, '')}/${dataForTest.desktopMode.pageElement.replace(/^\/+/, '')}`;
                     await page.goto(fullPagrUrl);
+                    console.log(fullPagrUrl);
                     console.log("Navigated to window page element");
                     await page.waitForTimeout(3000);
 
@@ -117,18 +163,38 @@ export class OpenProcedureWindow {
         }
 
         try {
-            console.log(dataForTest); // Asegúrate de que contiene mobileMode
-            console.log(dataForTest.mobileMode); // Asegúrate de que contiene clickMenu
+            // await test.step("Take screenshot of session label element", async () => {
+            //     const sessionLabelElement = page.locator('#sessionLabel').first();
+            //     await testInfo.attach("User Session Details", {
+            //         body: await sessionLabelElement.screenshot(),
+            //         contentType: ConfigSettings.screenShotsContentType
+            //     });
+            // });
+            await page.waitForTimeout(500);
 
+            // await test.step("Click on the mobile menu", async () => {
+            //     // Espera a que el botón esté visible antes de hacer clic
+            //     await page.locator('md-icon', { hasText: dataForTest.mobileMode.clickMenu }).click();
+
+            //     // await page.click('md-filled-icon-button.menu');
+
+            //     console.log("Clicked on mobile menu");
+            // });
             await test.step("Click on the mobile menu", async () => {
-                // Espera a que el botón esté visible antes de hacer clic
-                await page.waitForSelector('md-filled-icon-button.menu', { state: 'visible' });
-                await page.click('md-filled-icon-button.menu');
-
-            //     await page.getByLabel(dataForTest.mobileMode.clickMenu).click();
-                console.log("Clicked on mobile menu");
+                // Intenta hacer clic en el menú móvil usando la primera opción
+                const firstMenu = page.locator('md-icon', { hasText: dataForTest.mobileMode.clickMenu });
+            
+                // Verifica si el primer botón está visible
+                if (await firstMenu.isVisible()) {
+                    await firstMenu.click();
+                    console.log("Clicked on mobile menu using first option");
+                } else {
+                    // Si no está visible, intenta la segunda opción
+                    await page.click('md-filled-icon-button.menu');
+                    console.log("Clicked on mobile menu using second option");
+                }
             });
-
+            
             await test.step("Check dataForTest.mobileMode.pageElementName is defined", async () => {
                 if (!dataForTest.mobileMode.pageElementName) {
                     throw new Error("dataForTest.mobileMode.pageElementName es undefined.");
@@ -139,24 +205,35 @@ export class OpenProcedureWindow {
             await page.pause();
 
             await test.step("Click on the main procedure element in the mobile menu", async () => {
-                await page.locator(dataForTest.mobileMode.pageElementName).click();
+                // await page.getByRole('button', { name: dataForTest.mobileMode.pageElementName }).click();
+                await page.locator(dataForTest.mobileMode.pageElementName).click({timeout: 2000});
+                // await page.locator(dataForTest.mobileMode.pageElementName).click({timeout:5000})
                 console.log("Clicked on mobile procedure page element");
             });
 
             await page.pause();
 
-            // await test.step("Take screenshot after opening the procedure menu", async () => {
-            //     await testInfo.attach(dataForTest.mobileMode.screenShotsName, {
-            //         body: await page.screenshot(),
-            //         contentType: ConfigSettings.screenShotsContentType
-            //     });
-            // });
+            await test.step("Take screenshot after opening the procedure menu", async () => {
+                await testInfo.attach(dataForTest.mobileMode.screenShotsName, {
+                    body: await page.screenshot(),
+                    contentType: ConfigSettings.screenShotsContentType
+                });
+            });
 
             await page.pause();
 
             await test.step("Verify dataForTest.mobileMode.label is defined and click", async () => {
                 if (dataForTest && dataForTest.mobileMode.label) {
-                    await page.locator(dataForTest.mobileMode.label).click();
+                    // await page.getByRole('button', { name: dataForTest.mobileMode.label }).click({timeout:5000})
+                    await page.getByRole('button', { name: dataForTest.mobileMode.label }).click({timeout: 2000});
+
+                    // await page.locator(dataForTest.mobileMode.label).click({timeout:5000})
+                    await test.step("Take screenshot after clicking procedure element", async () => {
+                             await testInfo.attach(dataForTest.mobileMode.viewScreenShotLabel, {
+                                 body: await page.screenshot(),
+                                 contentType: ConfigSettings.screenShotsContentType
+                             });
+                        });
                 } else {
                     console.error('dataForTest.mobileMode.label is undefined');
                     throw new Error("El nombre del elemento de configuración es undefined.");
@@ -166,7 +243,7 @@ export class OpenProcedureWindow {
             await page.pause();
 
             // await test.step("Take screenshot of mobile page configuration", async () => {
-            //     await testInfo.attach(dataForTest.mobileMode.screenShotsNameIncident, {
+            //     await testInfo.attach(dataForTest.mobileMode.viewScreenShotLabel, {
             //         body: await page.screenshot(),
             //         contentType: ConfigSettings.screenShotsContentType
             //     });
@@ -216,48 +293,101 @@ export class OpenProcedureWindow {
         
         
         try {
-            await test.step("Check platformMenuNames.procedure.main.pageElementName is defined", async () => {
-                if (!dataForTest.tabletRetratoMode.pageElementName) {
-                    throw new Error("platformMenuNames.procedure.main.pageElementName es undefined.");
+            // Verifico que tabletRetratoMode esté definido
+            await test.step("Check dataForTest.tabletRetratoMode is defined", async () => {
+                if (!dataForTest.tabletRetratoMode) {
+                    throw new Error("dataForTest.tabletRetratoMode es undefined.");
                 }
             });
 
+            await test.step("Check dataForTest.tabletRetratoMode.pageElementName is defined", async () => {
+                if (!dataForTest.tabletRetratoMode.pageElementName) {
+                    throw new Error("dataForTest.tabletRetratoMode.pageElementName es undefined.");
+                }
+            });
+            await test.step("Take screenshot of session label element", async () => {
+                const sessionLabelElement = page.locator('#sessionLabel').first();
+                await testInfo.attach("User Session Details", {
+                    body: await sessionLabelElement.screenshot(),
+                    contentType: ConfigSettings.screenShotsContentType
+                });
+            });
+            await page.waitForTimeout(500);
+
             await test.step("Click on the main page element", async () => {
-                await page.locator(dataForTest.tabletRetratoMode.pageElementName).click();
+                // await page.getByRole('button', { name: dataForTest.tabletRetratoMode.pageElementName }).click({timeout: 5000});
+                await page.waitForTimeout(500);
+                await page.locator(dataForTest.tabletRetratoMode.pageElementName).click({timeout:15000})
                 console.log("Clicked on main page element name");
             });
 
-            // await test.step("Take screenshot after clicking main element", async () => {
-            //     await testInfo.attach(dataForTest.tabletRetratoMode.screenShotsName, {
-            //         body: await page.screenshot(),
-            //         contentType: ConfigSettings.screenShotsContentType
-            //     });
-            // });
+            await test.step("Take screenshot after hover main element", async () => {
+                await testInfo.attach(dataForTest.tabletRetratoMode.screenShotsName, {
+                    body: await page.screenshot(),
+                    contentType: ConfigSettings.screenShotsContentType
+                });
+            });
 
             await page.pause();
 
+            // await test.step("Verify dataForTest and dataForTest.pageElement.label are defined", async () => {
+            //     if (dataForTest && dataForTest.tabletRetratoMode && dataForTest.tabletRetratoMode.label) {
+            //         // await page.getByRole('button', { name: dataForTest.tabletRetratoMode.label }).click({timeout:5000})
+            //         await page.waitForTimeout(3000);
+            //         // opcion 1:
+            //         await page.getByRole('menuitem', { name: dataForTest.tabletRetratoMode.label }).locator('span').click({timeout:5000})
+            //         // opción 2:
+            //         await page.getByRole('button', { name: dataForTest.tabletRetratoMode.label }).click({timeout: 5000});
+                    
+            //         console.log("Clicked on procedure page element label");
+            //     } else {
+            //         console.error("dataForTest.tabletRetratoMode.label is undefined");
+            //         throw new Error("El nombre del elemento de procedimiento es undefined.");
+            //     }
+            // });
             await test.step("Verify dataForTest and dataForTest.pageElement.label are defined", async () => {
                 if (dataForTest && dataForTest.tabletRetratoMode && dataForTest.tabletRetratoMode.label) {
-                    await page.getByRole('menuitem', { name: dataForTest.tabletRetratoMode.label }).locator('span').click();
-                    console.log("Clicked on procedure page element label");
+                    try {
+                        // Primer intento: Opción 1 (1 segundo de timeout)
+                        await page.getByRole('menuitem', { name: dataForTest.tabletRetratoMode.label })
+                            .locator('span')
+                            .click({ timeout: 1000 });
+                        
+                        console.log("Clicked on procedure page element label (Opción 1)");
+                    } catch (error) {
+                        console.log("Opción 1 no encontrada, intentando Opción 2...");
+                        try {
+                            // Segundo intento: Opción 2 (1.5 segundos de timeout)
+                            await page.getByRole('button', { name: dataForTest.tabletRetratoMode.label })
+                                .click({ timeout: 1500 });
+                            
+                            console.log("Clicked on procedure page element label (Opción 2)");
+                        } catch (error) {
+                            // Si ambas opciones fallan, lanza un error
+                            console.error("No se encontró ninguna de las opciones para el elemento de procedimiento.");
+                            throw new Error("El nombre del elemento de procedimiento es undefined.");
+                        }
+                    }
                 } else {
                     console.error("dataForTest.tabletRetratoMode.label is undefined");
                     throw new Error("El nombre del elemento de procedimiento es undefined.");
                 }
             });
+            
 
             await page.pause();
-            // await test.step("Take screenshot after clicking procedure element", async () => {
-            //     await testInfo.attach(dataForTest.tabletRetratoMode.viewScreenShotLabel, {
-            //         body: await page.screenshot(),
-            //         contentType: ConfigSettings.screenShotsContentType
-            //     });
-            // });
+            await test.step("Take screenshot after clicking procedure element", async () => {
+                await testInfo.attach(dataForTest.tabletRetratoMode.viewScreenShotLabel, {
+                    body: await page.screenshot(),
+                    contentType: ConfigSettings.screenShotsContentType
+                });
+            });
 
             await test.step("Navigate to window URL", async () => {
                 if (dataForTest.tabletRetratoMode.pageElement && dataForTest.tabletRetratoMode.pageElement) {
                     const fullPagrUrl = `${ConfigSettings.platformUrl.replace(/\/+$/, '')}/${dataForTest.tabletRetratoMode.pageElement.replace(/^\/+/, '')}`;
                     await page.goto(fullPagrUrl);
+                    console.log(fullPagrUrl);
                     console.log("Navigated to window page element");
                     await page.waitForTimeout(3000);
 
@@ -273,7 +403,7 @@ export class OpenProcedureWindow {
 
             await page.pause();
         } catch (error) {
-            console.error("Error en openWindowForTabletMode:", error);
+            console.error("Error en openWindowForTabletsModeRetrato:", error);
             throw error;
         }
     }
