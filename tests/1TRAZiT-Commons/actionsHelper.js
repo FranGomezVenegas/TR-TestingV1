@@ -150,7 +150,11 @@ export const attachScreenshot = async (testInfo, screenshotName, page, contentTy
 
 // 3 constantes para la Justification Phrase (Justification Phrase, Credenciales, Accept)
 export const justificationPhrase = async (page, timeout = 30000, testInfo) => {
+    console.log("Intentando ejecutar justificationPhrase...")
+
     try {
+        console.log("Intentando ejecutar justificationPhrase...")
+
         await test.step("Add Justification Phrase", async () => {
             let phraseBox = null;
 
@@ -217,11 +221,12 @@ export const fillUserField = async (page, testInfo, timeout = 30000) => {
     const userCredentialSettings = {
         fldUser: { label: "User", value: "admin" }
     };
+    console.log("Intentando ejecutar fillUserField...")
 
     try {
         // Comprobar si el campo 'User' es visible
         const isUserVisible = await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).isVisible({ timeout }).catch(() => false);
-        
+        console.log("Intentando ejecutar fillUserField...")
         if (isUserVisible) {
             await test.step("Start - Fill 'User' field", async () => {
                 await test.step("Click on 'User' field", async () => {
@@ -253,8 +258,10 @@ export const fillPasswordField = async (page, testInfo, timeout = 30000) => {
     const userCredentialSettings = {
         fldPss: { label: "Password", value: "trazit", id: "pwd" }
     };
-
+    console.log("Intentando ejecutar fillPasswordField...")
     try {
+        console.log("Intentando ejecutar fillPasswordField...")
+
         // Comprobar si el campo 'Password' es visible usando el id 'pwd'
         const isPasswordVisible = await page.locator(`#${userCredentialSettings.fldPss.id}`).isVisible({ timeout }).catch(() => false);
         

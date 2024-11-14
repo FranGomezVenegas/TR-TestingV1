@@ -30,6 +30,9 @@ export const processTestData = async (page, consoleData, testDataGame) => {
                             case 'multilist':  
                                 await processMultiListField(page, field);
                                 break;
+                            case 'datetime':  
+                                await processDateTimeField(page, field);
+                                break;
                         }
                         console.log(`Processed field ${fieldType}: ${field.label}`);
                     });
@@ -55,6 +58,9 @@ export const processTestData = async (page, consoleData, testDataGame) => {
     });
     await test.step("Processing multi-list fields", async () => {
         await processFields('multilist');
+    });
+    await test.step("Processing datetime fields", async () => {
+        await processFields('datetime');
     });
 };
 
@@ -261,7 +267,49 @@ export const processMultiListField = async (page, multiListField) => {
 };
 
 
+// Function to process datetime fields
+export const processDateTimeField = async (page, dateTimeField) => {
+    // await page.locator('#datetime1').click();
+    // await page.locator('#datetime1').fill('2024-11-08T23:26');
 
+    // Generate ID automatically based on the label, removing spaces and special characters
+    const fieldId = `#${cleanString(dateTimeField.label).replace(/\s+/g, '').replace(/[^\w\s]/gi, '')}`;
+
+    // Try multiple search attempts to locate the field by label
+    const searchAttempts = [
+        dateTimeField.label,
+        `* ${dateTimeField.label}`,
+    ];
+
+    for (const searchLabel of searchAttempts) {
+        try {
+            await test.step(`Filling datetime field: ${searchLabel}`, async () => {
+                await page.locator(fieldId).click();
+                await page.locator(fieldId).fill(dateTimeField.datetime); // Fill with date-time format, e.g., '2024-11-08T23:26'
+                console.log(`Added datetime field: ${searchLabel}`);
+            });
+            return; // Exit function if processed successfully
+        } catch (attemptError) {
+            console.log(`Error processing datetime field: ${searchLabel}. Details:`, attemptError);
+        }
+    }
+
+    // Flexible search as a last resort
+    const matchingField = findMatchingField(consoleData, dateTimeField.label);
+    if (matchingField) {
+        const flexibleLabel = determineFlexibleLabel(matchingField);
+        const flexibleId = `#${cleanString(flexibleLabel).replace(/\s+/g, '').replace(/[^\w\s]/gi, '')}`;
+        
+        await test.step(`Filling datetime field with flexible label: ${flexibleLabel}`, async () => {
+            await page.locator(flexibleId).click();
+            await page.locator(flexibleId).fill(dateTimeField.datetime);
+            console.log(`Added datetime field with flexible label: ${flexibleLabel}`);
+        });
+    } else {
+        throw new Error(`Could not find datetime field: ${dateTimeField.label}`);
+    }
+};
+    
 // Function to find a matching field
 const findMatchingField = (consoleData, label) => {
     return consoleData.find(field => {

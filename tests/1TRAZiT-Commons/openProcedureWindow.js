@@ -92,18 +92,28 @@ export class OpenProcedureWindow {
                     } catch (error) {
                         console.log("Opción 1 no encontrada, intentando Opción 2...");
                         try {
-                            // Segundo intento: Opción 2 (1.5 segundos de timeout)
-                            await page.getByRole('button', { name: dataForTest.desktopMode.label })
-                                .click({ timeout: 1500 });
+                            // Segundo intento: Opción 2 (3.5 segundos de timeout)
+                            await page.getByRole('button', { name: dataForTest.desktopMode.label, exact: true })
+                                .click({ timeout: 3500 });
                             
                             console.log("Clicked on procedure page element label (Opción 2)");
                         } catch (error) {
-                            // Si ambas opciones fallan, lanza un error
-                            console.error("No se encontró ninguna de las opciones para el elemento de procedimiento.");
-                            throw new Error("El nombre del elemento de procedimiento es undefined.");
+                            console.log("Opción 2 no encontrada, intentando Opción 3...");
+                            try {
+                                // Tercer intento: Opción 3 usando getByText (2 segundos de timeout)
+                                await page.getByText(dataForTest.desktopMode.label)
+                                    .click({ timeout: 3000 });
+                                
+                                console.log("Clicked on procedure page element label (Opción 3)");
+                            } catch (error) {
+                                // Si todas las opciones fallan, lanza un error
+                                console.error("No se encontró ninguna de las opciones para el elemento de procedimiento.");
+                                throw new Error("El nombre del elemento de procedimiento es undefined.");
+                            }
                         }
                     }
-                } else {
+                }
+                 else {
                     console.error("dataForTest.desktopMode.label is undefined");
                     throw new Error("El nombre del elemento de procedimiento es undefined.");
                 }
@@ -118,14 +128,40 @@ export class OpenProcedureWindow {
                 });
             });
 
+            // await test.step("Navigate to window URL", async () => {
+            //     if (dataForTest.desktopMode.pageElement && dataForTest.desktopMode.pageElement) {
+            //         const fullPagrUrl = `${ConfigSettings.platformUrl.replace(/\/+$/, '')}/${dataForTest.desktopMode.pageElement.replace(/^\/+/, '')}`;
+            //         await page.goto(fullPagrUrl);
+            //         console.log(fullPagrUrl);
+            //         console.log("Navigated to window page element");
+            //         await page.waitForTimeout(3000);
+
+            //         // await testInfo.attach(dataForTest.desktopMode.pageElement.screenShotName, {
+            //         //     body: await page.screenshot(),
+            //         //     contentType: ConfigSettings.screenShotsContentType
+            //         // });
+            //     } else {
+            //         console.error("dataForTest.desktopMode.pageElement is undefined");
+            //         throw new Error("La URL de la ventana es undefined.");
+            //     }
+            // });
             await test.step("Navigate to window URL", async () => {
-                if (dataForTest.desktopMode.pageElement && dataForTest.desktopMode.pageElement) {
+                if (dataForTest.desktopMode.pageElement) {
                     const fullPagrUrl = `${ConfigSettings.platformUrl.replace(/\/+$/, '')}/${dataForTest.desktopMode.pageElement.replace(/^\/+/, '')}`;
                     await page.goto(fullPagrUrl);
                     console.log(fullPagrUrl);
                     console.log("Navigated to window page element");
                     await page.waitForTimeout(3000);
-
+            
+                    // Verificar que la URL actual sea la esperada
+                    const currentUrl = page.url();
+                    if (currentUrl !== fullPagrUrl) {
+                        console.error(`Navigation failed. Expected URL: ${fullPagrUrl}, but navigated to: ${currentUrl}`);
+                        throw new Error("La navegación a la URL de la ventana falló.");
+                    } else {
+                        console.log("Successfully navigated to the expected URL.");
+                    }
+            
                     // await testInfo.attach(dataForTest.desktopMode.pageElement.screenShotName, {
                     //     body: await page.screenshot(),
                     //     contentType: ConfigSettings.screenShotsContentType
@@ -135,6 +171,7 @@ export class OpenProcedureWindow {
                     throw new Error("La URL de la ventana es undefined.");
                 }
             });
+            
 
             await page.pause();
         } catch (error) {
@@ -142,6 +179,7 @@ export class OpenProcedureWindow {
             throw error;
         }
     }
+
 
     async openWindowForMobile(page, testInfo, ConfigSettings) {
         console.log("openWindowForMobile - ConfigSettings:", ConfigSettings);

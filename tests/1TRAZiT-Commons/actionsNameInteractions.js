@@ -17,12 +17,12 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
                 
                 try {
                     // Primer intento: hacer clic con exactitud en el texto especificado
-                    await page.getByText(Button.selectName, { exact: true }).nth(position).click();
+                    await page.getByText(Button.selectName, { exact: true }).nth(position).dblclick({timeout: 3000});
                 } catch (exactClickError) {
                     console.log(`Error en clic exacto: ${exactClickError.message}`);
                     
                     // Si falla, intenta el clic sin { exact: true }
-                    await page.getByText(Button.selectName).nth(position).click();
+                    await page.getByText(Button.selectName).nth(position).dblclick({timeout: 3000});
                 }
             });
 
