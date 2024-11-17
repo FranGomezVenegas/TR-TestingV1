@@ -143,10 +143,10 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         //await clickAcceptButton(page);
             
         // Verify that there are no console errors
-        // await test.step(phraseReport.phraseError, async () => {
-        //     logger.printLogs();
-        //     expect(logger.errors.length).toBe(0);
-        // });
+        await test.step(phraseReport.phraseError, async () => {
+            logger.printLogs();
+            expect(logger.errors.length).toBe(0);
+        });
 
         // Verify captured network responses
         await test.step(phraseReport.phraseVerifyNetwork, async () => {

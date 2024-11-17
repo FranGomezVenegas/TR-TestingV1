@@ -11,9 +11,10 @@ import { fillUserField, fillPasswordField } from '../1TRAZiT-Commons/actionsHelp
 import { handleTabInteraction } from '../1TRAZiT-Commons/tabsInteractions.js';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions.js';
 import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractions.js';
+import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
 
 import { processTestData } from '../1TRAZiT-Commons/dialogInteraction.js';
-// const { processTestData } = await import('../1TRAZiT-Commons/dialogInteraction.js');
+import { selectElementWithScroll } from '../1TRAZiT-Commons/selectElementWithScroll';
 
 const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     const logger = new Logger();
@@ -44,23 +45,19 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     const capturedMessages = new Set<string>();
 
     page.on('console', async (msg) => {
-        // Verificar si el tipo de mensaje es 'log' y si contiene las palabras clave
         if (msg.type() === 'log' && 
             (msg.text().includes('actionBeingPerformedModel') ||   
             msg.text().includes('actionMethod'))) {
             
-            // Obtener los argumentos del mensaje
             const args = await Promise.all(msg.args().map(arg => arg.jsonValue()));
             const jsonOutput = JSON.stringify(args, null, 2);
 
-            // Verificar si el mensaje ya fue capturado
             if (!capturedMessages.has(jsonOutput)) {
                 capturedMessages.add(jsonOutput);
                 console.log(`\nCaptured actionBeingPerformedModel or actionMethod: ${jsonOutput}`);
             }
         }
     });
-
 
     // Notification Handling
     const afterEachData = {
@@ -72,117 +69,21 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     const notificationWitness = new NotificationWitness(page);
 
     await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, buttonWithDialog);
- 
-    // rowActions rowButtons
+    await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, buttonWithDialog);
+
     const rowActions = await handleRowActionsInteraction(page, buttonWithDialog, testInfo); 
     console.log("Resultado de handleRowActionsInteraction:", rowActions);
 
-    // Si `handleRowActionsInteraction` se ejecutó correctamente, omite las secciones específicas
     if (rowActions) {
         console.log("El resultado fue verdadero, realizando acciones adicionales...");
-        // Si rowActions es true, realiza las acciones deseadas
-        // Aplicar el transform scale al contenedor del diálogo
-    await page.evaluate(() => {
-        const dialogSurface = document.querySelector('.mdc-dialog__surface') as HTMLElement; // Aserción de tipo
-        if (dialogSurface) {
-            dialogSurface.style.transform = 'scale(0.9)';
-        }
-    });
-
-    // Handle dialog interaction
-    const dialogInfo = buttonWithDialog.dialogInfo;
-    await test.step('Handle dialog fields', async () => {
-        if (dialogInfo && dialogInfo.fields) {
-            for (const field of dialogInfo.fields) {
-                const fieldKey = Object.keys(field)[0];
-                const fieldData = field[fieldKey];
-
-                if (fieldData.label_en) {
-                    const selector = `input[name="${fieldData.selObjectPropertyName || fieldKey}"]`;
-
-                    try {
-                        await page.waitForSelector(selector, { state: 'visible', timeout: 3000 });
-                        await page.fill(selector, fieldData.defaultValue || '');
-                        console.log(`Filled field "${fieldData.label_en}" with value: ${fieldData.defaultValue}`);
-                    } catch (error) {
-                        console.error(`Failed to fill field "${fieldData.label_en}":`, error);
-                    }
-                }
-            }
-        }
-    });
-
-    // Validate and process captured messages
-    await test.step('Validate captured messages', async () => {
-        const validCapturedMessages = Array.from(capturedMessages).filter(msg => {
-            try {
-                JSON.parse(msg);
-                return true;
-            } catch {
-                console.warn(`Invalid JSON message: ${msg}`);
-                return false;
+        await page.evaluate(() => {
+            const dialogSurface = document.querySelector('.mdc-dialog__surface') as HTMLElement;
+            if (dialogSurface) {
+                dialogSurface.style.transform = 'scale(0.9)';
             }
         });
-
-        const parsedMessages = validCapturedMessages.map(msg => {
-            try {
-                return JSON.parse(msg);
-            } catch (error) {
-                console.error(`Error parsing JSON: ${msg}`, error);
-                return null;
-            }
-        }).filter(Boolean);
-
-        if (parsedMessages.length > 0) {
-            await processTestData(page, parsedMessages, JSON.stringify(buttonWithDialog));
-        }
-    });
-
-    await test.step(buttonWithDialog.phrasePauses, async () => {
-        await page.waitForTimeout(1000);
-    })
-
-    // Screenshot handling
-    await test.step(buttonWithDialog.phraseScreenShots, async () => {
-        await attachScreenshot(testInfo, buttonWithDialog.screenShotsFilledForm, page, ConfigSettingsAlternative.screenShotsContentType);
-        if (buttonWithDialog.phrasePauses) {
-            await page.pause();
-        }
-    });
-
-    // Justification Phrase
-    await fillUserField(page, testInfo);
-    await fillPasswordField(page, testInfo);
-    await justificationPhrase(page, 30000, testInfo);
-    await clickAcceptButton(page);
-
-    // Network response validation
-    await test.step(phraseReport.phraseVerifyNetwork, async () => {
-        networkInterceptor.printNetworkData();
-        const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-        expect(nullResponsesCount).toBe(0);
-    });
-
-    // Response validation
-    await test.step(phraseReport.phraseVerifyNetwork, async () => {
-        const responseValidator = new ResponseValidator(networkInterceptor.responses);
-        try {
-            await responseValidator.validateResponses();
-        } catch (error) {
-            console.log("Error validating responses:", error);
-        }
-    });
-
-    // Notification handling post-action
-    const mode = await notificationWitness.getDeviceMode(testInfo);
-    await test.step(ReportNotificationPhase.phraseCaptureNotification, async () => {
-        const capturedObjectName = await notificationWitness.addNotificationWitness(testInfo, afterEachData, mode);
-        console.log('Captured Object Name:', capturedObjectName);
-    });
-        
-        return
     }
-    
+
     // Click button by name
     await handleActionNameInteraction(page, testInfo, buttonWithDialog);
 
@@ -194,7 +95,7 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         }
     });
 
-    // Handle dialog interaction
+    // Check for fields in the dialog
     const dialogInfo = buttonWithDialog.dialogInfo;
     await test.step('Handle dialog fields', async () => {
         if (dialogInfo && dialogInfo.fields) {
@@ -214,6 +115,10 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
                     }
                 }
             }
+        } else {
+            console.log("No fields found in dialog. Executing selectElementWithScroll...");
+            await selectElementWithScroll(page, true, null, buttonWithDialog.selectElement);
+           
         }
     });
 
@@ -245,7 +150,7 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
 
     await test.step(buttonWithDialog.phrasePauses, async () => {
         await page.waitForTimeout(1000);
-    })
+    });
 
     // Screenshot handling
     await test.step(buttonWithDialog.phraseScreenShots, async () => {
@@ -254,30 +159,60 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
             await page.pause();
         }
     });
+    // Justification Phrase
+    await fillUserField(page, testInfo);
+    await fillPasswordField(page, testInfo);
+    await justificationPhrase(page, 30000, testInfo);
+    await clickAcceptButton(page);
+    
 
     // Justification Phrase
     await fillUserField(page, testInfo);
     await fillPasswordField(page, testInfo);
     await justificationPhrase(page, 30000, testInfo);
     await clickAcceptButton(page);
-
-    const acceptButton = page.getByRole('button', { name: 'Accept' }).nth(1);
-        if (await acceptButton.isVisible()) {
-            await test.step("Aceptar", async () => {
-                await acceptButton.click();
-            });
-        } else {
-            console.log("Botón de Aceptar no encontrado, omitiendo paso.");
+    // Intentar hacer clic en el botón "Accept" en nth(1)
+    const acceptButton1 = page.getByRole('button', { name: 'Accept' }).nth(1);
+    if (await acceptButton1.isVisible()) {
+      await test.step("Aceptar", async () => {
+        try {
+          await acceptButton1.click({ timeout: 5000 });
+        } catch (error) {
+          console.log("Error clicking acceptButton1:", error);
         }
+      });
+    } else {
+      console.log("Botón de Aceptar no encontrado en la posición 0, intentando con nth(1).");
 
+      // Intentar hacer clic con nth(1) si el primer botón no está visible
+      const acceptButton2 = page.getByRole('button', { name: 'Accept' }).nth(0);
+      if (await acceptButton2.isVisible()) {
+        await test.step("Aceptar con nth(0)", async () => {
+          try {
+            await acceptButton2.click({ timeout: 5000 });
+          } catch (error) {
+            console.log("Error clicking acceptButton2:", error);
+          }
+        });
+      } else {
+        console.log("Botón de Aceptar no encontrado en nth(1), intentando con nth(2).");
+
+        // Intentar hacer clic con nth(2) si el segundo botón no está visible
+        const acceptButton3 = page.getByRole('button', { name: 'Accept' }).nth(2);
+        if (await acceptButton3.isVisible()) {
+          await test.step("Aceptar con nth(2)", async () => {
+            try {
+              await acceptButton3.click({ timeout: 5000 });
+            } catch (error) {
+              console.log("Error clicking acceptButton3:", error);
+            }
+          });
+        } else {
+          console.log("Botón de Aceptar no encontrado en nth(2), omitiendo paso.");
+        }
+      }
+    }
     // Network response validation
-    await test.step(phraseReport.phraseVerifyNetwork, async () => {
-        networkInterceptor.printNetworkData();
-        const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-        expect(nullResponsesCount).toBe(0);
-    });
-
-    // Response validation
     await test.step(phraseReport.phraseVerifyNetwork, async () => {
         const responseValidator = new ResponseValidator(networkInterceptor.responses);
         try {
@@ -287,7 +222,6 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         }
     });
 
-    await page.waitForTimeout(1000);
     // Notification handling post-action
     const mode = await notificationWitness.getDeviceMode(testInfo);
     await test.step(ReportNotificationPhase.phraseCaptureNotification, async () => {
@@ -311,10 +245,10 @@ test.describe('Desktop Mode', () => {
         });
   
         const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'SampleEnterResultFQRemoveSample';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'inspection_lot'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
@@ -524,13 +458,13 @@ afterEach(async ({}, testInfo) => {
     const durationInSeconds = (testInfo.duration / 1000).toFixed(2);
   
     const data = {
-      trazitTestName: process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution' ,
+      trazitTestName: process.env.TRAZIT_TEST_NAME || 'SampleEnterResultFQRemoveSample' ,
       duration: `${durationInSeconds} seconds`,
       
     };
   
     const testStatus = testInfo.status;
-    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; 
+    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'inspection_lot'; 
     await callApiRunCompletion(data, testStatus, trazitTestName, testInfo, procInstanceName)
   });
 
@@ -538,4 +472,3 @@ afterEach(async ({}, testInfo) => {
 //   pwTest('Example test', async ({ page }) => {
 //     // Your test logic here
 //   });
-

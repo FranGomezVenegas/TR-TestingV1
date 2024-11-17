@@ -116,10 +116,10 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     await clickAcceptButton(page);
 
     // Verificar que no haya errores en la consola
-    // await test.step(phraseReport.phraseError, async () => {
-    //   logger.printLogs();
-    //   expect(logger.errors.length).toBe(0);
-    // });
+    await test.step(phraseReport.phraseError, async () => {
+      logger.printLogs();
+      expect(logger.errors.length).toBe(0);
+    });
 
     // Verificar respuestas de red capturadas
     await test.step(phraseReport.phraseVerifyNetwork, async () => {
@@ -162,10 +162,10 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsStartCalibration';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
@@ -193,7 +193,7 @@ test.describe('Desktop Mode', () => {
     });
   });
 
-// // Mobile Mode 
+// Mobile Mode 
 // test.describe('Mobile mode', () => {
 //     test.beforeEach(async ({ page }, testInfo) => {
 //       // Size of the viewport of a mobile device
@@ -372,12 +372,12 @@ afterEach(async ({}, testInfo) => {
     const durationInSeconds = (testInfo.duration / 1000).toFixed(2);
   
     const data = {
-      trazitTestName: process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution' ,
+      trazitTestName: process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsStartCalibration' ,
       duration: `${durationInSeconds} seconds`,
     };
   
     const testStatus = testInfo.status;
-    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; 
+    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; 
     await callApiRunCompletion(data, testStatus, trazitTestName, testInfo, procInstanceName)
   });
 
