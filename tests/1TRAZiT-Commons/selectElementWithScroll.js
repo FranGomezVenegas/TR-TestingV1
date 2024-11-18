@@ -1,40 +1,37 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
-export async function selectElementWithScroll(page, gridContent, fields, element) {
-  // Verificar si 'fields' no existe o está vacío y si 'gridContent' es verdadero
+export async function selectElementWithScroll(page, gridContent, fields, element, nthIndex) {
+  // Verifico si no hay 'fields' y si 'gridContent' es verdadero para proceder con la selección
   if (!fields && gridContent) {
     await test.step('Scrolling and selecting an element', async () => {
       try {
-        // Intentar encontrar el elemento con getByText (primer intento)
-        let el = await page.getByText(element, { exact: true }).first();
+        // Si me dan un índice (nthIndex), intento seleccionar el elemento en ese índice.
+        // Si no, selecciono el primer elemento como predeterminado.
+        let el = nthIndex !== undefined
+          ? await page.getByText(element, { exact: true }).nth(nthIndex)
+          : await page.getByText(element, { exact: true }).first();
 
-        // Si no encontramos el primer elemento, intentamos con nth(1)
+        // Me aseguro de que el elemento sea visible
         if (!(await el.isVisible())) {
-          el = await page.getByText(element, { exact: true }).nth(1);
+          throw new Error(`No encontré el elemento con el texto '${element}' en el índice ${nthIndex ?? 0}.`);
         }
 
-        // Si aún no encontramos el elemento después de intentar con `first()` y `nth(1)`
-        if (!(await el.isVisible())) {
-          throw new Error(`Element with text '${element}' not found.`);
-        }
-
-        // Realizar scroll si el elemento no está visible
+        // Realizo un scroll para que el elemento sea visible en la pantalla
         await el.scrollIntoViewIfNeeded();
 
-        // Verificar que el elemento esté visible
+        // Confirmo que el elemento está visible antes de interactuar con él
         await expect(el).toBeVisible();
 
-        // Hacer clic en el elemento encontrado
+        // Finalmente, hago clic en el elemento
         await el.click();
-
-        
       } catch (error) {
-        console.error(`Error while selecting element: ${error.message}`);
-        throw error; // Re-throw the error to ensure the test fails if needed
+        // Registro el error en la consola y lo lanzo de nuevo para que el test falle si es necesario
+        console.error(`Hubo un error al intentar seleccionar el elemento: ${error.message}`);
+        throw error;
       }
     });
   } else {
-    console.log("Conditions not met for scrolling and selecting an element.");
+    // Si no se cumplen las condiciones, lo informo en la consola
+    console.log("No se cumplen las condiciones para realizar el scroll y seleccionar un elemento.");
   }
 }
-
