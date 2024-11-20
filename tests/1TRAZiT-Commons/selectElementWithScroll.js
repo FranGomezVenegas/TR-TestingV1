@@ -7,13 +7,21 @@ export async function selectElementWithScroll(page, gridContent, fields, element
       try {
         // Si me dan un índice (nthIndex), intento seleccionar el elemento en ese índice.
         // Si no, selecciono el primer elemento como predeterminado.
-        let el = nthIndex !== undefined
-          ? await page.getByText(element, { exact: true }).nth(nthIndex)
-          : await page.getByText(element, { exact: true }).first();
+        let el;
+        if (nthIndex !== undefined) {
+          el = await page.getByText(element, { exact: true }).nth(nthIndex);
+        } else {
+          el = await page.getByText(element, { exact: true }).first();
+        }
+
+        // Verifico si el elemento existe antes de intentar interactuar con él
+        if (!el) {
+          throw new Error(`No se encontró el elemento con el texto '${element}' en el índice ${nthIndex ?? 0}.`);
+        }
 
         // Me aseguro de que el elemento sea visible
         if (!(await el.isVisible())) {
-          throw new Error(`No encontré el elemento con el texto '${element}' en el índice ${nthIndex ?? 0}.`);
+          throw new Error(`El elemento con el texto '${element}' no es visible.`);
         }
 
         // Realizo un scroll para que el elemento sea visible en la pantalla
