@@ -293,91 +293,44 @@ export const fillPasswordField = async (page, testInfo, timeout = 30000) => {
     }
 };
 
+let hasClicked = false;  // Variable para evitar clics repetidos
 
-// Eliminar esta y usar las dos anteriores.
-// export const fillUserCredentials = async (page, testInfo, timeout = 30000) => {
-//     const userCredentialSettings = {
-//         fldUser: { label: "User", value: "admin" },
-//         fldPss: { label: "Password", value: "trazit", actionName: "Enter" }
-//     };
+export const clickAcceptButton = async (page, timeout = 3000) => {
+  if (hasClicked) {
+    console.log("Button 'Accept' has already been clicked.");
+    return;  // Salir si ya se hizo clic
+  }
 
-//     try {
-//         // Comprobar si el campo 'User' es visible
-//         const isUserVisible = await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).isVisible({ timeout }).catch(() => false);
-        
-//         if (isUserVisible) {
-//             await test.step("Start - Fill 'User' field", async () => {
-//                 await test.step("Click on 'User' field", async () => {
-//                     await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).click();
-//                     await page.pause(); // Pausa después de hacer clic
-//                 });
+  try {
+    await test.step("Check if 'Accept' button is visible", async () => {
+      const acceptButton = page.getByRole('button', { name: 'Accept' });
+      const isVisible = await acceptButton.isVisible({ timeout }).catch(() => false); // Manejo seguro si el botón no es visible
 
-//                 // await test.step("Attach screenshot before filling 'User'", async () => {
-//                 //     await attachScreenshot(testInfo, "Before filling User field", page, ConfigSettingsAlternative.screenShotsContentType);
-//                 // });
+      if (isVisible) {
+        await test.step("Click 'Accept' button using first element", async () => {
+          try {
+            // Intentar hacer clic en el primer botón
+            await acceptButton.first().click({ timeout });
+            hasClicked = true; // Marcar que ya se hizo clic
+            console.log("Clicked 'Accept' button using first element.");
+          } catch (error) {
+            console.log("Failed to click 'Accept' button using first element. Trying nth(1)...");
 
-//                 await test.step("Fill in 'User' field", async () => {
-//                     await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).fill(userCredentialSettings.fldUser.value);
-//                 });
-                
-//                 // await test.step("Attach screenshot after filling 'User'", async () => {
-//                 //     await attachScreenshot(testInfo, "Filled User field", page, ConfigSettingsAlternative.screenShotsContentType);
-//                 // });
-//             });
-//         }
-
-//         // Comprobar si el campo 'Password' es visible
-//         const isPasswordVisible = await page.getByLabel(userCredentialSettings.fldPss.label).isVisible({ timeout }).catch(() => false);
-        
-//         if (isPasswordVisible) {
-//             await test.step("Start - Fill 'Password' field", async () => {
-//                 await test.step("Click on 'Password' field", async () => {
-//                     await page.getByLabel(userCredentialSettings.fldPss.label).click();
-//                     await page.pause(); // Pausa después de hacer clic
-//                 });
-
-//                 // await test.step("Attach screenshot before filling 'Password'", async () => {
-//                 //     await attachScreenshot(testInfo, "Before filling Password field", page, ConfigSettingsAlternative.screenShotsContentType);
-//                 // });
-
-//                 await test.step("Fill in 'Password' field", async () => {
-//                     await page.getByLabel(userCredentialSettings.fldPss.label).fill(userCredentialSettings.fldPss.value);
-//                 });
-
-//                 // await test.step("Attach screenshot after filling 'Password'", async () => {
-//                 //     await attachScreenshot(testInfo, "Filled Password field", page, ConfigSettingsAlternative.screenShotsContentType);
-//                 // });
-//             });
-//         }
-
-//     } catch (error) {
-//         console.error("An unexpected error occurred while trying to fill user credentials:", error);
-//         throw error; 
-//     }
-// };
-
-
-export const clickAcceptButton = async (page, timeout = 30000) => {
-    try {
-        await test.step("Check if 'Accept' button is visible", async () => {
-            const isVisible = await page.getByRole('button', { name: 'Accept' }).isVisible({ timeout }).catch(() => false);
-            
-            if (isVisible) {
-                await test.step("Click 'Accept' button using first element", async () => {
-                    try {
-                        await page.getByRole('button', { name: 'Accept' }).first().click({ timeout });
-                    } catch (error) {
-                        console.warn("Failed to click 'Accept' button using first element. Trying nth(1)...");
-                        await test.step("Click 'Accept' button using nth(1) element", async () => {
-                            await page.getByRole('button', { name: 'Accept' }).nth(1).click({ timeout });
-                        });
-                    }
-                });
+            try {
+              // Intentar hacer clic en nth(1) si el primer intento falla
+              await acceptButton.nth(1).click({ timeout });
+              hasClicked = true; // Marcar que ya se hizo clic
+              console.log("Clicked 'Accept' button using nth(1).");
+            } catch (error) {
+              console.log("Failed to click 'Accept' button using nth(1). No further action will be taken.");
             }
+          }
         });
-    } catch (error) {
-        console.error("Error while attempting to click 'Accept' button:", error);
-        throw error;
-    }
+      } else {
+        console.log("No 'Accept' button is visible. Skipping the step.");
+      }
+    });
+  } catch (error) {
+    console.log("Error while attempting to click 'Accept' button:", error);
+  }
 };
-
