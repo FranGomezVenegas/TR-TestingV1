@@ -109,7 +109,46 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     // Continuar con la justificación y otras acciones
     await justificationPhrase(page, 30000, testInfo);    
     await clickAcceptButton(page);
+    const acceptButton1 = page.getByRole('button', { name: 'Accept' }).nth(1);
+    if (await acceptButton1.isVisible()) {
+      await test.step("Aceptar", async () => {
+        try {
+          await acceptButton1.click({ timeout: 5000 });
+        } catch (error) {
+          console.log("Error clicking acceptButton1:", error);
+        }
+      });
+    } else {
+      console.log("Botón de Aceptar no encontrado en la posición 0, intentando con nth(1).");
 
+      // Intentar hacer clic con nth(1) si el primer botón no está visible
+      const acceptButton2 = page.getByRole('button', { name: 'Accept' }).nth(0);
+      if (await acceptButton2.isVisible()) {
+        await test.step("Aceptar con nth(0)", async () => {
+          try {
+            await acceptButton2.click({ timeout: 5000 });
+          } catch (error) {
+            console.log("Error clicking acceptButton2:", error);
+          }
+        });
+      } else {
+        console.log("Botón de Aceptar no encontrado en nth(1), intentando con nth(2).");
+
+        // Intentar hacer clic con nth(2) si el segundo botón no está visible
+        const acceptButton3 = page.getByRole('button', { name: 'Accept' }).nth(2);
+        if (await acceptButton3.isVisible()) {
+          await test.step("Aceptar con nth(2)", async () => {
+            try {
+              await acceptButton3.click({ timeout: 5000 });
+            } catch (error) {
+              console.log("Error clicking acceptButton3:", error);
+            }
+          });
+        } else {
+          console.log("Botón de Aceptar no encontrado en nth(2), omitiendo paso.");
+        }
+      }
+    }
   
     // Verificar que no haya errores en la consola
     await test.step(phraseReport.phraseError, async () => {
