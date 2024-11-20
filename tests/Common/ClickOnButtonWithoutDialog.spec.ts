@@ -56,17 +56,17 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     // Llamadas a interacciones previas
     await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, Button);
 
-    // Llamo a la funcion para comprobar si un objectByTabs tiene un search. Essta funcion solo controla el search
-    // clica en este y añada el campo que se desea buscar.
+    // Llamo a la funcion para comprobar si un objectByTabs tiene un search. Esta funcion solo controla el search
+    // clica en este y añade el campo que se desea buscar.
     await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, Button);
     
     // Llamada a handleDragDropBoxesInteraction y captura si se ejecutó correctamente
     const rowActions = await handleRowActionsInteraction(page, Button, testInfo); 
-    console.log("Resultado de handleRowActionsInteraction:", rowActions);
+    console.log("Valor de rowActions después de handleRowActionsInteraction:", rowActions);
 
-    // Si `handleRowActionsInteraction` se ejecutó correctamente, omite las secciones específicas
+    // Verificar el valor de rowActions antes de entrar en la condición
     if (rowActions) {
-        console.log("El resultado fue verdadero, realizando acciones adicionales...");
+        console.log("El valor de rowActions es verdadero. Ejecutando acciones adicionales...");
         // Si rowActions es true, realiza las acciones deseadas
         await fillUserField(page, testInfo); // Rellena el campo de "User"
         await fillPasswordField(page, testInfo); // Rellena el campo de "Password"
@@ -99,53 +99,56 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
             console.log('Captured Object Name:', capturedObjectName);
         });
         
-        return
+        return true; // Si `rowActions` es verdadero, termina aquí
+    } else {
+        // Esta sección se ejecutará solo si `rowActions` es **falso**
+        console.log("El valor de rowActions es falso. Continuando con el flujo normal...");
+
+        // Aquí va el código alternativo si `rowActions` es falso
+        await handleActionNameInteraction(page, testInfo, Button); // Ejecutar solo si `rowActions` es falso
+
+        // Justification Phrase
+        await fillUserField(page, testInfo); // Rellena el campo de "User"
+        await fillPasswordField(page, testInfo); // Rellena el campo de "Password"
+
+        // Continuar con la justificación y otras acciones
+        await justificationPhrase(page, 30000, testInfo);    
+        await clickAcceptButton(page);
+
+        // Verificar que no haya errores en la consola
+        await test.step(phraseReport.phraseError, async () => {
+          logger.printLogs();
+          expect(logger.errors.length).toBe(0);
+        });
+
+        // Verificar respuestas de red capturadas
+        await test.step(phraseReport.phraseVerifyNetwork, async () => {
+            networkInterceptor.printNetworkData();
+            const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
+            expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
+        });
+
+        // Validar respuestas utilizando ResponseValidator
+        await test.step(phraseReport.phraseVerifyNetwork, async () => {
+            const responseValidator = new ResponseValidator(networkInterceptor.responses);
+            try {
+                await responseValidator.validateResponses(); // Lanza un error si no hay respuestas válidas
+            } catch (error) {
+                // test.fail(error.message); // Marca la prueba como fallida con el mensaje
+            }
+        });
+
+        const mode = await notificationWitness.getDeviceMode(testInfo);
+
+        // Llamar a addNotificationWitness después de realizar acciones
+        await test.step(ReportNotificationPhase.phraseCaptureNotification, async () => {
+            const capturedObjectName = await notificationWitness.addNotificationWitness(testInfo, afterEachData, mode);
+            console.log('Captured Object Name:', capturedObjectName);
+        });
     }
-    
-    console.log("El resultado fue falso, continuando con el flujo normal...");
-    
-    // Si `handleDragDropBoxesInteraction` no fue exitoso, continuar con el flujo normal
-    await handleActionNameInteraction(page, testInfo, Button);
-
-    // Justification Phrase
-    await fillUserField(page, testInfo); // Rellena el campo de "User"
-    await fillPasswordField(page, testInfo); // Rellena el campo de "Password"
-
-    // Continuar con la justificación y otras acciones
-    await justificationPhrase(page, 30000, testInfo);    
-    await clickAcceptButton(page);
-
-    // Verificar que no haya errores en la consola
-    await test.step(phraseReport.phraseError, async () => {
-      logger.printLogs();
-      expect(logger.errors.length).toBe(0);
-    });
-
-    // Verificar respuestas de red capturadas
-    await test.step(phraseReport.phraseVerifyNetwork, async () => {
-        networkInterceptor.printNetworkData();
-        const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-        expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
-    });
-
-    // Validar respuestas utilizando ResponseValidator
-    await test.step(phraseReport.phraseVerifyNetwork, async () => {
-        const responseValidator = new ResponseValidator(networkInterceptor.responses);
-        try {
-            await responseValidator.validateResponses(); // Lanza un error si no hay respuestas válidas
-        } catch (error) {
-            // test.fail(error.message); // Marca la prueba como fallida con el mensaje
-        }
-    });
-
-    const mode = await notificationWitness.getDeviceMode(testInfo);
-
-    // Llamar a addNotificationWitness después de realizar acciones
-    await test.step(ReportNotificationPhase.phraseCaptureNotification, async () => {
-        const capturedObjectName = await notificationWitness.addNotificationWitness(testInfo, afterEachData, mode);
-        console.log('Captured Object Name:', capturedObjectName);
-    });
 };
+
+
 
 
 
@@ -162,10 +165,10 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsStartCalibration';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'AnalysisDesignerAnalysisApprovalForUse';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'inspection_lot'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
@@ -372,12 +375,12 @@ afterEach(async ({}, testInfo) => {
     const durationInSeconds = (testInfo.duration / 1000).toFixed(2);
   
     const data = {
-      trazitTestName: process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsStartCalibration' ,
+      trazitTestName: process.env.TRAZIT_TEST_NAME || 'AnalysisDesignerAnalysisApprovalForUse' ,
       duration: `${durationInSeconds} seconds`,
     };
   
     const testStatus = testInfo.status;
-    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; 
+    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'inspection_lot'; 
     await callApiRunCompletion(data, testStatus, trazitTestName, testInfo, procInstanceName)
   });
 
