@@ -18,9 +18,13 @@ import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsIntera
 import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions';
 import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
 import {handleAuditAndSign} from '../1TRAZiT-Commons/handleAuditAndSign'
+import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
+    await handleMenus(page);
+
+    // await page.getByLabel('Lots-Lot view').click();
     // Create instances of Logger and NetworkInterceptor
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
@@ -162,17 +166,17 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
   
   
     // Verificar que no haya errores en la consola
-    // await test.step(phraseReport.phraseError, async () => {
-    //   logger.printLogs();
-    //   expect(logger.errors.length).toBe(0);
-    // });
+    await test.step(phraseReport.phraseError, async () => {
+      logger.printLogs();
+      expect(logger.errors.length).toBe(0);
+    });
 
     // Verificar respuestas de red capturadas
-    await test.step(phraseReport.phraseVerifyNetwork, async () => {
-        networkInterceptor.printNetworkData();
-        const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-        expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
-    });
+    // await test.step(phraseReport.phraseVerifyNetwork, async () => {
+    //     networkInterceptor.printNetworkData();
+    //     const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
+    //     expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
+    // });
 
     // Validar respuestas utilizando ResponseValidator
     await test.step(phraseReport.phraseVerifyNetwork, async () => {

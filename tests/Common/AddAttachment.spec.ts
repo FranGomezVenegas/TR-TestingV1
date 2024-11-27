@@ -14,8 +14,12 @@ import { clickElementByText, clickElement, justificationPhrase, fillUserField, f
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 
+import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
+
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => { 
+        await handleMenus(page);
+    
         // Create instances of Logger and NetworkInterceptor
         const logger = new Logger();
         const networkInterceptor = new NetworkInterceptor();

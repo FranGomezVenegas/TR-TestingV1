@@ -11,7 +11,7 @@ export const handleRowActionsInteraction = async (page, button, testInfo) => {
     try {
         await test.step(`Click on button with ID "${button.buttonName}" in row "${button.rowName}"`, async () => {
             // Selecciono la fila por su nombre y luego hago clic en el botón por ID
-            await page.getByRole('row', { name: button.rowName }).locator(`#${button.buttonName}`).click({ timeout: 30000 });
+            await page.getByRole('row', { name: button.rowName }).locator(`#${button.buttonName}`).dblclick({ timeout: 30000 });
         });
         
         await test.step(button.phraseScreenShots, async () => {

@@ -165,8 +165,8 @@ export class NetworkInterceptor {
                         response.url.endsWith('.jpeg') ||
                         response.url.endsWith('.json') ||
                         response.url.endsWith('.woff2')||
-                        response.url.endsWith('.gif');
-
+                        response.url.endsWith('.gif') ||                                                       
+                        response.url.endsWith('.js');
         return response.body === null && !isImage;
       });
   

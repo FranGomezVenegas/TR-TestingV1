@@ -18,8 +18,11 @@ import { handleObjectByTabsWithSearchInteraction } from '../1TRAZiT-Commons/obje
 
 import fs from 'fs';
 import path from 'path';
+import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
 const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
+    await handleMenus(page);
+
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
     let print: any;

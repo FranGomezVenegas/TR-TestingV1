@@ -9,37 +9,32 @@ export class OpenProcedureWindow {
 
     async openWindowForDesktop(page, testInfo, ConfigSettings) {
         console.log("openWindowForDesktop - ConfigSettings:", ConfigSettings);
-//        let dataForTest=JSON.parse(ConfigSettings.dataForTest)
-        let dataForTest={};        
+        let dataForTest = {};        
         if (ConfigSettings.dataForTest) {
-            // dataForTest = JSON.parse(ConfigSettings.dataForTest);
             let unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
             try {
                 dataForTest = JSON.parse(unescapedString);
-              } catch (error) {
+            } catch (error) {
                 console.error("Error parsing JSON:", error);
-              }            
-            // dataForTest = JSON.parse(unescapedString);
-            dataForTest = JSON.parse(dataForTest.testDataGame)
-           // dataForTest = ConfigSettings.dataForTest.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":');
-
+            }            
+            dataForTest = JSON.parse(dataForTest.testDataGame);
         } else {
             throw new Error("ConfigSettings.dataForTest está indefinido o vacío");
         }
-        
+    
         try {
-            // Verifico que desktopMode esté definido
             await test.step("Check dataForTest.desktopMode is defined", async () => {
                 if (!dataForTest.desktopMode) {
                     throw new Error("dataForTest.desktopMode es undefined.");
                 }
             });
-
+    
             await test.step("Check dataForTest.desktopMode.pageElementName is defined", async () => {
                 if (!dataForTest.desktopMode.pageElementName) {
                     throw new Error("dataForTest.desktopMode.pageElementName es undefined.");
                 }
             });
+    
             await test.step("Take screenshot of session label element", async () => {
                 const sessionLabelElement = page.locator('#sessionLabel').first();
                 await testInfo.attach("User Session Details", {
@@ -48,137 +43,105 @@ export class OpenProcedureWindow {
                 });
             });
             await page.waitForTimeout(500);
-
+    
             await test.step("Click on the main page element", async () => {
-                // await page.getByRole('button', { name: dataForTest.desktopMode.pageElementName }).click({timeout: 5000});
                 await page.waitForTimeout(500);
-                await page.locator(dataForTest.desktopMode.pageElementName).click({timeout:15000})
+                await page.locator(dataForTest.desktopMode.pageElementName).click({ timeout: 15000 });
                 console.log("Clicked on main page element name");
             });
-
+    
             await test.step("Take screenshot after hover main element", async () => {
                 await testInfo.attach(dataForTest.desktopMode.screenShotsName, {
                     body: await page.screenshot(),
                     contentType: ConfigSettings.screenShotsContentType
                 });
             });
-
+    
             await page.pause();
-
-            // await test.step("Verify dataForTest and dataForTest.pageElement.label are defined", async () => {
-            //     if (dataForTest && dataForTest.desktopMode && dataForTest.desktopMode.label) {
-            //         // await page.getByRole('button', { name: dataForTest.desktopMode.label }).click({timeout:5000})
-            //         await page.waitForTimeout(3000);
-            //         // opcion 1:
-            //         await page.getByRole('menuitem', { name: dataForTest.desktopMode.label }).locator('span').click({timeout:5000})
-            //         // opción 2:
-            //         await page.getByRole('button', { name: dataForTest.desktopMode.label }).click({timeout: 5000});
-                    
-            //         console.log("Clicked on procedure page element label");
-            //     } else {
-            //         console.error("dataForTest.desktopMode.label is undefined");
-            //         throw new Error("El nombre del elemento de procedimiento es undefined.");
-            //     }
-            // });
+    
             await test.step("Verify dataForTest and dataForTest.pageElement.label are defined", async () => {
                 if (dataForTest && dataForTest.desktopMode && dataForTest.desktopMode.label) {
                     try {
-                        // Primer intento: Opción 1 (1 segundo de timeout)
-                        await page.getByRole('menuitem', { name: dataForTest.desktopMode.label })
-                            .locator('span')
-                            .click({ timeout: 1000 });
-                        
+                        await page.getByRole('menuitem', { name: dataForTest.desktopMode.label }).locator('span').nth(0).click({ timeout: 1000 });
                         console.log("Clicked on procedure page element label (Opción 1)");
                     } catch (error) {
                         console.log("Opción 1 no encontrada, intentando Opción 2...");
                         try {
-                            // Segundo intento: Opción 2 (3.5 segundos de timeout)
-                            await page.getByRole('button', { name: dataForTest.desktopMode.label, exact: true })
-                                .click({ timeout: 3500 });
-                            
+                              //await page.getByRole('button', { name: 'Micro EM' }).click();
+
+                            await page.getByRole('button', { name: dataForTest.desktopMode.label, exact: true }).click({ timeout: 3500 });
                             console.log("Clicked on procedure page element label (Opción 2)");
                         } catch (error) {
                             console.log("Opción 2 no encontrada, intentando Opción 3...");
                             try {
-                                // Tercer intento: Opción 3 usando getByText (2 segundos de timeout)
                                 await page.getByText(dataForTest.desktopMode.label)
                                     .click({ timeout: 3000 });
-                                
                                 console.log("Clicked on procedure page element label (Opción 3)");
                             } catch (error) {
-                                // Si todas las opciones fallan, lanza un error
                                 console.error("No se encontró ninguna de las opciones para el elemento de procedimiento.");
                                 throw new Error("El nombre del elemento de procedimiento es undefined.");
                             }
                         }
                     }
-                }
-                 else {
+                } else {
                     console.error("dataForTest.desktopMode.label is undefined");
                     throw new Error("El nombre del elemento de procedimiento es undefined.");
                 }
             });
-            
-
+    
             await page.pause();
+    
             await test.step("Take screenshot after clicking procedure element", async () => {
                 await testInfo.attach(dataForTest.desktopMode.viewScreenShotLabel, {
                     body: await page.screenshot(),
                     contentType: ConfigSettings.screenShotsContentType
                 });
             });
-
-            // await test.step("Navigate to window URL", async () => {
-            //     if (dataForTest.desktopMode.pageElement && dataForTest.desktopMode.pageElement) {
-            //         const fullPagrUrl = `${ConfigSettings.platformUrl.replace(/\/+$/, '')}/${dataForTest.desktopMode.pageElement.replace(/^\/+/, '')}`;
-            //         await page.goto(fullPagrUrl);
-            //         console.log(fullPagrUrl);
-            //         console.log("Navigated to window page element");
-            //         await page.waitForTimeout(3000);
-
-            //         // await testInfo.attach(dataForTest.desktopMode.pageElement.screenShotName, {
-            //         //     body: await page.screenshot(),
-            //         //     contentType: ConfigSettings.screenShotsContentType
-            //         // });
-            //     } else {
-            //         console.error("dataForTest.desktopMode.pageElement is undefined");
-            //         throw new Error("La URL de la ventana es undefined.");
-            //     }
-            // });
-            await test.step("Navigate to window URL", async () => {
-                if (dataForTest.desktopMode.pageElement) {
-                    const fullPagrUrl = `${ConfigSettings.platformUrl.replace(/\/+$/, '')}/${dataForTest.desktopMode.pageElement.replace(/^\/+/, '')}`;
-                    await page.goto(fullPagrUrl);
-                    console.log(fullPagrUrl);
-                    console.log("Navigated to window page element");
-                    await page.waitForTimeout(3000);
-            
-                    // Verificar que la URL actual sea la esperada
-                    const currentUrl = page.url();
-                    if (currentUrl !== fullPagrUrl) {
-                        console.error(`Navigation failed. Expected URL: ${fullPagrUrl}, but navigated to: ${currentUrl}`);
-                        throw new Error("La navegación a la URL de la ventana falló.");
+    
+            await test.step("First attempt to click and fallback to URL navigation if needed", async () => {
+                try {
+                    // Primer intento: hacer clic en el texto 'Active Instruments'
+                    await page.getByText(dataForTest.desktopMode.screenShotName, { exact: true }).first().click({timeout:2000});
+                    console.log("Clicked on 'menu text'");
+                } catch (error) {
+                    console.log("'Pestaña' no encontrada, intentando navegar por URL...");
+                    
+                    // Segundo intento: navegación por URL
+                    if (dataForTest.desktopMode.pageElement) {
+                        // Asegúrate de que la URL se construya correctamente
+                        const baseUrl = ConfigSettings.platformUrl.replace(/\/+$/, '');  // Eliminar barras extra al final
+                        const pageUrl = dataForTest.desktopMode.pageElement.replace(/^\/+/, '');  // Eliminar barras al principio
+                        const fullPagrUrl = `${baseUrl}/${pageUrl}`;
+                        
+                        console.log("Constructed URL: ", fullPagrUrl);
+                        await page.goto(fullPagrUrl);
+                        console.log("Navigated to window page element");
+                        await page.waitForTimeout(3000);
+                
+                        // Verificar que la URL actual sea la esperada
+                        const currentUrl = page.url();
+                        if (currentUrl !== fullPagrUrl) {
+                            console.error(`Navigation failed. Expected URL: ${fullPagrUrl}, but navigated to: ${currentUrl}`);
+                            throw new Error("La navegación a la URL de la ventana falló.");
+                        } else {
+                            console.log("Successfully navigated to the expected URL.");
+                        }
                     } else {
-                        console.log("Successfully navigated to the expected URL.");
+                        console.error("dataForTest.desktopMode.pageElement is undefined");
+                        throw new Error("La URL de la ventana es undefined.");
                     }
-            
-                    // await testInfo.attach(dataForTest.desktopMode.pageElement.screenShotName, {
-                    //     body: await page.screenshot(),
-                    //     contentType: ConfigSettings.screenShotsContentType
-                    // });
-                } else {
-                    console.error("dataForTest.desktopMode.pageElement is undefined");
-                    throw new Error("La URL de la ventana es undefined.");
                 }
             });
-            
-
+            ;
+    
             await page.pause();
+    
         } catch (error) {
             console.error("Error en openWindowForDesktop:", error);
             throw error;
         }
     }
+    
 
 
     async openWindowForMobile(page, testInfo, ConfigSettings) {

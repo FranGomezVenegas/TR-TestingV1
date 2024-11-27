@@ -16,9 +16,12 @@ import { handleTabInteraction } from '../1TRAZiT-Commons/tabsInteractions.js';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions.js';
 import { handleObjectByTabsWithSearchInteraction } from '../1TRAZiT-Commons/objectByTabsWithSearch.js';
 import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions';
+import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
 
 const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
+    await handleMenus(page);
+
     // Create instances of Logger and NetworkInterceptor
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();

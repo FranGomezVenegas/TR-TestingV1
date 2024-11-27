@@ -1,37 +1,57 @@
-const { chromium } = require('playwright');
-import { ConfigSettings } from '../../trazit-config';
-import { getTestConfigSettings } from './ApiCalls';
-// Definino la clase JustificationPhrase
 export class NotificationWitness {
     constructor(page) {
-        //this.page = page;
+        this.page = page; // Opcional: guardar referencia a la página si es necesario
     }
-
+  
     async addNotificationWitness({ page }, testInfo, testData) {
+        // Hover sobre el elemento de la notificación
         await page.locator(ConfigSettings.Notification.main.pageElement).hover();
+  
+        // Adjuntar captura de pantalla del contexto de la página
         await testInfo.attach(ConfigSettings.Notification.main.screenShotsName, {
-          body: await page.screenshot({ fullPage: true }),
-          contentType: ConfigSettings.screenShotsContentType
+            body: await page.screenshot({ fullPage: true }),
+            contentType: ConfigSettings.screenShotsContentType,
         });
+  
+        // Localizar el div de la notificación y tomar su captura de pantalla
         const notif = await page.locator(ConfigSettings.Notification.main.pageElementdiv).first();
         await testInfo.attach(ConfigSettings.Notification.main.screenShotsdivNotification, {
-          body: await notif.screenshot(),
-          contentType: ConfigSettings.screenShotsContentType
+            body: await notif.screenshot(),
+            contentType: ConfigSettings.screenShotsContentType,
         });
-        await expect(notif).toContainText(testData.textInNotif1);
-        await expect(notif).toContainText(testData.textInNotif2);
-        await expect(notif).toContainText(testData.textInNotif3);
-        const notifText = await notif.textContent(); // Get the text content of the notification element
-        //const inputText = "Instrument X h is found";
-        //const regex = /testData.textInNotif1 \s+(.*?)\s+ testData.textInNotif2/;
-        const regexPattern = new RegExp(`${testData.textInNotif1}\\s+(.*?)\\s+${testData.textInNotif2}`);
-        const match = notifText.match(regexPattern); 
-        if (match && match[1]) {
-          console.log(notifText, 'ObjectName:', match[1])
-          return match[1];
+  
+        // Obtener el texto completo de la notificación
+        const notifText = await notif.textContent();
+  
+        // Crear los patrones de expresión regular, permitiendo que algunos textos sean opcionales
+        const regexPatternGroup1 = new RegExp(
+            `${testData.textInNotif1}\\s+(.*?)\\s+${testData.textInNotif2}\\s+(.*?)\\s+(${testData.textInNotif3 || ""})`
+        );
+        const regexPatternGroup2 = new RegExp(
+            `${testData.textInNotif4 || ""}\\s+(.*?)\\s+${testData.textInNotif5 || ""}\\s+(.*?)\\s+(${testData.textInNotif6 || ""})`
+        );
+  
+        // Mostrar el texto extraído de la notificación
+        console.log("Texto extraído de la notificación:", notifText);
+  
+        // Intentar encontrar coincidencias para ambos patrones
+        const matchGroup1 = notifText.match(regexPatternGroup1);
+        const matchGroup2 = notifText.match(regexPatternGroup2);
+  
+        // Validar si alguno de los patrones coincide
+        if (matchGroup1 && matchGroup1[1]) {
+            console.log("Group 1 matched:", matchGroup1[1]);
+            expect(matchGroup1[1]).toBeTruthy(); // Asegurar que el grupo coincidente es válido
+            return matchGroup1[1]; // Devuelve el valor del primer grupo válido
+        } else if (matchGroup2 && matchGroup2[1]) {
+            console.log("Group 2 matched:", matchGroup2[1]);
+            expect(matchGroup2[1]).toBeTruthy(); // Asegurar que el grupo coincidente es válido
+            return matchGroup2[1]; // Si no coincide el grupo 1, devuelve el del grupo 2
         } else {
-            console.log(notifText)
-            return notifText;
+            // Si ninguno de los grupos coincide, usa expect para fallar el test con un mensaje claro
+            console.error("No match found in either group. Text content:", notifText);
+            expect(matchGroup1 || matchGroup2).toBeTruthy(); // Forzar un fallo de test
         }
-      };
-}
+    }
+  }
+  

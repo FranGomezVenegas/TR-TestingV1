@@ -43,9 +43,9 @@ export class LogIntoPlatform {
                 });
 
                 await test.step('Click and add the password', async () => {
-                    await page.locator('input[type="password"]').click();
-                    await page.locator('input[type="password"]').fill("trazit");
-                    // await page.getByLabel(ConfigSettings.login.fldPss.label).fill(ConfigSettingsAlternative.login.fldPss.value);
+                    // await page.locator('input[type="password"]').click();
+                    // await page.locator('input[type="password"]').fill("trazit");
+                    await page.getByLabel(ConfigSettings.login.fldPss.label).fill(ConfigSettingsAlternative.login.fldPss.value);
                 });
 
                 await test.step('Enter the Platform', async () => {

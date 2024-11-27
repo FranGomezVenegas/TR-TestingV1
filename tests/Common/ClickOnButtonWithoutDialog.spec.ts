@@ -10,15 +10,20 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
-import { justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper.js';
+import { justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton } from '../1TRAZiT-Commons/actionsHelper.js';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions';
-import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions';
-import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
+import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractions';
+import { handleObjectByTabsWithSearchInteraction } from '../1TRAZiT-Commons/objectByTabsWithSearch';
+
+import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
+
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
+    await handleMenus(page);
+
     // Create instances of Logger and NetworkInterceptor
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
@@ -114,6 +119,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         // Continuar con la justificación y otras acciones
         await justificationPhrase(page, 30000, testInfo);    
         await clickAcceptButton(page);
+        await clickDoButton(page);
 
         // Verificar que no haya errores en la consola
         await test.step(phraseReport.phraseError, async () => {
@@ -165,10 +171,10 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'AnalysisDesignerAnalysisApprovalForUse';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'SecondPlateReadingPersonalSamplesStageMoveToNext';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'inspection_lot'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'mb_em'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
@@ -375,7 +381,7 @@ afterEach(async ({}, testInfo) => {
     const durationInSeconds = (testInfo.duration / 1000).toFixed(2);
   
     const data = {
-      trazitTestName: process.env.TRAZIT_TEST_NAME || 'AnalysisDesignerAnalysisApprovalForUse' ,
+      trazitTestName: process.env.TRAZIT_TEST_NAME || 'PendingReviewTestingMBUnCancelTest' ,
       duration: `${durationInSeconds} seconds`,
     };
   

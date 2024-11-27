@@ -135,17 +135,36 @@ export const clickButtonAcceptCancel = async (page, buttonName, timeout = 30000)
     }
 };
 
+// export const attachScreenshot = async (testInfo, screenshotName, page, contentType, timeout = 30000) => {
+//     try {
+//         await testInfo.attach(screenshotName, {
+//             body: await page.screenshot(),
+//             contentType: contentType
+//         }), timeout;
+//     } catch (error) {
+//         console.error(`Error al adjuntar la captura de pantalla: '${screenshotName}'. Detalles del error:`, error);
+//         throw error;
+//     }
+// };
 export const attachScreenshot = async (testInfo, screenshotName, page, contentType, timeout = 30000) => {
-    try {
-        await testInfo.attach(screenshotName, {
-            body: await page.screenshot(),
-            contentType: contentType
-        }), timeout;
-    } catch (error) {
-        console.error(`Error al adjuntar la captura de pantalla: '${screenshotName}'. Detalles del error:`, error);
-        throw error;
+    if (process.env.NO_HTML_REPORT === 'true') {
+        console.log(`Captura de pantalla omitida para ${screenshotName} porque NO_HTML_REPORT está activo.`);
+    } else {
+        // Aquí es donde se hace la captura de pantalla si NO_HTML_REPORT no está activo
+        try {
+            await testInfo.attach(screenshotName, {
+                body: await page.screenshot(),
+                contentType: contentType
+            });
+            console.log(`Captura de pantalla adjuntada: ${screenshotName}`);
+        } catch (error) {
+            console.error(`Error al adjuntar la captura de pantalla: '${screenshotName}'. Detalles del error:`, error);
+            throw error;
+        }
     }
 };
+
+
 
 
 // 3 constantes para la Justification Phrase (Justification Phrase, Credenciales, Accept)
@@ -334,3 +353,50 @@ export const clickAcceptButton = async (page, timeout = 3000) => {
     console.log("Error while attempting to click 'Accept' button:", error);
   }
 };
+
+
+export const clickDoButton = async (page, timeout = 10000) => {
+    let hasClicked = false; // Variable local para rastrear si se ha hecho clic
+
+    try {
+        await test.step("Check if 'Do' button is visible", async () => {
+            const DoButton = page.getByRole('button', { name: 'Do' });
+            const isVisible = await DoButton.isVisible({ timeout }).catch(() => false);
+
+            if (isVisible) {
+                await test.step("Try clicking 'Do' button with multiple approaches", async () => {
+                    const attempts = [
+                        { method: 'first', action: () => DoButton.first().click({ timeout }) },
+                        { method: 'nth(0)', action: () => DoButton.nth(0).click({ timeout }) },
+                        { method: 'nth(1)', action: () => DoButton.nth(1).click({ timeout }) },
+                        { method: 'nth(2)', action: () => DoButton.nth(2).click({ timeout }) }
+                    ];
+
+                    for (const attempt of attempts) {
+                        if (hasClicked) break; // Salir si ya se hizo clic
+
+                        try {
+                            console.log(`Attempting to click 'Do' button using ${attempt.method}...`);
+                            await attempt.action(); // Intentar la acción definida
+                            hasClicked = true; // Marcar que se hizo clic
+                            console.log(`Successfully clicked 'Do' button using ${attempt.method}.`);
+                        } catch (error) {
+                            console.log(`Failed to click 'Do' button using ${attempt.method}.`);
+                        }
+                    }
+
+                    if (!hasClicked) {
+                        console.log("All attempts to click 'Do' button failed.");
+                        throw new Error("Unable to click 'Do' button after multiple attempts.");
+                    }
+                });
+            } else {
+                console.log("No 'Do' button is visible. Skipping the step.");
+            }
+        });
+    } catch (error) {
+        console.log("Error while attempting to click 'Do' button:", error);
+        throw error; // Lanzar el error para que el test falle explícitamente
+    }
+};
+
