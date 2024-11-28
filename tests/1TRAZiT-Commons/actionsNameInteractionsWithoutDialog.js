@@ -35,7 +35,6 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
                     }
                 });
             }
-            
         }
 
         // Paso 4: Clic en el botón
@@ -64,25 +63,15 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
                     }
 
                     await elementos.nth(indice).waitFor({ state: 'visible', timeout });
-                    // Comentar si no es con dialogo.
                     try {
                         await elementos.nth(indice).click({ timeout });
-                        const position = Button.positionSelectElement !== undefined ? Button.positionSelectElement : 0;
-                        try {
-                            await page.getByText(Button.selectName, { exact: true }).nth(position).dblclick({ timeout: 4000 });
-                        } catch (exactClickError) {
-                            console.log(`Error en clic exacto: ${exactClickError.message}`);
-                            await page.getByText(Button.selectName).nth(position).dblclick({ timeout: 4000 });
-                        }
-                        await elementos.nth(indice).click({ timeout });
-                        // Hasta aqui, el console.log ya no.
                         console.log(`Clic correctamente nth(${indice})`);
                     } catch (clickError) {
                         console.log(`Error en clic directo: ${clickError.message}`);
                         await page.evaluate((selector, index) => {
                             const elementos = document.querySelectorAll(selector);
                             if (elementos[index]) {
-                                elementos[index].dblclick({timeout: 3000});
+                                elementos[index].click({timeout: 3000});
                             }
                         }, selectorBoton, indice);
                         console.log(`Clic correctamente`);

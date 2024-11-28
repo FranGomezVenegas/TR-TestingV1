@@ -14,7 +14,7 @@ import { justificationPhrase, fillUserField, fillPasswordField, clickAcceptButto
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions';
-import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractions';
+import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
 import { handleObjectByTabsWithSearchInteraction } from '../1TRAZiT-Commons/objectByTabsWithSearch';
 
 import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
