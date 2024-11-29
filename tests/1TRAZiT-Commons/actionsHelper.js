@@ -355,7 +355,7 @@ export const clickAcceptButton = async (page, timeout = 3000) => {
 };
 
 
-export const clickDoButton = async (page, timeout = 10000) => {
+export const clickDoButton = async (page, timeout = 3000) => {
     let hasClicked = false; // Variable local para rastrear si se ha hecho clic
 
     try {

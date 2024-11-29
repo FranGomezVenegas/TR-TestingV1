@@ -42,11 +42,11 @@ export class OpenProcedureWindow {
                     contentType: ConfigSettings.screenShotsContentType
                 });
             });
-            await page.waitForTimeout(500);
+            await page.waitForTimeout(200);
     
             await test.step("Click on the main page element", async () => {
-                await page.waitForTimeout(500);
-                await page.locator(dataForTest.desktopMode.pageElementName).click({ timeout: 15000 });
+                await page.waitForTimeout(200);
+                await page.locator(dataForTest.desktopMode.pageElementName).click({ timeout: 1000 });
                 console.log("Clicked on main page element name");
             });
     
@@ -69,13 +69,13 @@ export class OpenProcedureWindow {
                         try {
                               //await page.getByRole('button', { name: 'Micro EM' }).click();
 
-                            await page.getByRole('button', { name: dataForTest.desktopMode.label, exact: true }).click({ timeout: 3500 });
+                            await page.getByRole('button', { name: dataForTest.desktopMode.label, exact: true }).click({ timeout: 1000 });
                             console.log("Clicked on procedure page element label (Opción 2)");
                         } catch (error) {
                             console.log("Opción 2 no encontrada, intentando Opción 3...");
                             try {
                                 await page.getByText(dataForTest.desktopMode.label)
-                                    .click({ timeout: 3000 });
+                                    .click({ timeout: 1000 });
                                 console.log("Clicked on procedure page element label (Opción 3)");
                             } catch (error) {
                                 console.error("No se encontró ninguna de las opciones para el elemento de procedimiento.");
@@ -101,7 +101,7 @@ export class OpenProcedureWindow {
             await test.step("First attempt to click and fallback to URL navigation if needed", async () => {
                 try {
                     // Primer intento: hacer clic en el texto 'Active Instruments'
-                    await page.getByText(dataForTest.desktopMode.screenShotName, { exact: true }).first().click({timeout:2000});
+                    await page.getByText(dataForTest.desktopMode.screenShotName, { exact: true }).first().click({timeout:1000});
                     console.log("Clicked on 'menu text'");
                 } catch (error) {
                     console.log("'Pestaña' no encontrada, intentando navegar por URL...");
@@ -116,7 +116,7 @@ export class OpenProcedureWindow {
                         console.log("Constructed URL: ", fullPagrUrl);
                         await page.goto(fullPagrUrl);
                         console.log("Navigated to window page element");
-                        await page.waitForTimeout(3000);
+                        await page.waitForTimeout(1000);
                 
                         // Verificar que la URL actual sea la esperada
                         const currentUrl = page.url();

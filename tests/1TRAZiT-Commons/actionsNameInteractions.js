@@ -69,10 +69,12 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
                         await elementos.nth(indice).click({ timeout });
                         const position = Button.positionSelectElement !== undefined ? Button.positionSelectElement : 0;
                         try {
-                            await page.getByText(Button.selectName, { exact: true }).nth(position).dblclick({ timeout: 4000 });
+                            await page.getByText(Button.selectName, { exact: true }).nth(position).click({ timeout: 4000 });
+                            await page.getByText(Button.selectName, { exact: true }).nth(position).click({ timeout: 4000 });
                         } catch (exactClickError) {
                             console.log(`Error en clic exacto: ${exactClickError.message}`);
-                            await page.getByText(Button.selectName).nth(position).dblclick({ timeout: 4000 });
+                            await page.getByText(Button.selectName).nth(position).click({ timeout: 4000 });
+                            await page.getByText(Button.selectName).nth(position).click({ timeout: 4000 });
                         }
                         await elementos.nth(indice).click({ timeout });
                         // Hasta aqui, el console.log ya no.
@@ -82,7 +84,8 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
                         await page.evaluate((selector, index) => {
                             const elementos = document.querySelectorAll(selector);
                             if (elementos[index]) {
-                                elementos[index].dblclick({timeout: 3000});
+                                elementos[index].click();
+                                elementos[index].click();
                             }
                         }, selectorBoton, indice);
                         console.log(`Clic correctamente`);

@@ -60,8 +60,8 @@ export class LogIntoPlatform {
             });
 
             // Espera 3 segundos para la carga completa
-            await test.step('Wait 3 seconds for the page to load completely.', async () => {
-                await page.waitForTimeout(3000);
+            await test.step('Wait 1 second for the page to load completely.', async () => {
+                await page.waitForTimeout(1000);
             });
 
             // Adjunta la captura de pantalla después del login
