@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper';
+import { justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton, esignRequired } from '../1TRAZiT-Commons/actionsHelper';
 
 import { clickButtonById, clickElementByText, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
@@ -19,6 +19,7 @@ import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInterac
 import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
 import {handleAuditAndSign} from '../1TRAZiT-Commons/handleAuditAndSign'
 import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
+import { rotateAndSkewTextRadiansAndTranslate } from 'pdf-lib';
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
@@ -78,7 +79,10 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
     // Continuar con la justificación y otras acciones
     await justificationPhrase(page, 30000, testInfo);    
+    await esignRequired(page, 30000, testInfo);
+    
     await clickAcceptButton(page);
+    await clickDoButton(page);
 
     //Cierra el Audit para poder ver las notificaciones y acceder a estas.
     //await page.locator('mwc-icon.corner[dialogaction="decline"]:has-text("close"):visible').click();

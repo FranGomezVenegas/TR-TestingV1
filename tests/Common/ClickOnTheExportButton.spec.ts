@@ -15,7 +15,7 @@ import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls.js';
 import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
-import { justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper.js';
+import { clickDoButton, esignRequired, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper.js';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
@@ -219,8 +219,11 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
   // Continuar con la justificación y otras acciones
   await justificationPhrase(page, 30000, testInfo);    
-  await clickAcceptButton(page);
+  await esignRequired(page, 30000, testInfo);
 
+  await clickAcceptButton(page);
+  await clickDoButton(page);
+  
   // Verificar que no haya errores en la consola
   await test.step('Verificar errores en la consola', async () => {
       logger.printLogs();

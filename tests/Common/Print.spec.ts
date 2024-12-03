@@ -10,7 +10,7 @@ import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
 
 import { clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
-import { fillUserField, fillPasswordField } from '../1TRAZiT-Commons/actionsHelper.js';
+import { esignRequired, clickDoButton, fillUserField, fillPasswordField } from '../1TRAZiT-Commons/actionsHelper.js';
 
 import { handleTabInteraction } from '../1TRAZiT-Commons/tabsInteractions.js';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions.js';
@@ -155,7 +155,10 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     await fillUserField(page, testInfo);
     await fillPasswordField(page, testInfo);
     await justificationPhrase(page, 30000, testInfo);
+    await esignRequired(page, 30000, testInfo);
+
     await clickAcceptButton(page);
+    await clickDoButton(page);
 
     await test.step('Si es necesario hago clic en Accept', async () => {
         const acceptButton = page.getByRole('button', { name: 'Accept' }).nth(1);

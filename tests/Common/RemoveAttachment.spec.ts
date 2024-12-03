@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickElementByText, clickElement, fillUserField,fillPasswordField, justificationPhrase, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { clickDoButton, esignRequired, clickElementByText, clickElement, fillUserField,fillPasswordField, justificationPhrase, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions';
@@ -149,8 +149,11 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         await fillUserField(page, testInfo);
         await fillPasswordField(page, testInfo);
         await justificationPhrase(page, 30000, testInfo); 
-        await clickAcceptButton(page);
+        await esignRequired(page, 30000, testInfo);
 
+        await clickAcceptButton(page);
+        await clickDoButton(page);
+        
         // await test.step("Accept", async () => {
         //     await page.getByRole('button', { name: removeAttachment.buttonAccept }).nth(1).click();
         // });

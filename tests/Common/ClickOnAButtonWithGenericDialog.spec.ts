@@ -6,11 +6,12 @@ import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls.js';
 import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
-import { clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
+import { clickDoButton, clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
 import { fillUserField, fillPasswordField } from '../1TRAZiT-Commons/actionsHelper.js';
 import { handleTabInteraction } from '../1TRAZiT-Commons/tabsInteractions.js';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions.js';
-import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractions.js';
+import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
+// import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractions.js';
 import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
 
 import { processTestData } from '../1TRAZiT-Commons/dialogInteraction.js';
@@ -19,6 +20,9 @@ import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
 const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     await handleMenus(page);
+    await page.waitForTimeout(2000);
+    await page.pause();
+    await page.pause();
 
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
@@ -153,6 +157,7 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         await fillUserField(page, testInfo);
         await fillPasswordField(page, testInfo);
         await justificationPhrase(page, 30000, testInfo);
+        await esignRequired(page, 30000, testInfo);
         await clickAcceptButton(page);
         
 
@@ -160,6 +165,7 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         await fillUserField(page, testInfo);
         await fillPasswordField(page, testInfo);
         await justificationPhrase(page, 30000, testInfo);
+        await esignRequired(page, 30000, testInfo);
         await clickAcceptButton(page);
         // Intentar hacer clic en el botón "Accept" en nth(1)
         const acceptButton1 = page.getByRole('button', { name: 'Accept' }).nth(0);
@@ -301,56 +307,58 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     await fillPasswordField(page, testInfo);
     await justificationPhrase(page, 30000, testInfo);
     await clickAcceptButton(page);
-    
+    await esignRequired(page, 30000, testInfo);
+    await clickDoButton(page);
 
     // Justification Phrase
     await fillUserField(page, testInfo);
     await fillPasswordField(page, testInfo);
     await justificationPhrase(page, 30000, testInfo);
     await clickAcceptButton(page);
+    await esignRequired(page, 30000, testInfo);
+    await clickDoButton(page);
+
     // Array de índices para los botones
     const buttonIndices = [0, 1, 2]; // Índices a verificar
-let clicked = false;
+    let clicked = false;
 
-// Intentar hacer clic en el primer botón visible
-const firstButton = page.getByRole('button', { name: 'Accept' }).first();
+    // Intentar hacer clic en el primer botón visible
+    const firstButton = page.getByRole('button', { name: 'Accept' }).first();
 
-if (await firstButton.isVisible()) {
-    await test.step("Click 'Accept' button using .first()", async () => {
-        try {
-            await firstButton.click({ timeout: 1000 }); // Timeout reducido a 1 segundo
-            clicked = true; // Marcar como true si se hizo clic
-        } catch (error) {
-            console.log("Error clicking 'Accept' button with .first():", error);
-        }
-    });
-}
+    if (await firstButton.isVisible()) {
+        await test.step("Click 'Accept' button using .first()", async () => {
+            try {
+                await firstButton.click({ timeout: 1000 }); // Timeout reducido a 1 segundo
+                clicked = true; // Marcar como true si se hizo clic
+            } catch (error) {
+                console.log("Error clicking 'Accept' button with .first():", error);
+            }
+        });
+    }
 
-// Si no se pudo hacer clic con .first(), intentar con los índices
-if (!clicked) {
-    for (const index of buttonIndices) {
-        const button = page.getByRole('button', { name: 'Accept' }).nth(index);
+    // Si no se pudo hacer clic con .first(), intentar con los índices
+    if (!clicked) {
+        for (const index of buttonIndices) {
+            const button = page.getByRole('button', { name: 'Accept' }).nth(index);
 
-        if (await button.isVisible()) {
-            await test.step(`Click 'Accept' button at index ${index}`, async () => {
-                try {
-                    await button.click({ timeout: 1000 }); // Timeout reducido a 1 segundo
-                    clicked = true; // Si se hizo clic, marcar como true
-                } catch (error) {
-                    console.log(`Error clicking 'Accept' button at index ${index}:`, error);
-                }
-            });
-            break; // Salir del bucle después de hacer clic
+            if (await button.isVisible()) {
+                await test.step(`Click 'Accept' button at index ${index}`, async () => {
+                    try {
+                        await button.click({ timeout: 1000 }); // Timeout reducido a 1 segundo
+                        clicked = true; // Si se hizo clic, marcar como true
+                    } catch (error) {
+                        console.log(`Error clicking 'Accept' button at index ${index}:`, error);
+                    }
+                });
+                break; // Salir del bucle después de hacer clic
+            }
         }
     }
-}
 
-// Verificar si se hizo clic en algún botón
-if (!clicked) {
-    console.log("No 'Accept' button was clicked. Ensure the buttons are visible.");
-}
-
-
+    // Verificar si se hizo clic en algún botón
+    if (!clicked) {
+        console.log("No 'Accept' button was clicked. Ensure the buttons are visible.");
+    }
   
     // Network response validation
     await test.step(phraseReport.phraseVerifyNetwork, async () => {
@@ -384,10 +392,10 @@ test.describe('Desktop Mode', () => {
         });
   
         const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'LotCreationNewLot';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsNewInstrument';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'inspection_lot'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
@@ -597,13 +605,13 @@ afterEach(async ({}, testInfo) => {
     const durationInSeconds = (testInfo.duration / 1000).toFixed(2);
   
     const data = {
-      trazitTestName: process.env.TRAZIT_TEST_NAME || 'LotCreationNewLot' ,
+      trazitTestName: process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsNewInstrument' ,
       duration: `${durationInSeconds} seconds`,
       
     };
   
     const testStatus = testInfo.status;
-    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'inspection_lot'; 
+    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; 
     await callApiRunCompletion(data, testStatus, trazitTestName, testInfo, procInstanceName)
   });
 

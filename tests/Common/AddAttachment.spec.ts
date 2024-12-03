@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickElementByText, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { clickDoButton, esignRequired, clickElementByText, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 
@@ -136,7 +136,9 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         await justificationPhrase(page, 30000, testInfo); // Puedes ajustar el timeout según sea necesario
         await fillUserField(page, testInfo);
         await fillPasswordField(page, testInfo);
+        await esignRequired(page, 30000, testInfo);
         await clickAcceptButton(page);
+        await clickDoButton(page);
 
          // Justification Phrase
         //await fillUserField(page, testInfo); // Rellena el campo de "User"

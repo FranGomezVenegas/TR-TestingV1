@@ -9,7 +9,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
 
-import { clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
+import { clickDoButton, esignRequired, clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
 import { fillUserField, fillPasswordField } from '../1TRAZiT-Commons/actionsHelper.js';
 
 import { handleTabInteraction } from '../1TRAZiT-Commons/tabsInteractions.js';
@@ -142,9 +142,12 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
   await fillPasswordField(page, testInfo); // Rellena el campo de "Password"
 
   // Continuar con la justificación y otras acciones
-  await justificationPhrase(page, 30000, testInfo);    
-  await clickAcceptButton(page);
+  await justificationPhrase(page, 30000, testInfo);  
+  await esignRequired(page, 30000, testInfo);
 
+  await clickAcceptButton(page);
+  await clickDoButton(page);
+  
   // Verificar que no haya errores en la consola
   await test.step(phraseReport.phraseError, async () => {
     logger.printLogs();

@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper';
+import { esignRequired, clickDoButton, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper';
 
 import { clickButtonById, clickElementByText, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
@@ -153,7 +153,11 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
     // Continuar con la justificación y otras acciones
     await justificationPhrase(page, 30000, testInfo);    
+    await esignRequired(page, 30000, testInfo);
+    
     await clickAcceptButton(page);
+    await clickDoButton(page);
+
     const acceptButton = page.getByRole('button', { name: 'Accept' }).nth(1);
     if (await acceptButton.isVisible()) {
         await test.step("Aceptar", async () => {

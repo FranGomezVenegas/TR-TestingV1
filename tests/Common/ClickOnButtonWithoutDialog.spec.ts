@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
-import { justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton } from '../1TRAZiT-Commons/actionsHelper.js';
+import { justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions';
@@ -118,6 +118,8 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
         // Continuar con la justificación y otras acciones
         await justificationPhrase(page, 30000, testInfo);    
+        await esignRequired(page, 30000, testInfo);
+
         await clickAcceptButton(page);
         await clickDoButton(page);
 
