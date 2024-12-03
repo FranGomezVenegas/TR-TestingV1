@@ -36,7 +36,7 @@ export class OpenProcedureWindow {
             });
     
             await test.step("Take screenshot of session label element", async () => {
-                const sessionLabelElement = page.locator('#sessionLabel').first();
+                const sessionLabelElement = page.locator('#sessionLabel').first({timeout: 5000});
                 await testInfo.attach("User Session Details", {
                     body: await sessionLabelElement.screenshot(),
                     contentType: ConfigSettings.screenShotsContentType
@@ -132,10 +132,7 @@ export class OpenProcedureWindow {
                     }
                 }
             });
-            ;
-    
             await page.pause();
-    
         } catch (error) {
             console.error("Error en openWindowForDesktop:", error);
             throw error;
