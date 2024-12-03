@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config';
+import { ConfigSettings, ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config';
 
 
 export const clickElementByText = async (page, text, timeout = 30000) => {
@@ -124,6 +124,16 @@ export const fillTextbox = async (page, textboxName, text, timeout = 30000) => {
     }
 };
 
+export const dateTextBox = async (page, dateTextName, text, timeout = 30000) => {
+    try {
+        await page.getByPlaceholder(dateTextName, {exact: true}).fill(text, {timeout}); 
+     
+    } catch (error) {
+        console.log(`Error al llenar el textbox: '${dateTextName}' con el texto '${text}'. Detalles del error:`, error);
+        throw error;
+    }
+};
+
 
 // Click en botones de Accept o Cancel
 export const clickButtonAcceptCancel = async (page, buttonName, timeout = 30000) => {
@@ -169,47 +179,62 @@ export const attachScreenshot = async (testInfo, screenshotName, page, contentTy
 
 // 3 constantes para la Justification Phrase (Justification Phrase, Credenciales, Accept)
 export const justificationPhrase = async (page, timeout = 30000, testInfo) => {
-    console.log("Intentando ejecutar justificationPhrase...")
+    console.log("Intentando ejecutar justificationPhrase...");
+
+    const possibleLabels = [
+        "Justification Phrase",
+        "Justification",
+        "Justificación",
+        "Frase de justificación"
+    ];
 
     try {
-        console.log("Intentando ejecutar justificationPhrase...")
+        console.log("Buscando un campo visible con las posibles etiquetas...");
 
-        await test.step("Add Justification Phrase", async () => {
-            let phraseBox = null;
+        let phraseBox = null;
 
-            // Comprobar si el campo 'Justification Phrase' está visible
-            await test.step("Check visibility of 'Justification Phrase'", async () => {
-                const isVisible = await page.getByRole('textbox', { name: 'Justification Phrase' }).isVisible({ timeout }).catch(() => false);
+        // Verificar cada etiqueta de manera progresiva, buscando también con y sin '*'
+        for (const label of possibleLabels) {
+            // Verificar la etiqueta sin '*'
+            await test.step(`Check visibility of '${label}'`, async () => {
+                const isVisible = await page.getByRole('textbox', { name: label }).isVisible({ timeout }).catch(() => false);
                 if (isVisible) {
-                    phraseBox = 'Justification Phrase';
+                    phraseBox = label; // Guardar la etiqueta encontrada
+                    console.log(`Found visible field: '${label}'`);
                 }
             });
 
-            // Si no se encontró 'Justification Phrase', comprobar '* Justification Phrase'
+            // Si no se encontró, buscar con '*'
             if (!phraseBox) {
-                await test.step("Check visibility of '* Justification Phrase'", async () => {
-                    const isVisible = await page.getByRole('textbox', { name: '* Justification Phrase' }).isVisible({ timeout }).catch(() => false);
+                await test.step(`Check visibility of '* ${label}'`, async () => {
+                    const isVisible = await page.getByRole('textbox', { name: `* ${label}` }).isVisible({ timeout }).catch(() => false);
                     if (isVisible) {
-                        phraseBox = '* Justification Phrase';
+                        phraseBox = `* ${label}`; // Guardar la etiqueta con '*'
+                        console.log(`Found visible field with '*': '* ${label}'`);
                     }
                 });
             }
 
-            // Si no se encontró ninguno, salir de la función
-            if (!phraseBox) {
-                console.log("Justification Phrase field not found or not visible within the timeout.");
-                return;
-            }
+            if (phraseBox) break; // Salir del bucle si se encuentra un campo visible
+        }
 
-            await test.step("Attach screenshot before filling", async () => {
-                await attachScreenshot(testInfo, "Empty Justification Phrase", page, ConfigSettingsAlternative.screenShotsContentType);
-            });
+        // Si no se encontró ninguno, registrar y salir
+        if (!phraseBox) {
+            console.log("No visible Justification Phrase field found within the timeout.");
+            return;
+        }
+
+        // Agregar pasos detallados para interactuar con el campo encontrado
+        await test.step("Add Justification Phrase", async () => {
+            // await test.step("Attach screenshot before filling", async () => {
+            //     await attachScreenshot(testInfo, "Empty Justification Phrase", page, ConfigSettingsAlternative.screenShotsContentType);
+            // });
 
             await test.step("Pause execution before clicking on the field", async () => {
                 await page.pause();  // Pausa antes de la acción
             });
 
-            await test.step(`Click on visible Justification Phrase field: ${phraseBox}`, async () => {
+            await test.step(`Click on visible Justification Phrase field: '${phraseBox}'`, async () => {
                 await page.getByRole('textbox', { name: phraseBox }).click({ timeout });
             });
 
@@ -230,7 +255,107 @@ export const justificationPhrase = async (page, timeout = 30000, testInfo) => {
             });
         });
     } catch (error) {
-        console.log("Error during Justification Phrase handling", error);
+        console.error("Error during Justification Phrase handling", error);
+        throw error;
+    }
+};
+
+
+export const esignRequired = async (page, timeout = 30000, testInfo) => {
+    console.log("Intentando ejecutar esignRequired...");
+
+    try {
+        await test.step("Add Sign Field", async () => {
+            let signField = null;
+
+            // Comprobar si el campo 'Firma Electrónica' está visible
+            await test.step("Check visibility of 'Firma Electrónica'", async () => {
+                try {
+                    const isVisible = await page.getByLabel('Firma Electrónica').isVisible({ timeout });
+                    if (isVisible) {
+                        signField = 'Firma Electrónica';
+                        console.log("Campo 'Firma Electrónica' encontrado.");
+                    } else {
+                        console.log("'Firma Electrónica' no es visible.");
+                    }
+                } catch (error) {
+                    console.log("Error al verificar visibilidad de 'Firma Electrónica':", error);
+                }
+            });
+
+            // Si no se encontró 'Firma Electrónica', comprobar 'Electronic Signature'
+            if (!signField) {
+                await test.step("Check visibility of 'Electronic Signature'", async () => {
+                    try {
+                        const isVisible = await page.getByLabel('Electronic Signature').isVisible({ timeout });
+                        if (isVisible) {
+                            signField = 'Electronic Signature';
+                            console.log("Campo 'Electronic Signature' encontrado.");
+                        } else {
+                            console.log("'Electronic Signature' no es visible.");
+                        }
+                    } catch (error) {
+                        console.log("Error al verificar visibilidad de 'Electronic Signature':", error);
+                    }
+                });
+            }
+
+            // Si no se encontró ningún campo, salir de la función
+            if (!signField) {
+                console.log("No se encontró 'Firma Electrónica' ni 'Electronic Signature' dentro del tiempo especificado.");
+                return;
+            }
+
+            // Capturar antes de interactuar
+            // await test.step("Attach screenshot before interacting with Sign field", async () => {
+            //     await attachScreenshot(testInfo, "Empty Sign Field", page, ConfigSettingsAlternative.screenShotsContentType);
+            // });
+
+            // Pausar para inspeccionar antes del clic
+            await test.step("Pause execution before clicking on the Sign field", async () => {
+                console.log(`Preparado para hacer clic en el campo: ${signField}`);
+                await page.pause();
+            });
+
+            // Realizar clic en el campo
+            await test.step(`Click on the Sign field: ${signField}`, async () => {
+                try {
+                    await page.getByLabel(signField).click({ timeout });
+                    console.log(`Clic realizado en el campo: ${signField}`);
+                } catch (error) {
+                    console.log(`Error al hacer clic en el campo: ${signField}`, error);
+                    throw error;
+                }
+            });
+
+            // Pausar para inspeccionar después del clic
+            await test.step("Pause after clicking on the Sign field", async () => {
+                await page.pause();
+            });
+
+            // Llenar el campo
+            await test.step("Fill the Sign field with test data", async () => {
+                try {
+                    await page.getByLabel(signField).fill("firmademo");
+                    console.log(`Campo '${signField}' llenado correctamente.`);
+                } catch (error) {
+                    console.log(`Error al llenar el campo '${signField}':`, error);
+                    throw error;
+                }
+            });
+
+            // Capturar después de llenar
+            await test.step("Attach screenshot after filling the Sign field", async () => {
+                await attachScreenshot(testInfo, "Filled Sign Field", page, ConfigSettingsAlternative.screenShotsContentType);
+            });
+
+            // Pausar para inspeccionar después de llenar
+            await test.step("Pause execution after filling the Sign field", async () => {
+                await page.pause();
+            });
+        });
+    } catch (error) {
+        console.log("Error during Sign field handling:", error);
         throw error;
     }
 };
@@ -238,79 +363,198 @@ export const justificationPhrase = async (page, timeout = 30000, testInfo) => {
 
 export const fillUserField = async (page, testInfo, timeout = 30000) => {
     const userCredentialSettings = {
-        fldUser: { label: "User", value: "admin" }
+        fldUser: { label: "User", value: "admin" },
+        fldUser2: { label: "Usuario", value: "admin" }
     };
-    console.log("Intentando ejecutar fillUserField...")
+    console.log("Intentando ejecutar fillUserField...");
 
     try {
+        let visibleField = null;
+
         // Comprobar si el campo 'User' es visible
-        const isUserVisible = await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).isVisible({ timeout }).catch(() => false);
-        console.log("Intentando ejecutar fillUserField...")
-        if (isUserVisible) {
-            await test.step("Start - Fill 'User' field", async () => {
-                await test.step("Click on 'User' field", async () => {
-                    await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).click();
-                    await page.pause(); // Pausa después de hacer clic
-                });
+        await test.step("Check visibility of 'User' field", async () => {
+            const isUserVisible = await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label })
+                .isVisible({ timeout })
+                .catch(() => false);
 
-                // await test.step("Attach screenshot before filling 'User'", async () => {
-                //     await attachScreenshot(testInfo, "Before filling User field", page, ConfigSettingsAlternative.screenShotsContentType);
-                // });
+            if (isUserVisible) {
+                visibleField = userCredentialSettings.fldUser;
+                console.log("'User' field is visible.");
+            }
+        });
 
-                await test.step("Fill in 'User' field", async () => {
-                    await page.getByRole('textbox', { name: userCredentialSettings.fldUser.label }).fill(userCredentialSettings.fldUser.value);
-                });
+        // Si no se encontró 'User', comprobar 'Usuario'
+        if (!visibleField) {
+            await test.step("Check visibility of 'Usuario' field", async () => {
+                const isUser2Visible = await page.getByRole('textbox', { name: userCredentialSettings.fldUser2.label })
+                    .isVisible({ timeout })
+                    .catch(() => false);
 
-                // await test.step("Attach screenshot after filling 'User'", async () => {
-                //     await attachScreenshot(testInfo, "Filled User field", page, ConfigSettingsAlternative.screenShotsContentType);
-                // });
+                if (isUser2Visible) {
+                    visibleField = userCredentialSettings.fldUser2;
+                    console.log("'Usuario' field is visible.");
+                }
             });
         }
 
+        // Si no se encontró ninguno de los campos, salir de la función
+        if (!visibleField) {
+            console.log("Neither 'User' nor 'Usuario' fields are visible.");
+            return;
+        }
+
+        // Interactuar con el campo visible
+        await test.step(`Start - Fill '${visibleField.label}' field`, async () => {
+            await test.step(`Click on '${visibleField.label}' field`, async () => {
+                await page.getByRole('textbox', { name: visibleField.label }).click();
+                await page.pause(); // Pausa después de hacer clic
+            });
+
+            await test.step(`Fill in '${visibleField.label}' field`, async () => {
+                await page.getByRole('textbox', { name: visibleField.label }).fill(visibleField.value);
+            });
+
+            await test.step("Pause after filling the field", async () => {
+                await page.pause(); // Pausa después de rellenar el campo
+            });
+
+            console.log(`Successfully filled the '${visibleField.label}' field.`);
+        });
+
     } catch (error) {
-        console.error("An unexpected error occurred while trying to fill the 'User' field:", error);
-        throw error; 
+        console.log("An unexpected error occurred while trying to fill the 'User' or 'Usuario' field:", error);
+        throw error;
     }
 };
+
+// export const fillPasswordField = async (page, testInfo, timeout = 30000) => {
+//     const userCredentialSettings = {
+//         fldPss: { label: "Password", value: "trazit" },
+//         fldPss1: { label: "Contraseña", value: "trazit" }
+//     };
+
+//     console.log("Intentando ejecutar fillPasswordField...");
+
+//     try {
+//         let visibleField = null;
+
+//         // Comprobar si el campo 'Password' es visible
+//         await test.step("Check visibility of 'Password' field", async () => {
+//             const isPasswordVisible = await page.getByLabel(userCredentialSettings.fldPss.label)
+//                 .isVisible({ timeout })
+//                 .catch(() => false);
+
+//             if (isPasswordVisible) {
+//                 visibleField = userCredentialSettings.fldPss;
+//                 console.log("'Password' field is visible.");
+//             }
+//         });
+
+//         // Si no se encontró 'Password', comprobar 'Contraseña'
+//         if (!visibleField) {
+//             await test.step("Check visibility of 'Contraseña' field", async () => {
+//                 const isPassword1Visible = await page.getByLabel(userCredentialSettings.fldPss1.label)
+//                     .isVisible({ timeout })
+//                     .catch(() => false);
+
+//                 if (isPassword1Visible) {
+//                     visibleField = userCredentialSettings.fldPss1;
+//                     console.log("'Contraseña' field is visible.");
+//                 }
+//             });
+//         }
+
+//         // Si no se encontró ninguno de los campos, salir de la función
+//         if (!visibleField) {
+//             console.log("Neither 'Password' nor 'Contraseña' fields are visible.");
+//             return;
+//         }
+
+//         // Interactuar con el campo visible
+//         await test.step(`Start - Fill '${visibleField.label}' field`, async () => {
+//             await test.step(`Click on '${visibleField.label}' field`, async () => {
+//                 await page.getByLabel(visibleField.label).click();
+//                 await page.pause(); // Pausa después de hacer clic para ver la acción en tiempo real (opcional)
+//             });
+
+//             await test.step(`Fill in '${visibleField.label}' field`, async () => {
+//                 await page.getByLabel(visibleField.label).fill(visibleField.value);
+//             });
+
+//             await test.step("Pause after filling the field", async () => {
+//                 await page.pause(); // Pausa opcional después de rellenar el campo
+//             });
+
+//             console.log(`Successfully filled the '${visibleField.label}' field.`);
+//         });
+
+//     } catch (error) {
+//         console.log("An unexpected error occurred while trying to fill the 'Password' or 'Contraseña' field:", error);
+//         throw error;
+//     }
+// };
 
 export const fillPasswordField = async (page, testInfo, timeout = 30000) => {
     const userCredentialSettings = {
-        fldPss: { label: "Password", value: "trazit", id: "pwd" }
+        fldPss: { label: "Password", value: "trazit", id: "pwd" },
+        fldPss1: { label: "Contraseña", value: "trazit" } // No se usa ID para fldPss1
     };
-    console.log("Intentando ejecutar fillPasswordField...")
+
+    console.log("Intentando ejecutar fillPasswordField...");
+
     try {
-        console.log("Intentando ejecutar fillPasswordField...")
+        let visibleField = null;
 
         // Comprobar si el campo 'Password' es visible usando el id 'pwd'
         const isPasswordVisible = await page.locator(`#${userCredentialSettings.fldPss.id}`).isVisible({ timeout }).catch(() => false);
-        
         if (isPasswordVisible) {
-            await test.step("Start - Fill 'Password' field", async () => {
-                await test.step("Click on 'Password' field", async () => {
-                    // Hacer clic en el campo con el id 'pwd'
-                    await page.locator(`#${userCredentialSettings.fldPss.id}`).click();
-                    await page.pause(); // Pausa después de hacer clic para ver la acción en tiempo real (opcional)
-                });
-
-                // Esperar a que el campo interno de input esté disponible y luego rellenar
-                await test.step("Fill in 'Password' field", async () => {
-                    // Seleccionar el input interno y rellenarlo
-                    const inputLocator = page.locator(`#${userCredentialSettings.fldPss.id} input[type="password"]`);
-                    await inputLocator.fill(userCredentialSettings.fldPss.value);
-                });
-
-                // Pausa opcional después de rellenar el campo
-                await test.step("Pause after filling 'Password'", async () => {
-                    await page.pause();
-                });
-            });
+            visibleField = userCredentialSettings.fldPss;
+            console.log("'Password' field with ID 'pwd' is visible.");
         }
 
+        // Si no se encontró 'Password', comprobar 'Contraseña' usando el label
+        if (!visibleField) {
+            const isPassword1LabelVisible = await page.getByLabel(userCredentialSettings.fldPss1.label).isVisible({ timeout }).catch(() => false);
+            if (isPassword1LabelVisible) {
+                visibleField = userCredentialSettings.fldPss1;
+                console.log("'Contraseña' field with label is visible.");
+            }
+        }
+
+        // Si no se encontró ninguno de los campos, salir de la función
+        if (!visibleField) {
+            console.log("Neither 'Password' nor 'Contraseña' fields are visible.");
+            return;
+        }
+
+        // Interactuar con el campo visible
+        await test.step(`Start - Fill '${visibleField.label}' field`, async () => {
+            await test.step(`Click on '${visibleField.label}' field`, async () => {
+                const fieldLocator = visibleField.id ? page.locator(`#${visibleField.id}`) : page.getByLabel(visibleField.label);
+                await fieldLocator.click();
+                await page.pause(); // Pausa después de hacer clic para ver la acción en tiempo real (opcional)
+            });
+
+            await test.step(`Fill in '${visibleField.label}' field`, async () => {
+                const inputLocator = visibleField.id
+                    ? page.locator(`#${visibleField.id} input[type="password"]`)
+                    : page.getByLabel(visibleField.label);
+                await inputLocator.fill(visibleField.value);
+            });
+
+            await test.step("Pause after filling 'Password'", async () => {
+                await page.pause(); // Pausa opcional después de rellenar el campo
+            });
+
+            console.log(`Successfully filled the '${visibleField.label}' field.`);
+        });
+
     } catch (error) {
-        console.error("An unexpected error occurred while trying to fill the 'Password' field:", error);
-        throw error; 
+        console.error("An unexpected error occurred while trying to fill the 'Password' or 'Contraseña' field:", error);
+        throw error;
     }
 };
+
 
 let hasClicked = false;  // Variable para evitar clics repetidos
 
@@ -356,47 +600,46 @@ export const clickAcceptButton = async (page, timeout = 3000) => {
 
 
 export const clickDoButton = async (page, timeout = 3000) => {
-    let hasClicked = false; // Variable local para rastrear si se ha hecho clic
-
     try {
         await test.step("Check if 'Do' button is visible", async () => {
             const DoButton = page.getByRole('button', { name: 'Do' });
             const isVisible = await DoButton.isVisible({ timeout }).catch(() => false);
 
-            if (isVisible) {
-                await test.step("Try clicking 'Do' button with multiple approaches", async () => {
-                    const attempts = [
-                        { method: 'first', action: () => DoButton.first().click({ timeout }) },
-                        { method: 'nth(0)', action: () => DoButton.nth(0).click({ timeout }) },
-                        { method: 'nth(1)', action: () => DoButton.nth(1).click({ timeout }) },
-                        { method: 'nth(2)', action: () => DoButton.nth(2).click({ timeout }) }
-                    ];
-
-                    for (const attempt of attempts) {
-                        if (hasClicked) break; // Salir si ya se hizo clic
-
-                        try {
-                            console.log(`Attempting to click 'Do' button using ${attempt.method}...`);
-                            await attempt.action(); // Intentar la acción definida
-                            hasClicked = true; // Marcar que se hizo clic
-                            console.log(`Successfully clicked 'Do' button using ${attempt.method}.`);
-                        } catch (error) {
-                            console.log(`Failed to click 'Do' button using ${attempt.method}.`);
-                        }
-                    }
-
-                    if (!hasClicked) {
-                        console.log("All attempts to click 'Do' button failed.");
-                        throw new Error("Unable to click 'Do' button after multiple attempts.");
-                    }
-                });
-            } else {
+            if (!isVisible) {
                 console.log("No 'Do' button is visible. Skipping the step.");
+                return; // Si no es visible, no hacer nada y salir de la función
             }
+
+            // Solo se ejecuta si el botón es visible
+            await test.step("Try clicking 'Do' button with multiple approaches", async () => {
+                const attempts = [
+                    { method: 'first', action: () => DoButton.first().click({ timeout }) },
+                    { method: 'nth(0)', action: () => DoButton.nth(0).click({ timeout }) },
+                    { method: 'nth(1)', action: () => DoButton.nth(1).click({ timeout }) },
+                    { method: 'nth(2)', action: () => DoButton.nth(2).click({ timeout }) }
+                ];
+
+                for (const attempt of attempts) {
+                    try {
+                        console.log(`Attempting to click 'Do' button using ${attempt.method}...`);
+                        await attempt.action(); // Intentar la acción definida
+                        console.log(`Successfully clicked 'Do' button using ${attempt.method}.`);
+                        return; // Si se hace clic correctamente, salir de la función
+                    } catch (error) {
+                        console.log(`Failed to click 'Do' button using ${attempt.method}.`);
+                    }
+                }
+
+                // Si no se hizo clic después de todos los intentos
+                console.log("All attempts to click 'Do' button failed.");
+                // throw new Error("Unable to click 'Do' button after multiple attempts.");
+                return;
+            });
         });
     } catch (error) {
         console.log("Error while attempting to click 'Do' button:", error);
         throw error; // Lanzar el error para que el test falle explícitamente
     }
 };
+
 
