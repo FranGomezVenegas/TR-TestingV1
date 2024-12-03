@@ -1,4 +1,4 @@
-import { clickElement, clickElementByText,fillField, clickTextbox, fillTextbox, clickOption, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { dateTextBox, clickElement, clickElementByText,fillField, clickTextbox, fillTextbox, clickOption, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 import { test, expect } from '@playwright/test';
 
 // Main function for processing test data
@@ -19,7 +19,7 @@ export const processTestData = async (page, consoleData, testDataGame) => {
                                 await processTextField(page, consoleData, field);
                                 break;
                             case 'list':
-                                await processListField(page, consoleData, field);
+                                await processListField(page, consoleData, testDataGame, field);
                                 break;
                             case 'date':
                                 await processDateField(page, consoleData, field);
@@ -121,13 +121,13 @@ export const processTextField = async (page, consoleData, textField, useTextBoxM
     }
 };
 
-// Function to process list fields
-export const processListField = async (page, consoleData, listField) => {
-    const searchAttempts = [
-        listField.label,
-        `* ${listField.label}`,
-    ];
 
+const globalProcessedLists = new Set();
+
+export const processListField = async (page, consoleData, testDataGame, listField) => {
+    const searchAttempts = [listField.label, `* ${listField.label}`];
+
+    // Intentar buscar el campo de lista por las etiquetas proporcionadas
     for (const searchLabel of searchAttempts) {
         try {
             await test.step(`Trying to click on list field: ${searchLabel}`, async () => {
@@ -141,21 +141,59 @@ export const processListField = async (page, consoleData, listField) => {
         }
     }
 
-    // Flexible search as a last resort
+    // Intentar procesar las listas con un selector por ID, pero asegurándonos de no procesarlas más de una vez
+    try {
+        await test.step('Trying to click using ID selector pattern', async () => {
+            const parsedData = JSON.parse(testDataGame);
+            const listFields = Object.keys(parsedData).filter(key => key.startsWith('list')); // Filtrar campos de listas
+
+            for (const listKey of listFields) {
+                // Verificar si esta lista ya fue procesada globalmente
+                if (globalProcessedLists.has(listKey)) {
+                    console.log(`Skipping already processed list: ${listKey}`);
+                    return;
+                }
+
+                const listNumber = listKey.match(/\d+/)[0]; // Obtener el número de la lista
+                const listSelector = `#list${listNumber} #label`; // Selector único para la lista
+                const currentList = parsedData[listKey]; // Datos de la lista actual
+
+                try {
+                    // Procesar la lista si no fue procesada antes
+                    await page.locator(listSelector).click({ timeout: 3000 });
+                    await page.waitForTimeout(450);
+
+                    const optionSelector = `${currentList.option}`; // Selector para la opción
+                    await clickOption(page, optionSelector, 1000);
+                    await page.pause(); // Pausa opcional para inspección
+
+                    // Marcar la lista como procesada globalmente
+                    globalProcessedLists.add(listKey);
+                } catch (error) {
+                    console.log(`Error in ${listKey}: ${error.message}`);
+                }
+            }
+        });
+    } catch (error) {
+        console.log(`ID selector attempt failed: ${error.message}`);
+    }
+
+    // Si no se pudo encontrar el campo con los intentos previos, buscar coincidencias flexibles
     const matchingField = findMatchingField(consoleData, listField.label);
     if (matchingField) {
-        const flexibleLabel = determineFlexibleLabel(matchingField);
-        await test.step(`Using flexible label to click on list field: ${flexibleLabel}`, async () => {
+        try {
+            const flexibleLabel = determineFlexibleLabel(matchingField);
             await clickElement(page, flexibleLabel, 450);
             await clickOption(page, listField.option, 450);
-            console.log(`Selected list field with flexible label: ${flexibleLabel}`);
-        });
-    } else {
-        throw new Error(`Could not find list field: ${listField.label}`);
+        } catch {
+            throw new Error(`Could not find list field: ${listField.label}`);
+        }
     }
 };
 
-// Function to process date fields
+
+
+
 export const processDateField = async (page, consoleData, dateField) => {
     const searchAttempts = [
         dateField.label,
@@ -164,13 +202,23 @@ export const processDateField = async (page, consoleData, dateField) => {
 
     for (const searchLabel of searchAttempts) {
         try {
-            await test.step(`Filling date field: ${searchLabel}`, async () => {
-                await fillTextbox(page, searchLabel, dateField.date, 450);
-                console.log(`Added date field: ${searchLabel}`);
+            await test.step(`Filling date field: ${searchLabel} (using fillTextbox)`, async () => {
+                await fillTextbox(page, searchLabel, dateField.date, 450); // Primer intento
+                console.log(`Successfully added date field: ${searchLabel}`);
             });
-            return;
+            return; // Si se llena correctamente, salir de la función
         } catch (attemptError) {
-            // Silently continue to the next attempt
+            console.log(`Error trying to fill date field with fillTextbox: '${searchLabel}'. Retrying with dateTextBox...`);
+            try {
+                // Segundo intento con dateTextBox
+                await test.step(`Filling date field: ${searchLabel} (using dateTextBox)`, async () => {
+                    await dateTextBox(page, searchLabel, dateField.date, 450);
+                    console.log(`Successfully added date field using dateTextBox: ${searchLabel}`);
+                });
+                return; // Salir si se llena correctamente con el segundo método
+            } catch (secondError) {
+                console.log(`Error trying to fill date field with dateTextBox: '${searchLabel}'. Continuing to next attempt...`);
+            }
         }
     }
 
@@ -178,10 +226,18 @@ export const processDateField = async (page, consoleData, dateField) => {
     const matchingField = findMatchingField(consoleData, dateField.label);
     if (matchingField) {
         const flexibleLabel = determineFlexibleLabel(matchingField);
-        await test.step(`Filling date field with flexible label: ${flexibleLabel}`, async () => {
-            await fillTextbox(page, flexibleLabel, dateField.date, 450);
-            console.log(`Added date field with flexible label: ${flexibleLabel}`);
-        });
+        try {
+            await test.step(`Filling date field with flexible label: ${flexibleLabel}`, async () => {
+                await fillTextbox(page, flexibleLabel, dateField.date, 450); // Intento flexible con fillTextbox
+                console.log(`Successfully added date field with flexible label: ${flexibleLabel}`);
+            });
+        } catch (flexibleError) {
+            console.log(`Error filling date field with flexible label: '${flexibleLabel}'. Retrying with dateTextBox...`);
+            await test.step(`Filling date field with flexible label (using dateTextBox): ${flexibleLabel}`, async () => {
+                await dateTextBox(page, flexibleLabel, dateField.date, 450); // Intento flexible con dateTextBox
+                console.log(`Successfully added date field with flexible label using dateTextBox: ${flexibleLabel}`);
+            });
+        }
     } else {
         throw new Error(`Could not find date field: ${dateField.label}`);
     }
