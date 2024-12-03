@@ -61,7 +61,7 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
                     if (indice >= cantidad) {
                         throw new Error(`Índice ${indice} fuera de rango. Solo hay ${cantidad} elementos disponibles.`);
                     }
-
+                    await page.waitForTimeout(8000);
                     await elementos.nth(indice).waitFor({ state: 'visible', timeout });
                     try {
                         await elementos.nth(indice).click({ timeout });
