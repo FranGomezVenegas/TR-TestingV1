@@ -68,7 +68,6 @@ export const processTestData = async (page, consoleData, testDataGame) => {
     await test.step("Processing datetime fields", async () => {
         await processFields('datetime');
     });
-    
 };
 
 
@@ -144,7 +143,8 @@ export const processListField = async (page, consoleData, testDataGame, listFiel
             });
             return;
         } catch (attemptError) {
-            // Silently continue to the next attempt
+            await clickOption(page, listField.option, 450);
+            console.log(`Selected list field: ${searchLabel}`);
         }
     }
 
@@ -201,8 +201,6 @@ export const processListField = async (page, consoleData, testDataGame, listFiel
         }
     }
 };
-
-
 
 
 export const processDateField = async (page, consoleData, dateField) => {
