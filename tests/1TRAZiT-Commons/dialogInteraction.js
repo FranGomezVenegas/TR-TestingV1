@@ -1,4 +1,4 @@
-import { dateTextBox, clickElement, clickElementByText,fillField, clickTextbox, fillTextbox, clickOption, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { clickElementByText1, dateTextBox, clickElement, clickElementByText,fillField, clickTextbox, fillTextbox, clickOption, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 import { test, expect } from '@playwright/test';
 
 // Main function for processing test data
@@ -33,6 +33,9 @@ export const processTestData = async (page, consoleData, testDataGame) => {
                             case 'datetime':  
                                 await processDateTimeField(page, field);
                                 break;
+                            case 'tree':  
+                                await processTreeField(page, field);
+                                break;
                         }
                         console.log(`Processed field ${fieldType}: ${field.label}`);
                     });
@@ -46,6 +49,9 @@ export const processTestData = async (page, consoleData, testDataGame) => {
     // Sequential processing of field types to reduce blocking
     await test.step("Processing text fields", async () => {
         await processFields('text');
+    });
+    await test.step("Processing tree fields", async () => {
+        await processFields('tree');
     });
     await test.step("Processing list fields", async () => {
         await processFields('list');
@@ -62,6 +68,7 @@ export const processTestData = async (page, consoleData, testDataGame) => {
     await test.step("Processing datetime fields", async () => {
         await processFields('datetime');
     });
+    
 };
 
 
@@ -144,6 +151,8 @@ export const processListField = async (page, consoleData, testDataGame, listFiel
     // Intentar procesar las listas con un selector por ID, pero asegurándonos de no procesarlas más de una vez
     try {
         await test.step('Trying to click using ID selector pattern', async () => {
+            await page.waitForTimeout(450);
+
             const parsedData = JSON.parse(testDataGame);
             const listFields = Object.keys(parsedData).filter(key => key.startsWith('list')); // Filtrar campos de listas
 
@@ -169,6 +178,8 @@ export const processListField = async (page, consoleData, testDataGame, listFiel
 
                     // Marcar la lista como procesada globalmente
                     globalProcessedLists.add(listKey);
+                    await page.waitForTimeout(450);
+
                 } catch (error) {
                     console.log(`Error in ${listKey}: ${error.message}`);
                 }
@@ -270,6 +281,61 @@ export const processCheckboxField = async (page, checkboxField) => {
     await page.waitForTimeout(1000);
 };
 
+// export const processMultiListField = async (page, multiListField) => {
+//     const searchAttempts = [
+//         multiListField.label,
+//         `* ${multiListField.label}`,
+//     ];
+
+//     for (const searchLabel of searchAttempts) {
+//         try {
+//             await test.step(`Trying to click on multi-list field: ${searchLabel}`, async () => {
+//                 await clickElementByText(page, searchLabel, 450); // Click to open the multi-list
+                
+//                 // Loop through the options to select
+//                 for (const option of multiListField.options) {
+//                     await page.locator(`#${multiListField.id}`).getByText(option, { exact: true }).click();
+//                     console.log(`Selected option in multi-list: ${option}`);
+//                 }
+
+//                 // Click the arrow_drop_down to close the multi-list
+//                 await page.getByText('arrow_drop_down').click(); // Close the dropdown
+//                 console.log(`Closed multi-list field: ${searchLabel}`);
+//                 console.log(`Processed multi-list field: ${searchLabel}`);
+//             });
+//             return; // Exit function if processed successfully
+//         } catch (attemptError) {
+//             console.log(`Error processing multi-list field: ${searchLabel}. Details:`, attemptError);
+//         }
+//         await page.waitForTimeout(1000);
+//     }
+
+//     // Flexible search as a last resort
+//     const matchingField = findMatchingField(consoleData, multiListField.label);
+//     if (matchingField) {
+//         const flexibleLabel = determineFlexibleLabel(matchingField);
+//         await test.step(`Using flexible label to click on multi-list field: ${flexibleLabel}`, async () => {
+//             await clickElement(page, flexibleLabel, 450);
+
+//             for (const option of multiListField.options) {
+//                 await page.locator(`#${multiListField.id}`).getByText(option, { exact: true }).click();
+//                 console.log(`Selected option in multi-list with flexible label: ${option}`);
+//             }
+
+//             // Click the arrow_drop_down to close the multi-list
+//             await page.getByText('arrow_drop_down').click(); // Close the dropdown
+//             console.log(`Closed multi-list field with flexible label: ${flexibleLabel}`);
+//             console.log(`Processed multi-list field with flexible label: ${flexibleLabel}`);
+//         });
+//         await page.waitForTimeout(1000);
+//     } else {
+//         throw new Error(`Could not find multi-list field: ${multiListField.label}`);
+//     }
+// };
+
+
+// Function to process datetime fields
+
 export const processMultiListField = async (page, multiListField) => {
     const searchAttempts = [
         multiListField.label,
@@ -279,51 +345,49 @@ export const processMultiListField = async (page, multiListField) => {
     for (const searchLabel of searchAttempts) {
         try {
             await test.step(`Trying to click on multi-list field: ${searchLabel}`, async () => {
-                await clickElementByText(page, searchLabel, 450); // Click to open the multi-list
-                
-                // Loop through the options to select
+                // Intentar hacer clic en el multi-list usando el texto del label
+                await clickElementByText(page, searchLabel, 450);
+
+                // Loop para seleccionar las opciones basándose en el label
                 for (const option of multiListField.options) {
                     await page.locator(`#${multiListField.id}`).getByText(option, { exact: true }).click();
                     console.log(`Selected option in multi-list: ${option}`);
                 }
 
-                // Click the arrow_drop_down to close the multi-list
-                await page.getByText('arrow_drop_down').click(); // Close the dropdown
+                // Cerrar el multi-list
+                await page.getByText('arrow_drop_down').click(); 
                 console.log(`Closed multi-list field: ${searchLabel}`);
-                console.log(`Processed multi-list field: ${searchLabel}`);
             });
-            return; // Exit function if processed successfully
+            return; // Salir si se procesó correctamente
         } catch (attemptError) {
             console.log(`Error processing multi-list field: ${searchLabel}. Details:`, attemptError);
         }
         await page.waitForTimeout(1000);
     }
 
-    // Flexible search as a last resort
-    const matchingField = findMatchingField(consoleData, multiListField.label);
-    if (matchingField) {
-        const flexibleLabel = determineFlexibleLabel(matchingField);
-        await test.step(`Using flexible label to click on multi-list field: ${flexibleLabel}`, async () => {
-            await clickElement(page, flexibleLabel, 450);
+    // Método alternativo usando directamente el label como fallback
+    try {
+        await test.step(`Using fallback method for multi-list field with label: ${multiListField.label}`, async () => {
+            // Usar directamente el label para encontrar el elemento
+            await page.locator(`#${multiListField.id}`).getByText(multiListField.label, { exact: true }).click();
+            console.log(`Clicked multi-list field using label: ${multiListField.label}`);
 
+            // Seleccionar opciones
             for (const option of multiListField.options) {
                 await page.locator(`#${multiListField.id}`).getByText(option, { exact: true }).click();
-                console.log(`Selected option in multi-list with flexible label: ${option}`);
+                console.log(`Selected option in multi-list using fallback method: ${option}`);
             }
 
-            // Click the arrow_drop_down to close the multi-list
-            await page.getByText('arrow_drop_down').click(); // Close the dropdown
-            console.log(`Closed multi-list field with flexible label: ${flexibleLabel}`);
-            console.log(`Processed multi-list field with flexible label: ${flexibleLabel}`);
+            // Cerrar el multi-list
+            await page.getByText('arrow_drop_down').click();
+            console.log(`Closed multi-list field using fallback method: ${multiListField.label}`);
         });
-        await page.waitForTimeout(1000);
-    } else {
-        throw new Error(`Could not find multi-list field: ${multiListField.label}`);
+    } catch (fallbackError) {
+        console.error(`Fallback method failed for multi-list field with label: ${multiListField.label}. Details:`, fallbackError);
+        throw new Error(`Could not process multi-list field: ${multiListField.label}`);
     }
 };
 
-
-// Function to process datetime fields
 export const processDateTimeField = async (page, dateTimeField) => {
     // await page.locator('#datetime1').click();
     // await page.locator('#datetime1').fill('2024-11-08T23:26');
@@ -365,6 +429,34 @@ export const processDateTimeField = async (page, dateTimeField) => {
         throw new Error(`Could not find datetime field: ${dateTimeField.label}`);
     }
 };
+
+
+// Función para procesar el campo "tree" (árbol)
+export const processTreeField = async (page, treeField) => {
+    try {
+        // Iniciar el proceso de selección en el árbol
+        await test.step(`Processing tree field: ${treeField.label}`, async () => {
+            // Primero, haz clic en el elemento para desplegar el árbol (por ejemplo, 'Select an item')
+            // Select an item
+            await clickElementByText1(page, treeField.label, 0, 3000); // Hacer clic en el primer elemento
+            await page.waitForTimeout(400);
+
+
+            // Luego, seleccionamos el ítem específico dentro del árbol, la opción.
+            const itemText = treeField.option;  // 'option' es el texto que buscamos
+            const itemPosition = treeField.position || 0;  // Si no se pasa la posición, cogemos la primera
+            await clickElementByText1(page, itemText, itemPosition, 3000);
+            await page.waitForTimeout(1000);
+            
+
+            console.log(`Processed tree field: ${treeField.label}`);
+        });
+    } catch (error) {
+        console.log(`Error processing tree field: ${treeField.label}. Details:`, error);
+        throw new Error(`Could not process tree field: ${treeField.label}`);
+    }
+};
+
     
 // Function to find a matching field
 const findMatchingField = (consoleData, label) => {
