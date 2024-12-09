@@ -36,7 +36,13 @@ export async function handleObjectByTabsWithSearchInteraction(page, testInfo, co
         });
 
         await test.step(button.phraseSearch, async () => {
-            await page.getByRole('button', { name: button.search.press }).click();
+            try{
+                await page.getByRole('button', { name: button.search.press }).click();
+                console.log('Búsqueda realizada.');
+            } catch(error){
+                await page.getByLabel(button.search.press).click();
+                console.log('Búsqueda Realizada.');
+            }
         });
 
         await test.step(button.phrasePauses, async () => {

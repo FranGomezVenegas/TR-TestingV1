@@ -28,7 +28,7 @@ export const clickElementByText = async (page, text, timeout = 30000) => {
             await elementNth.click({ timeout });
 
         } catch (nthError) {
-            console.error(`Error al hacer clic en el segundo elemento con texto: '${text}'. Detalles del error:`, nthError);
+            console.log(`Error al hacer clic en el segundo elemento con texto: '${text}'. Detalles del error:`, nthError);
             throw nthError; // Propagar el error si ambos intentos fallan
         }
     }
@@ -156,6 +156,7 @@ export const clickButtonAcceptCancel = async (page, buttonName, timeout = 30000)
 //         throw error;
 //     }
 // };
+
 export const attachScreenshot = async (testInfo, screenshotName, page, contentType, timeout = 30000) => {
     if (process.env.NO_HTML_REPORT === 'true') {
         console.log(`Captura de pantalla omitida para ${screenshotName} porque NO_HTML_REPORT está activo.`);
