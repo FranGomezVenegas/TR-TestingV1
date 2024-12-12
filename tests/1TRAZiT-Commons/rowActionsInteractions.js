@@ -10,10 +10,19 @@ export const handleRowActionsInteraction = async (page, button, testInfo) => {
 
     try {
         await test.step(`Click on button with ID "${button.buttonName}" in row "${button.rowName}"`, async () => {
-            // Selecciono la fila por su nombre y luego hago clic en el botón por ID
-            await page.getByRole('row', { name: button.rowName }).locator(`#${button.buttonName}`).dblclick({ timeout: 5000 });
+            // Selecciono la fila por su nombre y luego selecciono el botón específico usando nth
+            const rowLocator = page.getByRole('row', { name: button.rowName });
+            const buttonLocator = rowLocator.locator(`#${button.buttonName}`);
+            
+            // Si hay varios botones con el mismo ID, selecciona el índice especificado en button.positionButton
+            if (button.positionButton) {
+                await buttonLocator.nth(parseInt(button.positionButton, 10)).dblclick({ timeout: 5000 });
+            } else {
+                // Por defecto, realiza clic en el primer botón si no se especifica el índice
+                await buttonLocator.first().dblclick({ timeout: 5000 });
+            }
         });
-        
+
         await test.step(button.phraseScreenShots, async () => {
             await testInfo.attach(button.screenShotRowNameAndButtonName, {
                 body: await page.screenshot(),
