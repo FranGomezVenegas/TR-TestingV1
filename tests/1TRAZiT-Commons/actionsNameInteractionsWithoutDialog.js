@@ -6,102 +6,133 @@ const timeout = 40000;
 
 export const handleActionNameInteraction = async (page, testInfo, Button) => {
     if (!Button?.buttonName) {
+        console.warn("Button.buttonName no está definido, se omite la interacción.");
         return;
     }
 
+    // Estructura para almacenar todos los mensajes de consola y errores del sistema
+    const consoleMessages = [];
+    const systemErrors = {
+        pageErrors: [],
+        networkErrors: [],
+        responseErrors: [],
+        dialogErrors: [],
+        workerErrors: [],
+    };
+
+    // Manejadores para capturar mensajes y errores
+    const handleConsoleMessage = (msg) => {
+        const logEntry = {
+            type: msg.type(),
+            text: msg.text(),
+            location: msg.location(),
+            timestamp: new Date().toISOString(),
+            args: msg.args().map(arg => arg.toString()),
+        };
+
+        console.log(`[${logEntry.timestamp}] Console ${logEntry.type}:`, logEntry.text);
+        consoleMessages.push(logEntry); // Almacenar todos los mensajes de consola
+    };
+
+    const handlePageError = (error) => {
+        systemErrors.pageErrors.push({
+            message: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString(),
+        });
+        console.error(`[Page Error] ${error.message}`);
+    };
+
+    const handleRequestFailed = (request) => {
+        systemErrors.networkErrors.push({
+            url: request.url(),
+            method: request.method(),
+            failure: request.failure()?.errorText || 'Unknown error',
+            timestamp: new Date().toISOString(),
+        });
+        console.error(`[Network Error] ${request.failure()?.errorText || 'Unknown error'} - ${request.url()}`);
+    };
+
+    const handleResponse = async (response) => {
+        if (!response.ok()) {
+            const errorEntry = {
+                url: response.url(),
+                status: response.status(),
+                statusText: response.statusText(),
+                timestamp: new Date().toISOString(),
+            };
+            try {
+                errorEntry.body = await response.text();
+            } catch {
+                errorEntry.body = 'Unable to fetch response body';
+            }
+            systemErrors.responseErrors.push(errorEntry);
+            console.error(`[Response Error] ${response.status()} - ${response.url()}`);
+        }
+    };
+
+    const handleWorkerError = (worker) => {
+        systemErrors.workerErrors.push({
+            url: worker.url(),
+            timestamp: new Date().toISOString(),
+        });
+        console.error(`[Worker Error] Worker at ${worker.url()} encountered an error.`);
+    };
+
     try {
+        // Configurar listeners
+        page.on('console', handleConsoleMessage);
+        page.on('pageerror', handlePageError);
+        page.on('requestfailed', handleRequestFailed);
+        page.on('response', handleResponse);
+        page.on('worker', handleWorkerError);
+
+        // Interactuar con el select si está definido
         if (Button.selectName) {
             await test.step(Button.phraseSelect, async () => {
-                const position = Button.positionSelectElement !== undefined ? Button.positionSelectElement : 0;
-                try {
-                    await page.getByText(Button.selectName, { exact: true }).nth(position).click({ timeout: 3000 });
-                } catch (exactClickError) {
-                    console.log(`Error en clic exacto: ${exactClickError.message}`);
-                    await page.getByText(Button.selectName).nth(position).click({ timeout: 3000 });
-                }
+                const position = Button.positionSelectElement ?? 0;
+                await page.getByText(Button.selectName).nth(position).click({ timeout: 3000 });
             });
-
-            if (Button.phrasePauses) {
-                await test.step(Button.phrasePauses, async () => {
-                    await page.pause();
-                });
-            }
 
             if (Button.screenShotsSelect) {
-                await test.step(Button.phraseScreenShots, async () => {
-                    await attachScreenshot(testInfo, Button.screenShotsSelect, page, ConfigSettingsAlternative.screenShotsContentType);
-                    if (Button.phrasePauses) {
-                        await page.pause();
-                    }
-                });
+                await attachScreenshot(testInfo, Button.screenShotsSelect, page, ConfigSettingsAlternative.screenShotsContentType);
             }
         }
 
-        // Paso 4: Clic en el botón
+        // Clic en el botón
         await test.step(Button.phraseButtonName, async () => {
             const selectorBoton = `#${Button.buttonName}`;
+            const elementos = page.locator(selectorBoton);
+            const cantidad = await elementos.count();
 
-            // Configuro el listener 'dialog' justo antes del clic
-            const handleDialog = async (dialog) => {
-                console.error(`Se detectó un alert con el mensaje: "${dialog.message()}"`);
-                await dialog.dismiss(); // Cierro el alert. 
-                throw new Error(`El test falló debido a un alert con el mensaje: "${dialog.message()}"`);
-            };
-
-            page.on('dialog', handleDialog);
-
-            try {
-                const elementos = page.locator(selectorBoton);
-                const cantidad = await elementos.count();
-                console.log(`Encontrados ${cantidad} elementos con el ID ${Button.buttonName}`);
-
-                if (cantidad > 0) {
-                    // Si hay múltiples elementos, usa la posición especificada o el primero por defecto
-                    const indice = Button.positionButton || 0;
-                    if (indice >= cantidad) {
-                        throw new Error(`Índice ${indice} fuera de rango. Solo hay ${cantidad} elementos disponibles.`);
-                    }
-                    await page.waitForTimeout(8000);
-                    await elementos.nth(indice).waitFor({ state: 'visible', timeout });
-                    try {
-                        await elementos.nth(indice).click({ timeout });
-                        console.log(`Clic correctamente nth(${indice})`);
-                    } catch (clickError) {
-                        console.log(`Error en clic directo: ${clickError.message}`);
-                        await page.evaluate((selector, index) => {
-                            const elementos = document.querySelectorAll(selector);
-                            if (elementos[index]) {
-                                elementos[index].click({timeout: 3000});
-                            }
-                        }, selectorBoton, indice);
-                        console.log(`Clic correctamente`);
-                    }
-                } else {
-                    throw new Error(`No se pudo hacer clic en ningún elemento con ID: ${Button.buttonName}`);
-                }
-            } finally {
-                // Quito el listener para evitar capturar diálogos no deseados después del clic
-                page.off('dialog', handleDialog);
-            }
+            if (cantidad === 0) throw new Error(`No se encontró el botón con ID: ${Button.buttonName}`);
+            await elementos.nth(Button.positionButton || 0).click({ timeout });
         });
 
-        if (Button.phrasePauses) {
-            await test.step(Button.phrasePauses, async () => {
-                await page.pause();
-            });
-        }
-
-        await page.waitForTimeout(3000);
         if (Button.screenShotsButtonName) {
-            await test.step(Button.phraseScreenShots, async () => {
-                await attachScreenshot(testInfo, Button.screenShotsButtonName, page, ConfigSettingsAlternative.screenShotsContentType);
-                if (Button.phrasePauses) {
-                    await page.pause();
-                }
-            });
+            await attachScreenshot(testInfo, Button.screenShotsButtonName, page, ConfigSettingsAlternative.screenShotsContentType);
         }
     } catch (error) {
         console.error("Error en handleActionNameInteraction:", error);
         throw error;
+    } finally {
+        // Remover listeners y adjuntar errores al test
+        page.removeAllListeners();
+
+        // Adjuntar los errores y mensajes al reporte del test
+        testInfo.attachments.push({
+            name: 'console-messages.json',
+            contentType: 'application/json',
+            body: Buffer.from(JSON.stringify({ consoleMessages, systemErrors }, null, 2)),
+        });
+
+        // Lanzar un error si se detectaron problemas críticos
+        if (
+            systemErrors.pageErrors.length > 0 ||
+            systemErrors.networkErrors.length > 0 ||
+            systemErrors.responseErrors.length > 0
+        ) {
+            throw new Error('Errores detectados durante la ejecución del test.');
+        }
     }
 };
