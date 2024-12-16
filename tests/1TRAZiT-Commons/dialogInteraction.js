@@ -279,66 +279,13 @@ export const processCheckboxField = async (page, checkboxField) => {
     await page.waitForTimeout(1000);
 };
 
-// export const processMultiListField = async (page, multiListField) => {
-//     const searchAttempts = [
-//         multiListField.label,
-//         `* ${multiListField.label}`,
-//     ];
-
-//     for (const searchLabel of searchAttempts) {
-//         try {
-//             await test.step(`Trying to click on multi-list field: ${searchLabel}`, async () => {
-//                 await clickElementByText(page, searchLabel, 450); // Click to open the multi-list
-                
-//                 // Loop through the options to select
-//                 for (const option of multiListField.options) {
-//                     await page.locator(`#${multiListField.id}`).getByText(option, { exact: true }).click();
-//                     console.log(`Selected option in multi-list: ${option}`);
-//                 }
-
-//                 // Click the arrow_drop_down to close the multi-list
-//                 await page.getByText('arrow_drop_down').click(); // Close the dropdown
-//                 console.log(`Closed multi-list field: ${searchLabel}`);
-//                 console.log(`Processed multi-list field: ${searchLabel}`);
-//             });
-//             return; // Exit function if processed successfully
-//         } catch (attemptError) {
-//             console.log(`Error processing multi-list field: ${searchLabel}. Details:`, attemptError);
-//         }
-//         await page.waitForTimeout(1000);
-//     }
-
-//     // Flexible search as a last resort
-//     const matchingField = findMatchingField(consoleData, multiListField.label);
-//     if (matchingField) {
-//         const flexibleLabel = determineFlexibleLabel(matchingField);
-//         await test.step(`Using flexible label to click on multi-list field: ${flexibleLabel}`, async () => {
-//             await clickElement(page, flexibleLabel, 450);
-
-//             for (const option of multiListField.options) {
-//                 await page.locator(`#${multiListField.id}`).getByText(option, { exact: true }).click();
-//                 console.log(`Selected option in multi-list with flexible label: ${option}`);
-//             }
-
-//             // Click the arrow_drop_down to close the multi-list
-//             await page.getByText('arrow_drop_down').click(); // Close the dropdown
-//             console.log(`Closed multi-list field with flexible label: ${flexibleLabel}`);
-//             console.log(`Processed multi-list field with flexible label: ${flexibleLabel}`);
-//         });
-//         await page.waitForTimeout(1000);
-//     } else {
-//         throw new Error(`Could not find multi-list field: ${multiListField.label}`);
-//     }
-// };
-
-
-// Function to process datetime fields
-
 export const processMultiListField = async (page, multiListField) => {
     const searchAttempts = [
         multiListField.label,
         `* ${multiListField.label}`,
     ];
+
+    let processedAny = false; // Bandera para rastrear si al menos un intento fue exitoso
 
     for (const searchLabel of searchAttempts) {
         try {
@@ -346,45 +293,65 @@ export const processMultiListField = async (page, multiListField) => {
                 // Intentar hacer clic en el multi-list usando el texto del label
                 await clickElementByText(page, searchLabel, 450);
 
-                // Loop para seleccionar las opciones basándose en el label
+                // Loop para seleccionar todas las opciones disponibles en el multi-list
                 for (const option of multiListField.options) {
-                    await page.locator(`#${multiListField.id}`).getByText(option, { exact: true }).click();
-                    console.log(`Selected option in multi-list: ${option}`);
+                    try {
+                        await page.locator(`#${multiListField.id}`).getByText(option, { exact: true }).click({ timeout: 3000 });
+                        console.log(`Selected option in multi-list: ${option}`);
+                    } catch (optionError) {
+                        console.log(`Option not found or already selected: ${option}. Skipping.`);
+                    }
                 }
 
                 // Cerrar el multi-list
-                await page.getByText('arrow_drop_down').click(); 
-                console.log(`Closed multi-list field: ${searchLabel}`);
+                try {
+                    await page.getByText('arrow_drop_down').click({ timeout: 3000 });
+                    console.log(`Closed multi-list field: ${searchLabel}`);
+                } catch (closeError) {
+                    console.log(`Failed to close multi-list field: ${searchLabel}. It might already be closed.`);
+                }
+
+                processedAny = true; // Marcar como procesado al menos una vez
             });
-            return; // Salir si se procesó correctamente
         } catch (attemptError) {
             console.log(`Error processing multi-list field: ${searchLabel}. Details:`, attemptError);
         }
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(1000); // Pausa entre intentos
     }
 
-    // Método alternativo usando directamente el label como fallback
-    try {
-        await test.step(`Using fallback method for multi-list field with label: ${multiListField.label}`, async () => {
-            // Usar directamente el label para encontrar el elemento
-            await page.locator(`#${multiListField.id}`).getByText(multiListField.label, { exact: true }).click();
-            console.log(`Clicked multi-list field using label: ${multiListField.label}`);
+    // Método alternativo si no se procesó nada en los intentos anteriores
+    if (!processedAny) {
+        try {
+            await test.step(`Using fallback method for multi-list field with label: ${multiListField.label}`, async () => {
+                // Usar directamente el label para encontrar el elemento
+                await page.locator(`#${multiListField.id}`).getByText(multiListField.label, { exact: true }).click();
+                console.log(`Clicked multi-list field using label: ${multiListField.label}`);
 
-            // Seleccionar opciones
-            for (const option of multiListField.options) {
-                await page.locator(`#${multiListField.id}`).getByText(option, { exact: true }).click();
-                console.log(`Selected option in multi-list using fallback method: ${option}`);
-            }
+                // Seleccionar todas las opciones
+                for (const option of multiListField.options) {
+                    try {
+                        await page.locator(`#${multiListField.id}`).getByText(option, { exact: true }).click();
+                        console.log(`Selected option in multi-list using fallback method: ${option}`);
+                    } catch (optionError) {
+                        console.log(`Option not found or already selected in fallback: ${option}. Skipping.`);
+                    }
+                }
 
-            // Cerrar el multi-list
-            await page.getByText('arrow_drop_down').click();
-            console.log(`Closed multi-list field using fallback method: ${multiListField.label}`);
-        });
-    } catch (fallbackError) {
-        console.error(`Fallback method failed for multi-list field with label: ${multiListField.label}. Details:`, fallbackError);
-        throw new Error(`Could not process multi-list field: ${multiListField.label}`);
+                // Cerrar el multi-list
+                try {
+                    await page.getByText('arrow_drop_down').click();
+                    console.log(`Closed multi-list field using fallback method: ${multiListField.label}`);
+                } catch (closeError) {
+                    console.log(`Failed to close multi-list field using fallback method: ${multiListField.label}. It might already be closed.`);
+                }
+            });
+        } catch (fallbackError) {
+            console.log(`Fallback method failed for multi-list field with label: ${multiListField.label}. Details:`, fallbackError);
+            throw new Error(`Could not process multi-list field: ${multiListField.label}`);
+        }
     }
 };
+
 
 export const processDateTimeField = async (page, dateTimeField) => {
     // await page.locator('#datetime1').click();
