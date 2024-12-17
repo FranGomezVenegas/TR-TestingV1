@@ -14,7 +14,7 @@ import { attachScreenshot, justificationPhrase, fillUserField, fillPasswordField
 
 import { handleTabInteraction } from '../1TRAZiT-Commons/tabsInteractions';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions';
-import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractions';
+import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
 import { handleObjectByTabsWithSearchInteraction } from '../1TRAZiT-Commons/objectByTabsWithSearch';
 import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
@@ -108,31 +108,31 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         // Verifica si el campo es un combobox y selecciona la opción
         if (Button.locator.includes('combobox')) {
             await test.step(Button.phraseSelectOption, async () => {
-                await page.getByRole(Button.locator).selectOption(Button.valueInput);
+                await page.getByRole(Button.locator).selectOption(Button.valueInput, { timeout: 3000 }); // Timeout de 3 segundos
                 await page.pause(); // Pausa para depuración si es necesario
             });
         } else {
             try {
                 // Realiza clic, llena el campo y presiona Enter
                 await test.step(Button.phraseClickInput, async () => {
-                    await page.locator(Button.locator).click({timeout: 1000});
+                    await page.locator(Button.locator).click({ timeout: 3000 }); // Timeout de 3 segundos
                     await page.pause(); // Pausa para depuración si es necesario
                 });
 
                 await test.step(Button.phraseFillField, async () => {
-                    await page.locator(Button.locator).fill(Button.valueInput);
+                    await page.locator(Button.locator).fill(Button.valueInput, { timeout: 3000 }); // Timeout de 3 segundos
                     await page.pause(); // Pausa para depuración si es necesario
                 });
 
                 await test.step(Button.phrasePressEnter, async () => {
-                    await page.locator(Button.locator).press(Button.press);
+                    await page.locator(Button.locator).press(Button.press, { timeout: 3000 }); // Timeout de 3 segundos
                     await page.pause(); // Pausa para depuración si es necesario
                 });
             } catch (error) {
                 console.log("Error haciendo clic en el botón:", error);
                 try {
                     const selectElement = page.locator(Button.locator);
-                    await selectElement.selectOption({ value: Button.valueInput });
+                    await selectElement.selectOption({ value: Button.valueInput }, { timeout: 3000 }); // Timeout de 3 segundos
                 } catch (innerError) {
                     console.error("Error al seleccionar opción en el <select>:", innerError);
                 }
@@ -145,7 +145,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
                     await page.pause();
                 }
             });
-        }
+        }    
 
         // Justificación y aceptación
         await fillUserField(page, testInfo); // Rellena el campo de "User"
@@ -161,7 +161,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         // Intentar cerrar el cuadro de resultados si está presente
         const closeButtonLocator = page.locator('#resultDialog').getByText('close');
         try {
-            await closeButtonLocator.click({ timeout: 2000 });
+            await closeButtonLocator.click({ timeout: 3000 }); // Timeout de 3 segundos
         } catch (error) {
             console.log('El botón no fue encontrado en el tiempo esperado. Continuando...');
         }
@@ -190,6 +190,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         });
     }
 };
+
 
 
 

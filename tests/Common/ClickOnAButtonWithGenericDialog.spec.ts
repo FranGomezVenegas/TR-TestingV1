@@ -238,6 +238,14 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         }
     });
 
+    // Definir el manejador de diálogos aquí, fuera del bloque try
+    const handleDialog = async (dialog) => {
+        console.error(`Se detectó un alert con el mensaje: "${dialog.message()}"`);
+        await dialog.dismiss(); // Cierro el alert. 
+        throw new Error(`El test falló debido a un alert con el mensaje: "${dialog.message()}"`);
+    };
+    page.on('dialog', handleDialog);
+
     // Check for fields in the dialog
     const dialogInfo = buttonWithDialog.dialogInfo;
     await test.step('Handle dialog fields', async () => {
@@ -359,6 +367,8 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     if (!clicked) {
         console.log("No 'Accept' button was clicked. Ensure the buttons are visible.");
     }
+    page.off('dialog', handleDialog);
+
   
     // Network response validation
     await test.step(phraseReport.phraseVerifyNetwork, async () => {
@@ -392,7 +402,7 @@ test.describe('Desktop Mode', () => {
         });
   
         const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsNewInstrument';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'InstrumentFamilyListUpdateInstrumentFamily';
   
         // Define procInstanceName antes de pasarlo
         procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; // Valor predeterminado o el valor de tu entorno

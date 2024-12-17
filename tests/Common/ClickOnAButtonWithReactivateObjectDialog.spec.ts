@@ -15,22 +15,57 @@ import { clickElement, justificationPhrase, fillUserField, fillPasswordField, cl
 import { clickButtonById, clickElementByText, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions';
-import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions';
+import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
 import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
 import {handleAuditAndSign} from '../1TRAZiT-Commons/handleAuditAndSign'
 import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
-//Function with all tests.
+// Definir los tipos para los mensajes de consola y errores
+interface ConsoleMessage {
+    type: string;
+    text: string;
+    location: string | undefined;
+    timestamp: string;
+    args: string[];
+}
+
+interface PageError {
+    message: string;
+    stack: string;
+    timestamp: string;
+}
+
+interface NetworkError {
+    url: string;
+    method: string;
+    failure: string;
+    timestamp: string;
+}
+
+interface ResponseError {
+    url: string;
+    status: number;
+    statusText: string;
+    timestamp: string;
+    body?: string; // body puede ser opcional en los errores de respuesta
+}
+
+interface WorkerError {
+    url: string;
+    timestamp: string;
+}
+
+// Función con todos los tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
     await handleMenus(page);
 
-    // Create instances of Logger and NetworkInterceptor
+    // Crear instancias de Logger y NetworkInterceptor
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
 
     let buttonWithDialog;
 
-    // If configuration data is available, process the JSON
+    // Si los datos de configuración están disponibles, procesar el JSON
     if (ConfigSettings && ConfigSettings.dataForTest) {
         let unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
         try {
@@ -43,13 +78,13 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         buttonWithDialog = dataForTestFromFile;
     }
 
-    // Attach Logger and NetworkInterceptor to the page
+    // Adjuntar Logger y NetworkInterceptor a la página
     await test.step(phraseReport.phraseNetworkInterceptionAndLogger, async () => {
         logger.attachToPage(page);
         networkInterceptor.attachToPage(page);
     });
 
-    // NOTIFICATIONS
+    // NOTIFICACIONES
     let afterEachData = {
         textInNotif1: buttonWithDialog.textInNotif1,
         textInNotif2: buttonWithDialog.textInNotif2,
@@ -61,55 +96,158 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     // Llamadas a interacciones previas
     await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, buttonWithDialog);
 
-    // Llamo a la funcion para comprobar si un objectByTabs tiene un search. Essta funcion solo controla el search
-    // clica en este y añada el campo que se desea buscar.
+    // Interacción con el objeto con búsqueda
     await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, buttonWithDialog);
     
     await handleActionNameInteraction(page, testInfo, buttonWithDialog);
 
+    // Estructura para almacenar todos los mensajes de consola y errores del sistema
+    const consoleMessages: ConsoleMessage[] = [];
+    const systemErrors = {
+        pageErrors: [] as PageError[],
+        networkErrors: [] as NetworkError[],
+        responseErrors: [] as ResponseError[],
+        dialogErrors: [] as string[],  // Asumiendo que los errores de diálogo son simplemente mensajes de texto
+        workerErrors: [] as WorkerError[],
+    };
+
+    // Manejadores para capturar mensajes y errores
+    const handleConsoleMessage = (msg) => {
+        const logEntry: ConsoleMessage = {
+            type: msg.type(),
+            text: msg.text(),
+            location: msg.location(),
+            timestamp: new Date().toISOString(),
+            args: msg.args().map(arg => arg.toString()),
+        };
+
+        console.log(`[${logEntry.timestamp}] Console ${logEntry.type}:`, logEntry.text);
+        consoleMessages.push(logEntry); // Almacenar todos los mensajes de consola
+    };
+
+    const handlePageError = (error) => {
+        systemErrors.pageErrors.push({
+            message: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString(),
+        });
+        console.error(`[Page Error] ${error.message}`);
+    };
+
+    const handleRequestFailed = (request) => {
+        systemErrors.networkErrors.push({
+            url: request.url(),
+            method: request.method(),
+            failure: request.failure()?.errorText || 'Unknown error',
+            timestamp: new Date().toISOString(),
+        });
+        console.error(`[Network Error] ${request.failure()?.errorText || 'Unknown error'} - ${request.url()}`);
+    };
+
+    const handleResponse = async (response) => {
+        if (!response.ok()) {
+            const errorEntry: ResponseError = {
+                url: response.url(),
+                status: response.status(),
+                statusText: response.statusText(),
+                timestamp: new Date().toISOString(),
+            };
+            try {
+                errorEntry.body = await response.text();
+            } catch {
+                errorEntry.body = 'Unable to fetch response body';
+            }
+            systemErrors.responseErrors.push(errorEntry);
+            console.error(`[Response Error] ${response.status()} - ${response.url()}`);
+        }
+    };
+
+    const handleWorkerError = (worker) => {
+        systemErrors.workerErrors.push({
+            url: worker.url(),
+            timestamp: new Date().toISOString(),
+        });
+        console.error(`[Worker Error] Worker at ${worker.url()} encountered an error.`);
+    };
+    // Definir el manejador de diálogos aquí, fuera del bloque try
+    const handleDialog = async (dialog) => {
+        console.error(`Se detectó un alert con el mensaje: "${dialog.message()}"`);
+        await dialog.dismiss(); // Cierro el alert. 
+        throw new Error(`El test falló debido a un alert con el mensaje: "${dialog.message()}"`);
+    };
+
+    // Configurar listeners
+    page.on('console', handleConsoleMessage);
+    page.on('pageerror', handlePageError);
+    page.on('requestfailed', handleRequestFailed);
+    page.on('response', handleResponse);
+    page.on('worker', handleWorkerError);
+
+    // Configurar el listener 'dialog' justo antes del clic
+    page.on('dialog', handleDialog);
+
     await clickElement(page, buttonWithDialog.numbersOfDays.label);
-    //await page.getByLabel(buttonWithDialog.numbersOfDays.label).click();
+
     await test.step(buttonWithDialog.phrasePauses, async () => {
         await page.pause();
         await page.pause();
         await page.pause();
-    })
+    });
     await page.getByLabel(buttonWithDialog.numbersOfDays.label).fill(buttonWithDialog.numbersOfDays.value);
-    await test.step(buttonWithDialog.phrasePauses, async () => {
-        await page.pause();
-        await page.pause();
-        await page.pause();
-    })
-
-    //await page.locator(buttonWithDialog.refresh.locator).getByLabel(buttonWithDialog.refresh.label).click({timeout: 10000});
-    //await page.locator(buttonWithDialog.refreshLocator).getByLabel(buttonWithDialog.refreshLabel).click({timeout: 10000});
-    await page.locator(buttonWithDialog.refreshLocator).click({ timeout: 10000 });
 
     await test.step(buttonWithDialog.phrasePauses, async () => {
         await page.pause();
         await page.pause();
         await page.pause();
-    })
+    });
+
+    await page.locator(buttonWithDialog.refreshLocator).click({ timeout: 2000 });
+
+    // Remover listeners y adjuntar errores al test
+    page.removeAllListeners();
+    page.off('dialog', handleDialog);
+
+    // Adjuntar los errores y mensajes al reporte del test
+    testInfo.attachments.push({
+        name: 'messages.json',
+        contentType: 'application/json',
+        body: Buffer.from(JSON.stringify({ consoleMessages, systemErrors }, null, 2)),
+    });
+
+    // Lanzar un error si se detectaron problemas críticos
+    if (
+        systemErrors.pageErrors.length > 0 ||
+        systemErrors.networkErrors.length > 0 ||
+        systemErrors.responseErrors.length > 0
+    ) {
+        throw new Error('Errores detectados durante la ejecución del test.');
+    }
+    await test.step(buttonWithDialog.phrasePauses, async () => {
+        await page.pause();
+        await page.pause();
+        await page.pause();
+    });
     await clickElement(page, buttonWithDialog.optionToReactivate.toReactivate);
-    //await page.getByLabel('Instrument to reactivate').click();
     
     await test.step(buttonWithDialog.phrasePauses, async () => {
         await page.pause();
         await page.pause();
         await page.pause();
-    })
-    await page.getByRole('option', { name:  buttonWithDialog.optionToReactivate.option }).click();
+    });
+    await page.getByRole('option', { name: buttonWithDialog.optionToReactivate.option }).click();
+
     await test.step(buttonWithDialog.phrasePauses, async () => {
         await page.pause();
         await page.pause();
         await page.pause();
-    })
+    });
     await test.step(buttonWithDialog.phraseScreenShots, async () => {
         await attachScreenshot(testInfo, buttonWithDialog.screenShotsFilled, page, ConfigSettingsAlternative.screenShotsContentType);
         if (buttonWithDialog.phrasePauses) {
             await page.pause();
         }
     });
+
     await page.getByRole('button', { name: buttonWithDialog.buttonAccept }).click();
     await test.step(buttonWithDialog.phraseScreenShots, async () => {
         await attachScreenshot(testInfo, buttonWithDialog.screenShotsAccept, page, ConfigSettingsAlternative.screenShotsContentType);
@@ -118,14 +256,13 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
                 await page.pause();
                 await page.pause();
                 await page.pause();
-            }
-         )}
+            });
+        }
     });
-    
 
-    // Justification Phrase
-    await fillUserField(page, testInfo); // Rellena el campo de "User"
-    await fillPasswordField(page, testInfo); // Rellena el campo de "Password"
+    // Justificación
+    await fillUserField(page, testInfo);
+    await fillPasswordField(page, testInfo);
 
     // Continuar con la justificación y otras acciones
     await justificationPhrase(page, 30000, testInfo);   
@@ -134,37 +271,14 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     await clickAcceptButton(page);
     await clickDoButton(page);
   
+    
+    
     // Verificar que no haya errores en la consola
     await test.step(phraseReport.phraseError, async () => {
-      logger.printLogs();
-      expect(logger.errors.length).toBe(0);
-    });
-
-    // Verificar respuestas de red capturadas
-    await test.step(phraseReport.phraseVerifyNetwork, async () => {
-        networkInterceptor.printNetworkData();
-        const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-        expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
-    });
-
-    // Validar respuestas utilizando ResponseValidator
-    await test.step(phraseReport.phraseVerifyNetwork, async () => {
-        const responseValidator = new ResponseValidator(networkInterceptor.responses);
-        try {
-            await responseValidator.validateResponses(); // Lanza un error si no hay respuestas válidas
-        } catch (error) {
-            // test.fail(error.message); // Marca la prueba como fallida con el mensaje
-        }
-    });
-
-    const mode = await notificationWitness.getDeviceMode(testInfo);
-
-    // Llamar a addNotificationWitness después de realizar acciones
-    await test.step(ReportNotificationPhase.phraseCaptureNotification, async () => {
-        const capturedObjectName = await notificationWitness.addNotificationWitness(testInfo, afterEachData, mode);
-        console.log('Captured Object Name:', capturedObjectName);
+        expect(consoleMessages.length).toBe(0);
     });
 };
+
 
 
 
