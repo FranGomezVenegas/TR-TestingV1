@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config.js';
 import { attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
 
-const timeout = 40000;
+const timeout = 3000;
 
 export const handleActionNameInteraction = async (page, testInfo, Button) => {
     if (!Button?.buttonName) {
@@ -79,6 +79,13 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
         console.error(`[Worker Error] Worker at ${worker.url()} encountered an error.`);
     };
 
+    // Definir el manejador de diálogos aquí, fuera del bloque try
+    const handleDialog = async (dialog) => {
+        console.error(`Se detectó un alert con el mensaje: "${dialog.message()}"`);
+        await dialog.dismiss(); // Cierro el alert. 
+        throw new Error(`El test falló debido a un alert con el mensaje: "${dialog.message()}"`);
+    };
+
     try {
         // Configurar listeners
         page.on('console', handleConsoleMessage);
@@ -91,13 +98,16 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
         if (Button.selectName) {
             await test.step(Button.phraseSelect, async () => {
                 const position = Button.positionSelectElement ?? 0;
-                await page.getByText(Button.selectName).nth(position).click({ timeout: 3000 });
+                await page.getByText(Button.selectName).nth(position).click({ timeout });
             });
 
             if (Button.screenShotsSelect) {
                 await attachScreenshot(testInfo, Button.screenShotsSelect, page, ConfigSettingsAlternative.screenShotsContentType);
             }
         }
+
+        // Configuro el listener 'dialog' justo antes del clic
+        page.on('dialog', handleDialog);
 
         // Clic en el botón
         await test.step(Button.phraseButtonName, async () => {
@@ -118,6 +128,7 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
     } finally {
         // Remover listeners y adjuntar errores al test
         page.removeAllListeners();
+        page.off('dialog', handleDialog);
 
         // Adjuntar los errores y mensajes al reporte del test
         testInfo.attachments.push({
