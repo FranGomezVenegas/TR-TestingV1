@@ -87,8 +87,21 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         await test.step(print.phrasePrintDialog, async () => {
             const [newPage] = await Promise.all([
                 page.waitForEvent('popup'), // Waits for a new page to open (print dialog)
-                page.getByLabel(print.buttonName).nth(0).dblclick(), // Click to open print dialog.
+                (async () => {
+                    try {
+                        // Intenta hacer clic en el botón en la posición print.positionButton, si está definido, o en la posición 0
+                        const buttonLocator = page.getByLabel(print.buttonName).nth(print.positionButton ?? 0); // Usa print.positionButton o 0 si no está definido
+                        await buttonLocator.click({ timeout: 3000 }); // Clic para abrir el diálogo de impresión
+                        console.log("Clic correctamente en el botón:", buttonLocator);
+                    } catch (error) {
+                        console.log("Intentando basado en su locator:", error);
+                        const buttonLocator = page.locator(print.buttonName).nth(print.positionButton ?? 0); 
+                        await buttonLocator.click({ timeout: 3000 });
+                        console.log("Clic correctamente en el botón:", buttonLocator);
+                    }
+                })()
             ]);
+            
 
             // Ensure the newPage has loaded completely
             await test.step(print.phraseWaitForPrintDialog, async () => {
@@ -207,10 +220,10 @@ test.describe('Desktop Mode', () => {
         });
   
         const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ProductDailyEntriesPrintHorizontal';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'RandD'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
