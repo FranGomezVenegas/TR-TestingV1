@@ -23,6 +23,13 @@ export class OpenProcedureWindow {
         }
     
         try {
+            const handleDialog = async (dialog) => {
+                console.error(`Se detectó un alert con el mensaje: "${dialog.message()}"`);
+                await dialog.dismiss(); // Cierro el alert. 
+                throw new Error(`El test falló debido a un alert con el mensaje: "${dialog.message()}"`);
+            };
+            page.on('dialog', handleDialog);
+
             await test.step("Check dataForTest.desktopMode is defined", async () => {
                 if (!dataForTest.desktopMode) {
                     throw new Error("dataForTest.desktopMode es undefined.");
@@ -103,6 +110,11 @@ export class OpenProcedureWindow {
                     // Primer intento: hacer clic en el texto 'Active Instruments'
                     await page.getByText(dataForTest.desktopMode.screenShotName, { exact: true }).first().click({timeout:1000});
                     console.log("Clicked on 'menu text'");
+                    //Para cerrar
+                    await page.getByRole('button', { name: dataForTest.desktopMode.label, exact: true }).click({ timeout: 1000 });
+                    await page.mouse.click(10, 20); // Esto hará clic en las coordenadas (100, 200) 
+
+
                 } catch (error) {
                     console.log("'Pestaña' no encontrada, intentando navegar por URL...");
                     
@@ -133,6 +145,8 @@ export class OpenProcedureWindow {
                 }
             });
             await page.pause();
+            page.off('dialog', handleDialog);
+
         } catch (error) {
             console.error("Error en openWindowForDesktop:", error);
             throw error;
