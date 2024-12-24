@@ -258,13 +258,13 @@ export class NotificationWitness {
             // Adjuntamos capturas de pantalla para la notificación seleccionada
             if (notificationDivToClick) {
                 await testInfo.attach(platformMenuNames.notification.main.screenShotsName, {
-                    body: await notificationDivToClick.screenshot(),
+                    body: await notificationDivToClick.screenshot({timeout: 2000}),
                     contentType: ConfigSettings.screenShotsContentType
                 });
     
                 // Hacemos clic en la notificación seleccionada
                 console.log('Haciendo clic en la notificación seleccionada.');
-                await notificationDivToClick.click();
+                await notificationDivToClick.click({timeout: 5000});
             }
     
             return 'desktop';
