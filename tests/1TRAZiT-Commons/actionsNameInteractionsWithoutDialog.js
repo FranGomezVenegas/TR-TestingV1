@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config.js';
 import { attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
 
-const timeout = 3000;
+const timeout = 5000;
 
 export const handleActionNameInteraction = async (page, testInfo, Button) => {
     if (!Button?.buttonName) {
@@ -104,6 +104,11 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
             if (Button.screenShotsSelect) {
                 await attachScreenshot(testInfo, Button.screenShotsSelect, page, ConfigSettingsAlternative.screenShotsContentType);
             }
+            await test.step('Pauses', async () => {
+                await page.pause();
+                await page.pause();
+                await page.pause();
+            });
         }
 
         // Configuro el listener 'dialog' justo antes del clic
@@ -114,6 +119,7 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
             const selectorBoton = `#${Button.buttonName}`;
             const elementos = page.locator(selectorBoton);
             const cantidad = await elementos.count();
+            await page.waitForTimeout(2000);
 
             if (cantidad === 0) throw new Error(`No se encontró el botón con ID: ${Button.buttonName}`);
             await elementos.nth(Button.positionButton || 0).click({ timeout });
