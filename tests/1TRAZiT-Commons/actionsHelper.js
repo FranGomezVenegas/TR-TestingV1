@@ -54,7 +54,7 @@ export const clickElementByText1 = async (page, text, position = 0, timeout = 30
     }
 };
 // Clic a un elemento para luego escribir o hacer click a un botón.
-export const clickElement = async (page, selector, timeout = 30000) => {
+export const clickElement = async (page, selector, timeout = 1000) => {
     try {
         await page.getByLabel(selector, { exact: true }).click({ timeout });
     } catch (error) {
@@ -99,7 +99,7 @@ export const clickOption = async (page, optionName, timeout = 30000) => {
     try {
         const option = page.getByRole('option', { name: optionName, exact: true });
         if (await option.isVisible()) {
-            await option.click({ timeout });
+            await option.click({ timeout, force: true });
         } else {
             console.log(`La opción con nombre '${optionName}' no es visible.`);
         }
@@ -108,6 +108,7 @@ export const clickOption = async (page, optionName, timeout = 30000) => {
         throw error;
     }
 };
+
 
 
 // Escribe en un campo que ha sido seleccionado.
@@ -621,8 +622,8 @@ export const clickAcceptButton = async (page, timeout = 3000) => {
 export const clickDoButton = async (page, timeout = 3000) => {
     try {
         await test.step("Check if 'Do' button is visible", async () => {
-            const DoButton = page.getByRole('button', { name: 'Do' });
-            const isVisible = await DoButton.isVisible({ timeout }).catch(() => false);
+            const DoButton = page.getByRole('button', { name: 'Do', exact: true });
+            const isVisible = await DoButton.isVisible({ force: true, timeout }).catch(() => false);
 
             if (!isVisible) {
                 console.log("No 'Do' button is visible. Skipping the step.");
@@ -660,5 +661,32 @@ export const clickDoButton = async (page, timeout = 3000) => {
         throw error; // Lanzar el error para que el test falle explícitamente
     }
 };
+
+export async function clickDoButtonJustification(page) {
+    try {
+        // Target specifically the second 'Do' button using nth(1)
+        const buttonLocator = page.locator('md-filled-button', { hasText: 'Do' }).nth(1);
+
+        // Wait for the button to be visible
+        const isVisible = await buttonLocator.isVisible({ timeout: 2000 })
+            .catch(() => false);
+
+        if (!isVisible) {
+            console.log('Second "Do" button is not visible');
+            return;
+        }
+
+        // Click the button
+        await buttonLocator.click({
+            timeout: 2000,
+            force: true
+        });
+        
+        console.log('Successfully clicked second "Do" button');
+    } catch (error) {
+        console.error('Failed to click second "Do" button:', error);
+        throw error;
+    }
+}
 
 
