@@ -6,6 +6,11 @@ export const processTestData = async (page, consoleData, testDataGame) => {
     const testData = JSON.parse(testDataGame);
 
     const processFields = async (fieldType) => {
+        if (fieldType === 'checkbox') {
+            await processCheckboxField(page, testDataGame);
+            return;
+        }
+
         const fieldsToProcess = Object.keys(testData)
             .filter(key => key.startsWith(fieldType))
             .map(key => testData[key]);
@@ -24,8 +29,11 @@ export const processTestData = async (page, consoleData, testDataGame) => {
                             case 'date':
                                 await processDateField(page, consoleData, field);
                                 break;
-                            case 'checkbox':
-                                await processCheckboxField(page, field);
+                            // case 'checkbox':
+                            //     await processCheckboxField(page, field);
+                            //     break;
+                            case 'checkbox': // Caso de checkbox añadido
+                                await processCheckboxField(page, testDataGame, checkboxField);
                                 break;
                             case 'multilist':  
                                 await processMultiListField(page, field);
@@ -137,13 +145,13 @@ export const processListField = async (page, consoleData, testDataGame, listFiel
     for (const searchLabel of searchAttempts) {
         try {
             await test.step(`Trying to click on list field: ${searchLabel}`, async () => {
-                await clickElement(page, searchLabel, 450);
-                await clickOption(page, listField.option, 450);
+                await clickElement(page, searchLabel, 50);
+                await clickOption(page, listField.option, 50);
                 console.log(`Selected list field: ${searchLabel}`);
             });
             return;
         } catch (attemptError) {
-            await clickOption(page, listField.option, 450);
+            await clickOption(page, listField.option, 50);
             console.log(`Selected list field: ${searchLabel}`);
         }
     }
@@ -151,43 +159,62 @@ export const processListField = async (page, consoleData, testDataGame, listFiel
     // Intentar procesar las listas con un selector por ID, pero asegurándonos de no procesarlas más de una vez
     try {
         await test.step('Trying to click using ID selector pattern', async () => {
-            await page.waitForTimeout(450);
-
+            await page.waitForTimeout(50);
+    
             const parsedData = JSON.parse(testDataGame);
             const listFields = Object.keys(parsedData).filter(key => key.startsWith('list')); // Filtrar campos de listas
-
+    
             for (const listKey of listFields) {
                 // Verificar si esta lista ya fue procesada globalmente
                 if (globalProcessedLists.has(listKey)) {
                     console.log(`Skipping already processed list: ${listKey}`);
-                    return;
+                    continue; // Continuar con la siguiente lista
                 }
-
-                const listNumber = listKey.match(/\d+/)[0]; // Obtener el número de la lista
+    
+                const listNumber = listKey.match(/\d+/)?.[0]; // Obtener el número de la lista
+                if (!listNumber) {
+                    console.log(`Could not extract list number for ${listKey}`);
+                    continue; // Si no se puede extraer el número, continuar
+                }
+    
                 const listSelector = `#list${listNumber} #label`; // Selector único para la lista
                 const currentList = parsedData[listKey]; // Datos de la lista actual
-
+    
                 try {
                     // Procesar la lista si no fue procesada antes
-                    await page.locator(listSelector).click({ timeout: 3000 });
-                    await page.waitForTimeout(450);
-
-                    const optionSelector = `${currentList.option}`; // Selector para la opción
-                    await clickOption(page, optionSelector, 1000);
-                    await page.pause(); // Pausa opcional para inspección
-
-                    // Marcar la lista como procesada globalmente
-                    globalProcessedLists.add(listKey);
-                    await page.waitForTimeout(450);
-
+                    await test.step(`Processing list: ${listKey}`, async () => {
+                        console.log(`Attempting to click list: ${listSelector}`);
+                        const listElement = page.locator(listSelector);
+                        if (await listElement.isVisible()) {
+                            await listElement.click({timeout: 500 });
+                            await page.waitForTimeout(500);
+    
+                            // Selector para la opción
+                            const optionSelector = currentList.option;
+                            if (!optionSelector) {
+                                throw new Error(`Option not defined for list: ${listKey}`);
+                            }
+    
+                            console.log(`Selecting option: ${optionSelector}`);
+                            await clickOption(page, optionSelector, 500);
+    
+                            // Marcar la lista como procesada globalmente
+                            globalProcessedLists.add(listKey);
+                            console.log(`Processed list: ${listKey}`);
+                            await page.waitForTimeout(50);
+                        } else {
+                            console.log(`List not visible: ${listSelector}`);
+                        }
+                    });
                 } catch (error) {
-                    console.log(`Error in ${listKey}: ${error.message}`);
+                    console.log(`Error processing ${listKey}: ${error.message}`);
                 }
             }
         });
     } catch (error) {
         console.log(`ID selector attempt failed: ${error.message}`);
     }
+    
 
     // Si no se pudo encontrar el campo con los intentos previos, buscar coincidencias flexibles
     const matchingField = findMatchingField(consoleData, listField.label);
@@ -201,6 +228,7 @@ export const processListField = async (page, consoleData, testDataGame, listFiel
         }
     }
 };
+
 
 
 export const processDateField = async (page, consoleData, dateField) => {
@@ -252,31 +280,69 @@ export const processDateField = async (page, consoleData, dateField) => {
     }
 };
 
+
 // New function to process checkbox fields
-export const processCheckboxField = async (page, checkboxField) => {
-    const checkboxLabel = checkboxField.label;
+// export const processCheckboxField = async (page, checkboxField) => {
+//     const checkboxLabel = checkboxField.label;
 
-    // Find the checkbox element
-    const checkbox = await page.getByLabel(checkboxLabel);
+//     // Find the checkbox element
+//     const checkbox = await page.getByLabel(checkboxLabel);
 
-    if (checkboxField.boolean === true) {
-        if (!(await checkbox.isChecked())) {
-            // Check the checkbox if it is not already checked
-            await test.step(`Checking checkbox: ${checkboxLabel}`, async () => {
-                await checkbox.check({ timeout: 15000 });
-                console.log(`Checked checkbox: ${checkboxLabel}`);
-            });
-        }
-    } else if (checkboxField.boolean === false) {
-        if (await checkbox.isChecked()) {
-            // Uncheck the checkbox if it is checked
-            await test.step(`Unchecking checkbox: ${checkboxLabel}`, async () => {
-                await checkbox.uncheck({ timeout: 15000 });
-                console.log(`Unchecked checkbox: ${checkboxLabel}`);
-            });
-        }
+//     if (checkboxField.boolean === true) {
+//         if (!(await checkbox.isChecked())) {
+//             // Check the checkbox if it is not already checked
+//             await test.step(`Checking checkbox: ${checkboxLabel}`, async () => {
+//                 await checkbox.check({ timeout: 15000 });
+//                 console.log(`Checked checkbox: ${checkboxLabel}`);
+//             });
+//         }
+//     } else if (checkboxField.boolean === false) {
+//         if (await checkbox.isChecked()) {
+//             // Uncheck the checkbox if it is checked
+//             await test.step(`Unchecking checkbox: ${checkboxLabel}`, async () => {
+//                 await checkbox.uncheck({ timeout: 15000 });
+//                 console.log(`Unchecked checkbox: ${checkboxLabel}`);
+//             });
+//         }
+//     }
+//     await page.waitForTimeout(1000);
+// };
+
+const globalProcessedCheckboxes = new Set();
+
+export const processCheckboxField = async (page, testDataGame) => {
+    try {
+        await test.step('Procesando checkboxes', async () => {
+            const parsedData = typeof testDataGame === 'string' ? JSON.parse(testDataGame) : testDataGame;
+            
+            const checkboxFields = Object.entries(parsedData)
+                .filter(([key]) => key.startsWith('checkbox'))
+                .map(([key, field]) => ({ key, ...field }));
+
+            for (const field of checkboxFields) {
+                if (globalProcessedCheckboxes.has(field.key)) continue;
+
+                const selector = `#${field.key} #input`;
+                const checkbox = page.locator(selector);
+
+                if (await checkbox.isVisible()) {
+                    try {
+                        if (field.boolean) {
+                            await checkbox.check({ timeout: 500 });
+                        } else {
+                            await checkbox.uncheck({ timeout: 500 });
+                        }
+                        await page.waitForTimeout(50);
+                        globalProcessedCheckboxes.add(field.key);
+                    } catch (error) {
+                        console.error(`Error en checkbox ${field.key}: ${error.message}`);
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error(`Error general: ${error.message}`);
     }
-    await page.waitForTimeout(1000);
 };
 
 export const processMultiListField = async (page, multiListField) => {
