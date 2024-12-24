@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickDoButton, esignRequired, clickElementByText, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { clickDoButtonJustification, clickDoButton, esignRequired, clickElementByText, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 
@@ -108,12 +108,14 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
                     .click({ timeout: 1000 });
             } catch (error) {
                 console.log("Primary click method failed, using fallback method:", error);
+                const position = addAttachment.positionButton || 0;
 
                 // Fallback method with force and timeout
                 await page
                     .locator('md-icon')
                     .filter({ hasText: addAttachment.buttonName.label })
                     .locator('slot')
+                    .nth(position) 
                     .click({ force: true, timeout: 1000 });
             }
         });
@@ -149,6 +151,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
                 await page.getByLabel(addAttachment.fldTitle.label).fill(addAttachment.fldTitle.value);
                 await test.step(addAttachment.phrasePauses, async () => {
                     await page.pause();
+                    await page.waitForTimeout(1000);
                 });
             });
         }
@@ -210,6 +213,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         await esignRequired(page, 30000, testInfo);
         await clickAcceptButton(page);
         await clickDoButton(page);
+        await clickDoButtonJustification(page);
         page.off('dialog', handleDialog);
 
          // Justification Phrase
@@ -221,10 +225,10 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         //await clickAcceptButton(page);
             
         // Verify that there are no console errors
-        // await test.step(phraseReport.phraseError, async () => {
-        //     logger.printLogs();
-        //     expect(logger.errors.length).toBe(0);
-        // });
+        await test.step(phraseReport.phraseError, async () => {
+            logger.printLogs();
+            expect(logger.errors.length).toBe(0);
+        });
 
         // Verify captured network responses
         // await test.step(phraseReport.phraseVerifyNetwork, async () => {
@@ -242,7 +246,6 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
                 // test.fail(error.message); // Mark the test as failed with the message
             }
         });
-
         const mode = await notificationWitness.getDeviceMode(testInfo);
 
         // Call addNotificationWitness after performing actions
@@ -265,8 +268,8 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-      trazitTestName = process.env.TRAZIT_TEST_NAME || 'ProductDevelopmentDailyEntriesAddAttchment' ;
-      procInstanceName = process.env.PROC_INSTANCE_NAME || 'RandD'; // Valor predeterminado o el valor de tu entorno
+      trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInventoryLotsAddAttachment' ;
+      procInstanceName = process.env.PROC_INSTANCE_NAME || 'stock'; // Valor predeterminado o el valor de tu entorno
 
   
       await test.step('Perform common setup', async () => {

@@ -91,6 +91,7 @@ export async function handleMenus(page) {
         ]
     };
 
+    test.step("Click on menus", async () => {
     for (const [menu, options] of Object.entries(menus)) {
         const menuElement = page.getByText(menu, { exact: true }); // Identifica el menú principal
         if (await menuElement.count() > 0) {
@@ -108,4 +109,5 @@ export async function handleMenus(page) {
             // console.log(`No se encontró el menú principal: ${menu}`);
         }
     }
+});
 }
