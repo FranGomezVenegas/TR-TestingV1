@@ -59,10 +59,13 @@ if [ -d "$CURRENT_INNER_DIR" ]; then
         rm -rf "$NEW_OUTER_DIR"
     fi
 
+    # Crear el directorio exterior nuevo si no existe
+    if [ ! -d "$NEW_OUTER_DIR" ]; then
+        echo "El directorio exterior no existe. Creando directorio: $NEW_OUTER_DIR"
+        mkdir -p "$NEW_OUTER_DIR"
+    fi
+
     echo "Renombrando directorios..."
-    
-    # Crear el nuevo directorio exterior
-    mkdir -p "$NEW_OUTER_DIR"
     
     # Mover el directorio interior a la nueva ubicación
     mv "$CURRENT_INNER_DIR" "$NEW_INNER_DIR"
