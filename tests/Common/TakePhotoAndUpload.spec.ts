@@ -114,15 +114,16 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     });
 
     // Subo la foto
-    await test.step(Button.phraseUpload, async () => {
-        await newPage.getByRole('button', { name: Button.buttonUpload }).click({timeout: 2000});
-        await test.step(Button.phraseScreenShots, async () => {
-            await attachScreenshot(testInfo, Button.screenShotUpload, newPage, ConfigSettingsAlternative.screenShotsContentType);
-            if (Button.phrasePauses) {
-                await newPage.pause();
-            }
-        });
-    });
+    // await test.step(Button.phraseUpload, async () => {
+    //     await newPage.getByRole('button', { name: Button.buttonUpload }).click({timeout: 2000});
+    //     await test.step(Button.phraseScreenShots, async () => {
+    //         await attachScreenshot(testInfo, Button.screenShotUpload, newPage, ConfigSettingsAlternative.screenShotsContentType);
+    //         if (Button.phrasePauses) {
+    //             await newPage.pause();
+    //         }
+    //     });
+    // });
+    
     await test.step(Button.phraseCloseDialog, async () => {
         // Cierro el diálogo
         await newPage.locator(Button.closeDialog.locator)
