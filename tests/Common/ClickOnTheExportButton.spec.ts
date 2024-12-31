@@ -20,10 +20,11 @@ import { clickDoButton, esignRequired, justificationPhrase, fillUserField, fillP
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
 import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
+import { time } from 'console';
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
-    await handleMenus(page);
+    // await handleMenus(page);
 
   // Create instances of Logger and NetworkInterceptor
   const logger = new Logger();
@@ -62,11 +63,29 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
   await test.step('Preparar para esperar la descarga', async () => {
       const downloadPromise = page.waitForEvent('download');
+
         // Selecciona el elemento en la posición especificada por positionSelectElement o el primer elemento (0) si no está definido
         const position = Export.positionSelectElement !== undefined ? Export.positionSelectElement : 0;
         //await page.getByText(Button.selectName).nth(position).click();
-        
-        await page.getByLabel(Export.buttonName).nth(position).click();
+
+        try {
+            // Verifica si el elemento está disponible por título. (Nueva Plataforma: buttonName: Export)
+            if (await page.getByTitle(Export.buttonName).locator('#button').nth(position).isVisible({ timeout: 1000 })) {
+                await page.getByTitle(Export.buttonName).locator('#button').nth(position).click({ timeout: 3000, force: true });
+                console.log(`Hizo clic con getByTitle en el botón "${Export.buttonName}" en la posición ${position}.`);
+            } else if (await page.getByLabel(Export.buttonName).nth(position).isVisible({ timeout: 1000 })) {
+                // Si no está disponible por título, verifica por etiqueta. (Antigua Plataforma: buttonName: download)
+                await page.getByLabel(Export.buttonName).nth(position).click({ timeout: 3000, force: true });
+                console.log(`Hizo clic con getByLabel en el botón "${Export.buttonName}" en la posición ${position}.`);
+            } else {
+                throw new Error(`No se encontró el botón "${Export.buttonName}" en la posición ${position} con ninguno de los selectores.`);
+            }
+        } catch (error) {
+            console.error(`Error al intentar hacer clic en el botón Export: ${error.message}`);
+            throw error; 
+        }        
+
+        // // await page.getByLabel(Export.buttonName).nth(position).click({ timeout: 3000, force: true });
 
       // Espera a que el cuadro de diálogo esté visible
         const dialogVisible = await page.isVisible('#dialog-box');
@@ -254,10 +273,10 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInventoryLotsExport';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'stock'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
