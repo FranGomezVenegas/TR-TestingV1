@@ -690,3 +690,29 @@ export async function clickDoButtonJustification(page) {
 }
 
 
+export async function clickConfirmDialogButton(page) {
+    try {
+        // Localizar el botón "Do" dentro del diálogo de confirmación
+        const buttonLocator = page.locator('#confirm-dialog').getByRole('button', { name: 'Do' });
+
+        // Verificar si el botón es visible
+        const isButtonVisible = await buttonLocator.isVisible({ timeout: 1000 });
+
+        if (!isButtonVisible) {
+            console.log('The "Do" button in the confirm dialog is not visible. Exiting function.');
+            return;
+        }
+
+        // Hacer clic en el botón
+        await buttonLocator.click({
+            timeout: 1000,
+            force: true
+        });
+
+        console.log('Successfully clicked the "Do" button in the confirm dialog.');
+    } catch (error) {
+        console.error('Error while trying to click the "Do" button in the confirm dialog:', error);
+        throw error;
+    }
+}
+

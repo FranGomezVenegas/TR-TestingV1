@@ -29,8 +29,8 @@ export async function handleTabInteraction(page, testInfo, configSettings, butto
 
             if (!clicked) {
                 try {
-                    await test.step('Wait for 3 seconds', async () => {
-                        await page.waitForTimeout(3000);
+                    await test.step('Pauses', async () => {
+                        await page.waitForTimeout(500);
                     });
                     // Intentar tercer clic
                     await page.getByRole('button', { name: button.tab, exact: true }).click({ timeout: 1000 });

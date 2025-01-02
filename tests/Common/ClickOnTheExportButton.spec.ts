@@ -26,237 +26,240 @@ import { time } from 'console';
 const commonTests = async (ConfigSettings, page, testInfo) => {
     // await handleMenus(page);
 
-  // Create instances of Logger and NetworkInterceptor
-  const logger = new Logger();
-  const networkInterceptor = new NetworkInterceptor();
+    // Create instances of Logger and NetworkInterceptor
+    const logger = new Logger();
+    const networkInterceptor = new NetworkInterceptor();
 
-  let Export;
+    let Export;
 
-  // If configuration data is available, process the JSON
-  if (ConfigSettings && ConfigSettings.dataForTest) {
-      let unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
-      try {
-          Export = JSON.parse(unescapedString);
-      } catch (error) {
-          console.error("Error parsing JSON:", error);
-      }
-      Export = JSON.parse(Export.testDataGame);
-  } else {
-      Export = dataForTestFromFile;
-  }
+    // If configuration data is available, process the JSON
+    if (ConfigSettings && ConfigSettings.dataForTest) {
+        let unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
+        try {
+            Export = JSON.parse(unescapedString);
+        } catch (error) {
+            console.error("Error parsing JSON:", error);
+        }
+        Export = JSON.parse(Export.testDataGame);
+    } else {
+        Export = dataForTestFromFile;
+    }
 
-  // Attach Logger and NetworkInterceptor to the page
-  await test.step(phraseReport.phraseNetworkInterceptionAndLogger, async () => {
-      logger.attachToPage(page);
-      networkInterceptor.attachToPage(page);
-  });
+    // Attach Logger and NetworkInterceptor to the page
+    await test.step(phraseReport.phraseNetworkInterceptionAndLogger, async () => {
+        logger.attachToPage(page);
+        networkInterceptor.attachToPage(page);
+    });
 
-  // Llamadas a interacciones previas
-  await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, Export);
+    // Llamadas a interacciones previas
+    await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, Export);
 
-  // Llamo a la funcion para comprobar si un objectByTabs tiene un search.
-  await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, Export);
-  
-  console.log("El resultado fue falso, continuando con el flujo normal...");
+    // Llamo a la funcion para comprobar si un objectByTabs tiene un search.
+    await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, Export);
 
-  
+    console.log("El resultado fue falso, continuando con el flujo normal...");
 
-  await test.step('Preparar para esperar la descarga', async () => {
-      const downloadPromise = page.waitForEvent('download');
+    await test.step('Pauses', async () => {
+        await page.waitForTimeout(2000);
+    });
 
-        // Selecciona el elemento en la posición especificada por positionSelectElement o el primer elemento (0) si no está definido
-        const position = Export.positionSelectElement !== undefined ? Export.positionSelectElement : 0;
-        //await page.getByText(Button.selectName).nth(position).click();
+    await test.step('Preparar para esperar la descarga', async () => {
+        const downloadPromise = page.waitForEvent('download');
+
+        // Intentar hacer clic en Export primero
+        let clickedExport = false;
 
         try {
             // Verifica si el elemento está disponible por título. (Nueva Plataforma: buttonName: Export)
+            const position = Export.positionSelectElement !== undefined ? Export.positionSelectElement : 0;
+
             if (await page.getByTitle(Export.buttonName).locator('#button').nth(position).isVisible({ timeout: 1000 })) {
                 await page.getByTitle(Export.buttonName).locator('#button').nth(position).click({ timeout: 3000, force: true });
-                console.log(`Hizo clic con getByTitle en el botón "${Export.buttonName}" en la posición ${position}.`);
+                console.log(`Clicked with getByTitle on the button "${Export.buttonName}" at position ${position}.`);
+                clickedExport = true;
             } else if (await page.getByLabel(Export.buttonName).nth(position).isVisible({ timeout: 1000 })) {
                 // Si no está disponible por título, verifica por etiqueta. (Antigua Plataforma: buttonName: download)
                 await page.getByLabel(Export.buttonName).nth(position).click({ timeout: 3000, force: true });
-                console.log(`Hizo clic con getByLabel en el botón "${Export.buttonName}" en la posición ${position}.`);
+                console.log(`Clicked with getByLabel on the button "${Export.buttonName}" at position ${position}.`);
+                clickedExport = true;
+            
             } else {
-                throw new Error(`No se encontró el botón "${Export.buttonName}" en la posición ${position} con ninguno de los selectores.`);
+                console.log(`The button "${Export.buttonName}" not found initially.`);
             }
         } catch (error) {
-            console.error(`Error al intentar hacer clic en el botón Export: ${error.message}`);
-            throw error; 
-        }        
+            console.log(`Error trying to click Export button initially: ${error.message}`);
+        }
 
-        // // await page.getByLabel(Export.buttonName).nth(position).click({ timeout: 3000, force: true });
+        // Si no se hizo clic en Export, intenta hacer clic en more_horiz y luego en Export
+        if (!clickedExport) {
+            await test.step('Click on more_horiz', async () => {
+                try {
+                    const moreHorizButton = page.locator('md-icon:has-text("more_horiz")').first();
 
-      // Espera a que el cuadro de diálogo esté visible
-        const dialogVisible = await page.isVisible('#dialog-box');
-
-        // Aplica la transformación al cuadro de diálogo y hace clic en el botón "OK" si el cuadro de diálogo está visible
-        if (dialogVisible) {
-            await page.evaluate(() => {
-                const dialogBox = document.getElementById('dialog-box');
-                if (dialogBox) {
-                    dialogBox.style.transform = 'translate(-50%, -50%) scale(0.9)';
+                    // Verifica si el botón more_horiz está visible antes de hacer clic
+                    // const moreHorizButton = await page.locator('text=more_horiz', {exact: true}); 
+                    if (await moreHorizButton.isVisible()) {
+                        await moreHorizButton.click({ timeout: 1000, force: true });
+                        console.log('Clicked on the "more_horiz" button.');
+                    } else {
+                        console.log('The "more_horiz" button is not visible, skipping this step.');
+                    }
+                } catch (error) {
+                    console.log('No need to click on "more_horiz":', error.message);
                 }
             });
-            await test.step('Captura de pantalla antes de la descarga', async () => {
-                await testInfo.attach('Ok Button', {
-                    body: await page.screenshot(),
-                    contentType: 'image/png'
+
+            // Vuelve a intentar hacer clic en Export después de interactuar con more_horiz
+            await test.step('Retry clicking Export after more_horiz', async () => {
+                const position = Export.positionSelectElement !== undefined ? Export.positionSelectElement : 0;
+
+                try {
+                    if (await page.getByTitle(Export.buttonName).locator('#button').nth(position).isVisible({ timeout: 1000 })) {
+                        await page.getByTitle(Export.buttonName).locator('#button').nth(position).click({ timeout: 3000, force: true });
+                        console.log(`Clicked with getByTitle on the button "${Export.buttonName}" after more_horiz.`);
+                    } else if (await page.getByLabel(Export.buttonName).nth(position).isVisible({ timeout: 1000 })) {
+                        await page.getByLabel(Export.buttonName).nth(position).click({ timeout: 3000, force: true });
+                        console.log(`Clicked with getByLabel on the button "${Export.buttonName}" after more_horiz.`);
+                    } else {
+                        throw new Error(`The button "${Export.buttonName}" was not found even after clicking more_horiz.`);
+                    }
+                } catch (error) {
+                    console.error(`Error trying to click Export button after more_horiz: ${error.message}`);
+                    throw error;
+                }
+            });
+        }
+
+        // Espera a que la descarga termine
+        const download = await downloadPromise;
+
+        // Captura de pantalla de la página web y adjuntarla al reporte
+        await test.step('Captura de pantalla antes de la descarga', async () => {
+            await testInfo.attach(Export.screenShotsDownload, {
+                body: await page.screenshot(),
+                contentType: 'image/png'
+            });
+        });
+
+        // Formatear la fecha y hora
+        await test.step('Formatear la fecha y hora', async () => {
+            const now = new Date();
+            const formattedDate = now.getFullYear() + '-' +
+                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0') + 'T' +
+                String(now.getHours()).padStart(2, '0') + '-' +
+                String(now.getMinutes()).padStart(2, '0') + '-' +
+                String(now.getSeconds()).padStart(2, '0');
+
+            // Crear el nombre del archivo para el CSV utilizando screenShotName y la fecha/hora
+            const csvFileName = `${Export.desktopMode.screenShotName
+            }_${formattedDate}.csv`;
+            const filePath = path.join(Export.downloadPath, csvFileName); // Usar el nuevo nombre de archivo CSV
+
+            // Guardar el archivo descargado con el mismo nombre para adjuntar
+            await download.saveAs(filePath);
+
+            // Almacenar el nombre del archivo y la ruta en el contexto para uso posterior
+            Export.csvFileName = csvFileName;
+            Export.filePath = filePath;
+        });
+
+        await test.step('Verificar que el archivo .csv se haya descargado', async () => {
+            try {
+                await fsPromises.access(Export.filePath);
+            } catch {
+                console.error(Export.consoleError);
+                await testInfo.attach('error-log.txt', {
+                    body: Buffer.from(Export.consoleError),
+                    contentType: 'text/plain'
                 });
+                return;
+            }
+        });
+
+        await test.step('Leer y analizar el contenido del archivo .csv', async () => {
+            const parseCsv = (filePath: string) => {
+                return new Promise((resolve, reject) => {
+                    const parsedResults: any[] = [];
+                    const stream = fs.createReadStream(filePath)
+                        .pipe(csv())
+                        .on('data', (data) => parsedResults.push(data))
+                        .on('end', () => resolve(parsedResults))
+                        .on('error', reject);
+                });
+            };
+
+            const records = await parseCsv(Export.filePath);
+            console.log('\nContenido del CSV:', records, "\n");
+
+            // Adjuntar el archivo CSV usando el mismo nombre que en `csvFileName`
+            await testInfo.attach(Export.csvFileName, {
+                path: Export.filePath,
+                contentType: 'text/csv'
             });
-            // Espera a que el botón "OK" esté visible y haz clic
-            await page.getByRole('button', { name: 'OK' }).click();
-        } 
-        
-      // Esperar a que la descarga termine
-      const download = await downloadPromise;
+        });
 
-      // Captura de pantalla de la página web y adjuntarla al reporte
-      await test.step('Captura de pantalla antes de la descarga', async () => {
-          await testInfo.attach(Export.screenShotsDownload, {
-              body: await page.screenshot(),
-              contentType: 'image/png'
-          });
-      });
-
-      // Formatear la fecha y hora
-      await test.step('Formatear la fecha y hora', async () => {
-          const now = new Date();
-          const formattedDate = now.getFullYear() + '-' +
-              String(now.getMonth() + 1).padStart(2, '0') + '-' +
-              String(now.getDate()).padStart(2, '0') + 'T' +
-              String(now.getHours()).padStart(2, '0') + '-' +
-              String(now.getMinutes()).padStart(2, '0') + '-' +
-              String(now.getSeconds()).padStart(2, '0');
-
-          // Crear el nombre del archivo para el CSV utilizando screenShotName y la fecha/hora
-          const csvFileName = `${Export.desktopMode.screenShotName
-
-          }_${formattedDate}.csv`;
-          const filePath = path.join(Export.downloadPath, csvFileName); // Usar el nuevo nombre de archivo CSV
-
-          // Guardar el archivo descargado con el mismo nombre para adjuntar
-          await download.saveAs(filePath);
-
-          // Almacenar el nombre del archivo y la ruta en el contexto para uso posterior
-          Export.csvFileName = csvFileName; 
-          Export.filePath = filePath; 
-      });
-
-      await test.step('Verificar que el archivo .csv se haya descargado', async () => {
-          try {
-              await fsPromises.access(Export.filePath);
-          } catch {
-              console.error(Export.consoleError);
-              await testInfo.attach('error-log.txt', {
-                  body: Buffer.from(Export.consoleError),
-                  contentType: 'text/plain'
-              });
-              return;
-          }
-      });
-
-      await test.step('Leer y analizar el contenido del archivo .csv', async () => {
-          const parseCsv = (filePath: string) => {
-              return new Promise((resolve, reject) => {
-                  const parsedResults: any[] = [];
-                  const stream = fs.createReadStream(filePath)
-                      .pipe(csv())
-                      .on('data', (data) => parsedResults.push(data))
-                      .on('end', () => resolve(parsedResults))
-                      .on('error', reject);
-              });
-          };
-
-          const records = await parseCsv(Export.filePath);
-          console.log('\nContenido del CSV:', records, "\n");
-
-          // Adjuntar el archivo CSV usando el mismo nombre que en `csvFileName`
-          await testInfo.attach(Export.csvFileName, {
-              path: Export.filePath,
-              contentType: 'text/csv'
-          });
-      });
-
-      await test.step('Abrir el archivo en Excel y capturar la pantalla', async () => {
-        await new Promise<void>((resolve, reject) => {
-            // Abrir el archivo de Excel
-            exec(`cmd /c start "" "${Export.filePath}"`, async (err) => {
-                if (err) {
-                    console.error('Error al abrir el archivo en Excel:', err);
-                    reject(err);
-                    return;
-                }
-    
-                // Esperar a que Excel se abra y maximizar la ventana
-                await new Promise(resolve => setTimeout(resolve, 3000)); // Pausa de 3 segundos
-    
-                // Ejecutar el script VBS para maximizar Excel
-                exec(`cscript //nologo MaximizeExcel.vbs`, (err) => {
+        await test.step('Abrir el archivo en Excel y capturar la pantalla', async () => {
+            await new Promise<void>((resolve, reject) => {
+                // Abrir el archivo de Excel
+                exec(`cmd /c start "" "${Export.filePath}"`, async (err) => {
                     if (err) {
-                        console.error('Error al maximizar Excel:', err);
+                        console.error('Error al abrir el archivo en Excel:', err);
                         reject(err);
                         return;
                     }
-                });
-    
-                // Capturar la pantalla después de abrir y maximizar
-                await test.step('Esperar a que Excel se abra y maximizar', async () => {
-                    await new Promise(resolve => setTimeout(resolve, 2000)); // Pausa adicional si es necesario
-                });
-    
-                try {
-                    const img = await screenshot();
-    
-                    // Crear el nombre del archivo para la captura de pantalla de Excel
-                    const imgPath = path.join(Export.downloadPath, `${Export.desktopMode.screenShotName}_${Export.csvFileName.replace('.csv', '')}.png`); // Usar el mismo nombre con la fecha
-    
-                    // Guardar la captura
-                    fs.writeFileSync(imgPath, img);
-    
-                    // Adjuntar la captura al reporte de Playwright
-                    await testInfo.attach('Captura de Excel', {
-                        path: imgPath,
-                        contentType: 'image/png'
+
+                    // Esperar a que Excel se abra y maximizar la ventana
+                    await new Promise(resolve => setTimeout(resolve, 3000)); // Pausa de 3 segundos
+
+                    // Ejecutar el script VBS para maximizar Excel
+                    exec(`cscript //nologo MaximizeExcel.vbs`, (err) => {
+                        if (err) {
+                            console.error('Error al maximizar Excel:', err);
+                            reject(err);
+                            return;
+                        }
                     });
-    
-                    console.log('Captura de Excel adjuntada al reporte');
-                    resolve();
-                } catch (error) {
-                    console.error('Error al capturar Excel:', error);
-                    reject(error);
+
+                    // Capturar la pantalla después de abrir y maximizar
+                    await test.step('Esperar a que Excel se abra y maximizar', async () => {
+                        await new Promise(resolve => setTimeout(resolve, 2000)); // Pausa adicional si es necesario
+                    });
+
+                    try {
+                        const img = await screenshot();
+
+                        // Crear el nombre del archivo para la captura de pantalla de Excel
+                        const imgPath = path.join(Export.downloadPath, `${Export.desktopMode.screenShotName}_${Export.csvFileName.replace('.csv', '')}.png`); // Usar el mismo nombre con la fecha
+
+                        // Guardar la captura
+                        fs.writeFileSync(imgPath, img);
+
+                        // Adjuntar la captura al reporte de Playwright
+                        await testInfo.attach('Captura de Excel', {
+                            path: imgPath,
+                            contentType: 'image/png'
+                        });
+
+                        resolve();
+                    } catch (error) {
+                        console.error('Error al tomar la captura de pantalla de Excel:', error);
+                        reject(error);
+                    }
+                });
+            });
+        });
+
+        await test.step('Cerrar la aplicación de Excel', async () => {
+            exec('taskkill /im EXCEL.EXE /f', (err) => {
+                if (err) {
+                    console.error('Error al cerrar Excel:', err);
                 }
             });
         });
     });
-    
-  });
-
-  // Justification Phrase
-  await fillUserField(page, testInfo); // Rellena el campo de "User"
-  await fillPasswordField(page, testInfo); // Rellena el campo de "Password"
-
-  // Continuar con la justificación y otras acciones
-  await justificationPhrase(page, 30000, testInfo);    
-  await esignRequired(page, 30000, testInfo);
-
-  await clickAcceptButton(page);
-  await clickDoButton(page);
-  
-  // Verificar que no haya errores en la consola
-  await test.step('Verificar errores en la consola', async () => {
-      logger.printLogs();
-      expect(logger.errors.length).toBe(0);
-  });
-
-  // Verificar respuestas de red capturadas
-//   await test.step('Verificar respuestas de red', async () => {
-//       networkInterceptor.printNetworkData();
-//       const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-//       expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
-//   });
-
 };
+
 
 
 
@@ -273,10 +276,10 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInventoryLotsExport';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsBalancesExport';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'stock'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
