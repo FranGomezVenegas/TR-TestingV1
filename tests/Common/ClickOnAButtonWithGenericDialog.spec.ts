@@ -6,7 +6,7 @@ import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls.js';
 import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
-import { clickDoButtonJustification, clickDoButton, clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
+import { clickDoButtonUserDialog, clickDoButtonJustification, clickDoButton, clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
 import { fillUserField, fillPasswordField } from '../1TRAZiT-Commons/actionsHelper.js';
 import { handleTabInteraction } from '../1TRAZiT-Commons/tabsInteractions.js';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions.js';
@@ -333,6 +333,7 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     await esignRequired(page, 30000, testInfo);
     await clickDoButton(page);
     await clickDoButtonJustification(page);
+    await clickDoButtonUserDialog(page);
     
     // Array de índices para los botones
     const buttonIndices = [0, 1, 2]; // Índices a verificar

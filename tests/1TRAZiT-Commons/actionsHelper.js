@@ -690,6 +690,51 @@ export async function clickDoButtonJustification(page) {
 }
 
 
+
+export const clickDoButtonUserDialog = async (page, timeout = 3000) => {
+    try {
+        await test.step("Check if 'Do' button is visible", async () => {
+            const DoButton =page.locator('#user-dialog').getByRole('button', { name: 'Do' });
+
+            const isVisible = await DoButton.isVisible({ force: true, timeout }).catch(() => false);
+
+            if (!isVisible) {
+                console.log("No 'Do' button is visible. Skipping the step.");
+                return; // Si no es visible, no hacer nada y salir de la función
+            }
+
+            // Solo se ejecuta si el botón es visible
+            await test.step("Try clicking 'Do' button with multiple approaches", async () => {
+                const attempts = [
+                    { method: 'nth(0)', action: () => DoButton.nth(1).click({ timeout }) },
+                    { method: 'nth(1)', action: () => DoButton.nth(2).click({ timeout }) },
+                    { method: 'nth(2)', action: () => DoButton.nth(0).click({ timeout }) }
+                ];
+
+                for (const attempt of attempts) {
+                    try {
+                        console.log(`Attempting to click 'Do' button using ${attempt.method}...`);
+                        await attempt.action(); // Intentar la acción definida
+                        console.log(`Successfully clicked 'Do' button using ${attempt.method}.`);
+                        return; // Si se hace clic correctamente, salir de la función
+                    } catch (error) {
+                        console.log(`Failed to click 'Do' button using ${attempt.method}.`);
+                    }
+                }
+
+                // Si no se hizo clic después de todos los intentos
+                console.log("All attempts to click 'Do' button failed.");
+                // throw new Error("Unable to click 'Do' button after multiple attempts.");
+                return;
+            });
+        });
+    } catch (error) {
+        console.log("Error while attempting to click 'Do' button:", error);
+        throw error; // Lanzar el error para que el test falle explícitamente
+    }
+};
+
+
 export async function clickConfirmDialogButton(page) {
     try {
         // Localizar el botón "Do" dentro del diálogo de confirmación
