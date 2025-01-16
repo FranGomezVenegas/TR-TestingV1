@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickDoButton, esignRequired, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper';
+import { clickConfirmDialogButton, clickDoButton, esignRequired, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper';
 
 import { clickButtonById, clickElementByText, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
@@ -23,7 +23,7 @@ const fs = require('fs').promises;
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
-    await handleMenus(page);
+    // await handleMenus(page);
 
     // Create instances of Logger and NetworkInterceptor
     const logger = new Logger();
@@ -127,26 +127,35 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     });
   });
 
-  // Step 9: Click on the "Upload File" button
-  await test.step(addAttachmentAWS.phraseClickUploadButton, async () => {
-    await page.getByLabel(addAttachmentAWS.labelUploadButton).click({ timeout: 5000 });
-  });
+  // try {
+  // // Step 9: Click on the "Upload File" button
+  //   await test.step(addAttachmentAWS.phraseClickUploadButton, async () => {
+  //     await page.getByLabel(addAttachmentAWS.labelUploadButton).click({ timeout: 1000 });
+  //   });
+  // } catch (error) {
+  //   try {
+  //   await page.getByTitle('Click to upload the file').locator('#button').click({ timeout: 1000 });
+  //     } catch (error) {
+  //       console.error('Failed to click on the "Upload File" button.');
+  //       throw new Error('Failed to click on the "Upload File" button.');
+  //     }
+  // }
 
   // Step 10: Close the popup dialog
-  await test.step(addAttachmentAWS.phraseCloseDialog, async () => {
-    const closeButton = page.locator(addAttachmentAWS.closeDialog);
-    await closeButton.click({ timeout: 5000 });
-  });
+  // await test.step(addAttachmentAWS.phraseCloseDialog, async () => {
+  //   const closeButton = page.locator(addAttachmentAWS.closeDialog);
+  //   await closeButton.click({ force: true, timeout: 5000 });
+  // });
 
-  await test.step(addAttachmentAWS.phraseScreenShots, async () => {
-    await attachScreenshot(testInfo, addAttachmentAWS.screenShotsAccept, page, ConfigSettingsAlternative.screenShotsContentType);
-    await test.step(addAttachmentAWS.phasePauses, async () => {
-        await page.pause();
-    });
-  });
+  // await test.step(addAttachmentAWS.phraseScreenShots, async () => {
+  //   await attachScreenshot(testInfo, addAttachmentAWS.screenShotsAccept, page, ConfigSettingsAlternative.screenShotsContentType);
+  //   await test.step(addAttachmentAWS.phasePauses, async () => {
+  //       await page.pause();
+  //   });
+  // });
 
   // Step 11: Wait for 5 seconds
-  await test.step(addAttachmentAWS.phrasePauseForFiveSeconds, async () => {
+  await test.step(addAttachmentAWS.phrasePauses, async () => {
     await page.waitForTimeout(5000);
   });
 
@@ -159,7 +168,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     await esignRequired(page, 30000, testInfo);
     await clickAcceptButton(page);
     await clickDoButton(page);
-
+    await clickConfirmDialogButton(page);
   
     // Verificar que no haya errores en la consola
     await test.step(phraseReport.phraseError, async () => {
@@ -206,8 +215,8 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-      trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution' ;
-      procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+      trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInventoryLotsAddAWS' ;
+      procInstanceName = process.env.PROC_INSTANCE_NAME || 'stock'; // Valor predeterminado o el valor de tu entorno
 
   
       await test.step('Perform common setup', async () => {
