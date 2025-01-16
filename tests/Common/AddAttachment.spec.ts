@@ -186,7 +186,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
                 console.log("Accept button not found, using fallback button 'Do':", error);
 
                 // Fallback to the "Do" button if "Accept" is not found
-                await page.getByRole('button', { name: 'Do' }).click({ force: true, timeout: 1000  });
+                await page.getByRole('button', { name: 'Do', exact: true }).click({ force: true, timeout: 1000  });
                     
                 // If clicked "Do", capture the screenshot for "Do"
                 await test.step("Capture screenshot for Do button click", async () => {
@@ -268,7 +268,7 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-      trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInventoryLotsAddAttachment' ;
+      trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInventoryLotsReactiveComercialesAddAttachment' ;
       procInstanceName = process.env.PROC_INSTANCE_NAME || 'stock'; // Valor predeterminado o el valor de tu entorno
 
   
