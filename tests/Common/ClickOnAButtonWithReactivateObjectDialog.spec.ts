@@ -57,7 +57,7 @@ interface WorkerError {
 
 // Función con todos los tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
-    await handleMenus(page);
+    // await handleMenus(page);
 
     // Crear instancias de Logger y NetworkInterceptor
     const logger = new Logger();
@@ -99,6 +99,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     // Interacción con el objeto con búsqueda
     await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, buttonWithDialog);
     
+    await page.waitForTimeout(2000);
     await handleActionNameInteraction(page, testInfo, buttonWithDialog);
 
     // Estructura para almacenar todos los mensajes de consola y errores del sistema
@@ -242,7 +243,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         await page.pause();
     });
     await test.step(buttonWithDialog.phraseScreenShots, async () => {
-        await attachScreenshot(testInfo, buttonWithDialog.screenShotsFilled, page, ConfigSettingsAlternative.screenShotsContentType);
+        await attachScreenshot(testInfo, buttonWithDialog.screenShotsFilledForm, page, ConfigSettingsAlternative.screenShotsContentType);
         if (buttonWithDialog.phrasePauses) {
             await page.pause();
         }
@@ -293,10 +294,10 @@ test.describe('Desktop Mode', () => {
       });
   
         const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsBalancesUndecommissionInstrument';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
