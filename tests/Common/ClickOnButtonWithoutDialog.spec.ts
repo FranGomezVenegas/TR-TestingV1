@@ -22,7 +22,7 @@ import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
-    await handleMenus(page);
+    // await handleMenus(page);
 
     // Create instances of Logger and NetworkInterceptor
     const logger = new Logger();
@@ -158,10 +158,6 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
 
 
-
-
-
-
 let trazitTestName;
 let procInstanceName;   
 let ConfigSettings;
@@ -173,7 +169,7 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'SecondPlateReadingPersonalSamplesStageMoveToNext';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'PendingSamplingLocationSetSamplingDate';
   
         // Define procInstanceName antes de pasarlo
         procInstanceName = process.env.PROC_INSTANCE_NAME || 'mb_em'; // Valor predeterminado o el valor de tu entorno
