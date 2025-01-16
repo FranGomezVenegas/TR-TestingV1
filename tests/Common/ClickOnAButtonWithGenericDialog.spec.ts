@@ -6,7 +6,7 @@ import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls.js';
 import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
-import { clickDoButton, clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
+import { clickDoButtonJustification, clickDoButton, clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
 import { fillUserField, fillPasswordField } from '../1TRAZiT-Commons/actionsHelper.js';
 import { handleTabInteraction } from '../1TRAZiT-Commons/tabsInteractions.js';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions.js';
@@ -19,7 +19,7 @@ import { selectElementWithScroll } from '../1TRAZiT-Commons/selectElementWithScr
 import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
 const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
-    await handleMenus(page);
+    // await handleMenus(page);
     await page.waitForTimeout(2000);
     await page.pause();
     await page.pause();
@@ -76,6 +76,8 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
 
     await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, buttonWithDialog);
     await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, buttonWithDialog);
+    await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, buttonWithDialog);
+
 
     const rowActions = await handleRowActionsInteraction(page, buttonWithDialog, testInfo); 
     console.log("Resultado de handleRowActionsInteraction:", rowActions);
@@ -297,6 +299,8 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         if (parsedMessages.length > 0) {
             await processTestData(page, parsedMessages, JSON.stringify(buttonWithDialog));
         }
+        await processTestData(page, parsedMessages, JSON.stringify(buttonWithDialog));
+
     });
 
     await test.step(buttonWithDialog.phrasePauses, async () => {
@@ -313,6 +317,9 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     // Justification Phrase
     await fillUserField(page, testInfo);
     await fillPasswordField(page, testInfo);
+    // await test.step(buttonWithDialog.phrasePauses, async () => {
+    //     await page.waitForTimeout(100);
+    // });
     await justificationPhrase(page, 30000, testInfo);
     await clickAcceptButton(page);
     await esignRequired(page, 30000, testInfo);
@@ -325,7 +332,8 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     await clickAcceptButton(page);
     await esignRequired(page, 30000, testInfo);
     await clickDoButton(page);
-
+    await clickDoButtonJustification(page);
+    
     // Array de índices para los botones
     const buttonIndices = [0, 1, 2]; // Índices a verificar
     let clicked = false;
@@ -402,10 +410,10 @@ test.describe('Desktop Mode', () => {
         });
   
         const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'InstrumentFamilyListUpdateInstrumentFamily';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
