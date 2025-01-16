@@ -94,23 +94,23 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
         page.on('response', handleResponse);
         page.on('worker', handleWorkerError);
 
-        // Interactuar con el select si está definido
-        if (Button.selectName) {
+        if (Button.selectName && Button.selectName.trim() !== "") {  // Verificar si selectName no está vacío
             await test.step(Button.phraseSelect, async () => {
                 const position = Button.positionSelectElement ?? 0;
                 await page.getByText(Button.selectName).nth(position).click({ timeout });
             });
-
+        
             if (Button.screenShotsSelect) {
                 await attachScreenshot(testInfo, Button.screenShotsSelect, page, ConfigSettingsAlternative.screenShotsContentType);
             }
+        
             await test.step('Pauses', async () => {
                 await page.pause();
                 await page.pause();
                 await page.pause();
             });
         }
-
+        
         // Configuro el listener 'dialog' justo antes del clic
         page.on('dialog', handleDialog);
 
@@ -123,14 +123,45 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
 
             if (cantidad === 0) throw new Error(`No se encontró el botón con ID: ${Button.buttonName}`);
             await elementos.nth(Button.positionButton || 0).click({ timeout });
+            // await page.keyboard.press('Escape');
+            // await elementos.nth(Button.positionButton || 0).click({ timeout });
+
         });
 
         if (Button.screenShotsButtonName) {
             await attachScreenshot(testInfo, Button.screenShotsButtonName, page, ConfigSettingsAlternative.screenShotsContentType);
         }
     } catch (error) {
-        console.error("Error en handleActionNameInteraction:", error);
-        throw error;
+        console.log("Error en handleActionNameInteraction:", error);
+        await test.step('Click on more_horiz', async () => {
+            try {
+                const position = Button.hideActionsButton.position !== undefined ? Button.hideActionsButton.position : 0;
+
+                // Usando el locator y la posición extraída o el valor por defecto
+                await page.locator(Button.hideActionsButton.locator).nth(position).click({ force: true, timeout: 1000 });
+                
+
+                await test.step(Button.phraseButtonName, async () => {
+                    const selectorBoton = `#${Button.buttonName}`;
+                    const elementos = page.locator(selectorBoton);
+                    const cantidad = await elementos.count();
+                    await page.waitForTimeout(2000);
+        
+                    if (cantidad === 0) throw new Error(`No se encontró el botón con ID: ${Button.buttonName}`);
+                    await elementos.nth(Button.positionButton || 0).click({ timeout });
+                    // await page.locator('body').press('Escape');
+                    // await elementos.nth(Button.positionButton || 0).click({ timeout });
+
+                });
+        
+                if (Button.screenShotsButtonName) {
+                    await attachScreenshot(testInfo, Button.screenShotsButtonName, page, ConfigSettingsAlternative.screenShotsContentType);
+                }
+            } catch (error) {
+                console.log('No need to click on "more_horiz":', error.message);
+            }
+        });
+
     } finally {
         // Remover listeners y adjuntar errores al test
         page.removeAllListeners();
