@@ -13,7 +13,7 @@ import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons
 import { clickDoButton, esignRequired, clickElementByText, clickElement, fillUserField,fillPasswordField, justificationPhrase, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
-import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions';
+import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog';
 import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
 import {handleRowActionsInteraction} from '../1TRAZiT-Commons/rowActionsInteractions';
 import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
@@ -106,7 +106,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         }
     
         console.log("El resultado fue falso, continuando con el flujo normal...");
-    
+
         // Si `handleDragDropBoxesInteraction` no fue exitoso, continuar con el flujo normal
          await handleActionNameInteraction(page, testInfo, removeAttachment);
 
@@ -169,10 +169,10 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         
         
         // Verify that there are no console errors
-        // await test.step(phraseReport.phraseError, async () => {
-        //     logger.printLogs();
-        //     expect(logger.errors.length).toBe(0);
-        // });
+        await test.step(phraseReport.phraseError, async () => {
+            logger.printLogs();
+            expect(logger.errors.length).toBe(0);
+        });
 
         // Verify captured network responses
         await test.step(phraseReport.phraseVerifyNetwork, async () => {
