@@ -90,6 +90,9 @@ export const processTextField = async (page, consoleData, textField, useTextBoxM
         `* ${textField.label}`,
     ];
 
+    await test.step(`Pauses`, async () => {
+        await page.waitForTimeout(200);
+    });
     for (const searchLabel of searchAttempts) {
         try {
             await test.step(`Trying to click on text field: ${searchLabel}`, async () => {
