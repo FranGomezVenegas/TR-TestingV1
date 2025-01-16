@@ -1,31 +1,29 @@
 import { test, expect } from '@playwright/test';
 
-import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config';
-import { LogIntoPlatform } from '../1TRAZiT-Commons/logIntoPlatform';
+import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config.js';
+import { LogIntoPlatform } from '../1TRAZiT-Commons/logIntoPlatform.js';
 
 import { Button as dataForTestFromFile } from '../../trazit-models/test-config-instruments-activate';
 
-import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls';
-import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
+import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls.js';
+import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 
-import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
-import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton, esignRequired } from '../1TRAZiT-Commons/actionsHelper';
+import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
+import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
+import { attachScreenshot, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
 
-import { clickButtonById, clickElementByText, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions';
-import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions';
-import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
-import {handleAuditAndSign} from '../1TRAZiT-Commons/handleAuditAndSign'
-import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
-import { rotateAndSkewTextRadiansAndTranslate } from 'pdf-lib';
+import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
+import { handleObjectByTabsWithSearchInteraction } from '../1TRAZiT-Commons/objectByTabsWithSearch';
+
+// import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
+
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
-    await handleMenus(page);
+    // await handleMenus(page);
 
-    // await page.getByLabel('Lots-Lot view').click();
     // Create instances of Logger and NetworkInterceptor
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
@@ -63,14 +61,78 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     // Llamadas a interacciones previas
     await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, Button);
 
-    // Llamo a la funcion para comprobar si un objectByTabs tiene un search. Essta funcion solo controla el search
-    // clica en este y añada el campo que se desea buscar.
+    // Llamo a la función para comprobar si un objectByTabs tiene un search. Esta fución solo controla el search
+    // clica en este y añade el campo que se desea buscar.
     await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, Button);
     
     await handleActionNameInteraction(page, testInfo, Button);
 
-    // Lo relacionado con el audit y la firma de este
-    await handleAuditAndSign(page, Button, test, testInfo);
+    try {
+        
+        if (Button.phraseOpenFilter) {
+            await test.step(Button.phraseOpenFilter, async () => {;
+                await page.getByRole('button', { name: Button.textFilter }).click({timeout: 2000});
+            });
+        }        
+
+        if (Button.phraseShouldClickSearchPlaceholder) {
+            await test.step(Button.phraseShouldClickSearchPlaceholder, async () => {
+                await page.getByPlaceholder(Button.placeholderShouldFilter).click({timeout: 2000});
+            });
+        }
+        if (Button.phraseShouldClickSelectButton) {
+            await test.step(Button.phraseShouldClickSelectButton, async () => {
+                await page.getByRole('button', { name: Button.buttonSelectFilter }).click({timeout: 2000});
+            });
+        }
+        if (Button.phraseShouldClickFilter) {
+            await test.step(Button.phraseShouldClickFilter, async () => {
+                await page.locator('#filterarea').getByText(Button.optionFilterSelect).click({timeout: 2000});
+            });
+        }
+        if (Button.phraseRangeDate) {
+            if (Button.phraseShouldFillDate) {
+                await test.step(Button.phraseShouldFillDate, async () => {
+                    await page.getByRole('textbox').nth(1).fill(Button.fillDateFilter);
+                });
+            }
+            if (Button.phraseShouldFillDate) {
+                await test.step(Button.phraseShouldFillDate, async () => {
+                    await page.getByRole('textbox').nth(2).fill(Button.fillSecondDateFilter);
+                });
+            }
+            if (Button.phraseApplyFilter) {
+                await page.getByRole('button', { name: Button.clickButtonApplyFilter }).click({timeout: 2000});
+            }
+            
+        }
+        if (Button.phraseScreenShots) {
+            await test.step(Button.phraseScreenShots, async () => {
+                await attachScreenshot(testInfo, Button.screenShotsFilter, page, ConfigSettingsAlternative.screenShotsContentType);
+            });
+            if (Button.phrasePauses) {
+                await test.step(Button.phrasePauses, async () => {
+                    await page.pause();
+                    await page.pause();
+                });
+            }
+        }
+        if (Button.phraseHideFilters) {
+            await test.step(Button.phraseHideFilters, async () => {
+                await page.getByRole('button', { name: Button.hideFilters }).click({timeout: 1000});
+            });
+        }
+    } catch (error) {}
+    // Clic en el botón
+    await test.step(Button.phraseButtonName, async () => {
+        const selectorBoton = `#${Button.buttonName}`;
+        const elementos = page.locator(selectorBoton);
+        const cantidad = await elementos.count();
+        await page.waitForTimeout(1500);
+
+        if (cantidad === 0) throw new Error(`No se encontró el botón con ID: ${Button.buttonName}`);
+        await elementos.nth(Button.positionButton2 || 0).click({ timeout: 5000 });
+    });
 
 
     // Justification Phrase
@@ -80,107 +142,22 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     // Continuar con la justificación y otras acciones
     await justificationPhrase(page, 30000, testInfo);    
     await esignRequired(page, 30000, testInfo);
-    
+
     await clickAcceptButton(page);
     await clickDoButton(page);
 
-    //Cierra el Audit para poder ver las notificaciones y acceder a estas.
-    //await page.locator('mwc-icon.corner[dialogaction="decline"]:has-text("close"):visible').click();
-    // Try clicking the first element
-    
-    try {
-      // Intento hacer clic en el primer elemento Instruments
-      const firstElement = page.locator('mwc-icon.corner[dialogaction="decline"]:has-text("close"):visible');
-  
-      // Si el primer elemento existe y es visible
-      if (await firstElement.count() > 0) {
-          await firstElement.click();
-      } else {
-          console.log('El primer elemento no fue encontrado o no es clickeable.');
-      }
-  } catch (error) {
-      console.log('El primer intento falló. Intentando con el segundo elemento dentro del shadow DOM.');
-  
-      try {
-          // Accedo manualmente al segundo elemento dentro de múltiples shadow DOMs Stock
-          const secondElement = await page.evaluateHandle(() => {
-              return document.querySelector("body > sp-theme > tr-app")
-                  ?.shadowRoot?.querySelector("tr-dashboard")
-                  ?.shadowRoot?.querySelector("div > div > main > div > tr-procedures")
-                  ?.shadowRoot?.querySelector("object-by-tabs")
-                  ?.shadowRoot?.querySelector("objecttabs-composition")
-                  ?.shadowRoot?.querySelector("audit-dialog")
-                  ?.shadowRoot?.querySelector("#auditDialog")
-                  ?.shadowRoot?.querySelector("div > div.mdc-dialog__container > div > div.popup-header > div:nth-child(2) > mwc-icon:nth-child(4)");
-          });
-  
-          // Asegúrate de que el segundo elemento no sea null y verifica que es un handle válido
-          if (secondElement && await secondElement.evaluate(el => el !== null)) {
-              await secondElement.click();
-              console.log('Hiciste clic en el segundo elemento dentro del shadow DOM');
-          } else {
-              console.log('El segundo elemento no fue encontrado o no es clickeable.');
-          }
-  
-      } catch (secondError) {
-          console.error('No se pudo hacer clic en el segundo elemento dentro del shadow DOM:', secondError);
-
-          try {
-            const thirdElement = await page.evaluateHandle(() => {
-              const spTheme = document.querySelector("body > sp-theme > tr-app");
-              if (spTheme?.shadowRoot) {
-                  const dashboard = spTheme.shadowRoot.querySelector("tr-dashboard");
-                  if (dashboard?.shadowRoot) {
-                      const procedures = dashboard.shadowRoot.querySelector("div > div > main > div > tr-procedures");
-                      if (procedures?.shadowRoot) {
-                          const byTabs = procedures.shadowRoot.querySelector("object-by-tabs");
-                          if (byTabs?.shadowRoot) {
-                              const composition = byTabs.shadowRoot.querySelector("objecttabs-composition");
-                              if (composition?.shadowRoot) {
-                                  const auditDialog = composition.shadowRoot.querySelector("audit-dialog");
-                                  if (auditDialog?.shadowRoot) {
-                                      const auditDialogContainer = auditDialog.shadowRoot.querySelector("#auditDialog");
-                                      if (auditDialogContainer?.shadowRoot) {
-                                          return auditDialogContainer.shadowRoot.querySelector(
-                                              "div > div.mdc-dialog__container > div > div.popup-header > div:nth-child(2) > mwc-icon:nth-child(4)"
-                                          );
-                                      }
-                                  }
-                              }
-                          }
-                      }
-                  }
-              }
-              return null;
-          });
-      
-          // Verificar que el elemento no sea null
-          if (thirdElement && await thirdElement.evaluate(el => el !== null)) {
-              await thirdElement.click();
-              console.log('Hiciste clic en el tercer elemento dentro del shadow DOM');
-          } else {
-              console.log('El tercer elemento no fue encontrado o no es clickeable.');
-          }
-
-        } catch (thirdError) {
-            console.error('No se pudo hacer clic en el tercer elemento dentro del shadow DOM:', thirdError);
-        }
-    }
-}
-  
-  
     // Verificar que no haya errores en la consola
     await test.step(phraseReport.phraseError, async () => {
-      logger.printLogs();
-      expect(logger.errors.length).toBe(0);
+        logger.printLogs();
+        expect(logger.errors.length).toBe(0);
     });
 
     // Verificar respuestas de red capturadas
-    // await test.step(phraseReport.phraseVerifyNetwork, async () => {
-    //     networkInterceptor.printNetworkData();
-    //     const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-    //     expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
-    // });
+    await test.step(phraseReport.phraseVerifyNetwork, async () => {
+        networkInterceptor.printNetworkData();
+        const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
+        expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
+    });
 
     // Validar respuestas utilizando ResponseValidator
     await test.step(phraseReport.phraseVerifyNetwork, async () => {
@@ -204,7 +181,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
 
 let trazitTestName;
-let procInstanceName;
+let procInstanceName;   
 let ConfigSettings;
     
 test.describe('Desktop Mode', () => {
@@ -214,10 +191,10 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsAuditAndSign';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
@@ -245,8 +222,7 @@ test.describe('Desktop Mode', () => {
     });
   });
 
-
-// // Mobile Mode 
+// Mobile Mode 
 // test.describe('Mobile mode', () => {
 //     test.beforeEach(async ({ page }, testInfo) => {
 //       // Size of the viewport of a mobile device
@@ -269,7 +245,7 @@ test.describe('Desktop Mode', () => {
 //         await test.step('Wait for 1 seconds', async () => {
 //             await page.waitForTimeout(1000);
 //         });
-
+  
 //       const openWindow = new OpenProcedureWindow({ page });
   
 //       await test.step('Open procedure window for TV', async () => {
@@ -298,7 +274,7 @@ test.describe('Desktop Mode', () => {
 //       });
   
 //       // Configuración común para ambos modos.
-//      const logPlat = new LogIntoPlatform({ page });
+//       const logPlat = new LogIntoPlatform({ page });
 //         trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
   
 //         // Define procInstanceName antes de pasarlo
@@ -342,19 +318,19 @@ test.describe('Desktop Mode', () => {
   
 //       // Configuración común para ambos modos.
 //       const logPlat = new LogIntoPlatform({ page });
-//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
-
-//       // Define procInstanceName antes de pasarlo
-//       procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
-
-//       await test.step('Perform common setup', async () => {
-//           // Ahora pasas procInstanceName al llamar a commonBeforeEach
-//           ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
-//       });
-
-//       await test.step('Wait for 1 seconds', async () => {
-//           await page.waitForTimeout(1000);
-//       });
+//         trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+  
+//         // Define procInstanceName antes de pasarlo
+//         procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+  
+//         await test.step('Perform common setup', async () => {
+//             // Ahora pasas procInstanceName al llamar a commonBeforeEach
+//             ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
+//         });
+  
+//         await test.step('Wait for 1 seconds', async () => {
+//             await page.waitForTimeout(1000);
+//         });
   
 //       const openWindow = new OpenProcedureWindow({ page });
   
@@ -384,19 +360,19 @@ test.describe('Desktop Mode', () => {
   
 //       // Configuración común para ambos modos.
 //       const logPlat = new LogIntoPlatform({ page });
-//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
-
-//       // Define procInstanceName antes de pasarlo
-//       procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
-
-//       await test.step('Perform common setup', async () => {
-//           // Ahora pasas procInstanceName al llamar a commonBeforeEach
-//           ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
-//       });
-
-//       await test.step('Wait for 1 seconds', async () => {
-//           await page.waitForTimeout(1000);
-//       });
+//         trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+  
+//         // Define procInstanceName antes de pasarlo
+//         procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+  
+//         await test.step('Perform common setup', async () => {
+//             // Ahora pasas procInstanceName al llamar a commonBeforeEach
+//             ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
+//         });
+  
+//         await test.step('Wait for 1 seconds', async () => {
+//             await page.waitForTimeout(1000);
+//         });
   
 //       const openWindow = new OpenProcedureWindow({ page });
   
@@ -416,24 +392,25 @@ test.describe('Desktop Mode', () => {
 //     });
 //   });
   
+  
 
 const { test:pwTest, afterEach } = require('@playwright/test');
  
   
 afterEach(async ({}, testInfo) => {
-  
     const durationInSeconds = (testInfo.duration / 1000).toFixed(2);
   
     const data = {
-      trazitTestName: process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution' ,
+      trazitTestName: process.env.TRAZIT_TEST_NAME || 'PendingReviewTestingMBUnCancelTest' ,
       duration: `${durationInSeconds} seconds`,
     };
   
     const testStatus = testInfo.status;
-    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; 
+    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'inspection_lot'; 
     await callApiRunCompletion(data, testStatus, trazitTestName, testInfo, procInstanceName)
   });
 
+   
 //   pwTest('Example test', async ({ page }) => {
 //     // Your test logic here
 //   });
