@@ -85,13 +85,6 @@ export const addAttachment={
 
 
 
-
-
-
-
-
-
-
 export const openAttachment={
     "selectInstrument": "w",
     "buttonName": "attach_file",

@@ -8,9 +8,10 @@ export const ConfigSettings={
 
     finalToken: "eyJ1c2VyREIiOiJwcm9jc2FkbWluIiwiZGF0ZXRpbWVGb3JtYXRBdFBsYXRmb3JtTGV2ZWwiOiJESVNBQkxFRCIsInByb2NzTW9kdWxlTmFtZSI6ImFwcCphcHAiLCJkYk5hbWUiOiJkZW1vX3YwXzlfMiIsInR5cCI6IkpXVCIsInVzZXJfcHJvY2VkdXJlX2hhc2hjb2RlcyI6ImFwcCoxKi0xIiwiZVNpZ24iOiJmaXJtYWRlbW8iLCJ1c2VyREJQYXNzd29yZCI6InRyYXppdDRldmVyIiwidXNlck1haWwiOiJpbmZvQHRyYXppdC5uZXQiLCJ1c2VyX3Byb2NlZHVyZXMiOiJbYXBwXSIsImFwcFNlc3Npb25JZCI6IjUxNDQiLCJhcHBTZXNzaW9uU3RhcnRlZERhdGUiOiJNb24gQXByIDE1IDIwOjM4OjQ0IFVUQyAyMDI0IiwidXNlclJvbGUiOiJwcm9jX21hbmFnZW1lbnQiLCJhbGciOiJIUzI1NiIsImludGVybmFsVXNlcklEIjoiNDU0ODkyMTcifQ.eyJpc3MiOiJMYWJQTEFORVRkZXN0cmFuZ2lzSW5UaGVOaWdodCJ9.1DpDWrSgE4kWjRohuEgjfMdFG-9C5q2QTGudULYYhD4",
     dbName:"demo_v0_9_2",
-    procInstanceName:"stock",
+    procInstanceName:"",
     zuserAdmin: "admin",
     zuserAdminPss : "trazit",
+   
 
     login:{
         fldUser:{label:"User", value:"admin"},
@@ -212,7 +213,7 @@ export const platformMenuNames={
 
         main: {
             
-            //pageElement: "sp-action-menu#dashboardnotifications",
+            // pageElement: "sp-action-menu#dashboardnotifications",
             pageElement: "sp-action-menu#notif-menu",
             screenShotsName: "Notifications",
 
