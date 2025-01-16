@@ -21,13 +21,13 @@ import path from 'path';
 import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
 const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
-    await handleMenus(page);
+    // await handleMenus(page);
 
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
     let print: any;
 
-    // Parse ConfigSettings data if available, or use the default data
+    // Parse ConfigSettings data or fallback to default
     if (ConfigSettings && ConfigSettings.dataForTest) {
         const unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
         try {
@@ -42,29 +42,27 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     }
 
     // Attach Logger and NetworkInterceptor to the page
-    await test.step(phraseReport.phraseNetworkInterceptionAndLogger, async () => {
+    await test.step(print.phraseNetworkInterceptionAndLogger, async () => {
         logger.attachToPage(page);
         networkInterceptor.attachToPage(page);
     });
 
     await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, print);
-    
     await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, print);
 
-    // rowActions rowButtons
-    const rowActions = await handleRowActionsInteraction(page, print, testInfo); 
+    const rowActions = await handleRowActionsInteraction(page, print, testInfo);
     console.log("Resultado de handleRowActionsInteraction:", rowActions);
 
     if (rowActions) {
         console.log("El resultado fue verdadero, realizando acciones adicionales...");
     }
 
-    // Pausar la ejecución por 1 segundo antes de continuar
+    // Pause before continuing
     await test.step(print.phrasePauses, async () => {
         await page.waitForTimeout(1000);
     });
 
-    // Función para obtener la fecha y hora actuales en formato yyyy-MM-dd_HH-mm-ss
+    // Generate the current timestamp
     function getFormattedDate() {
         const now = new Date();
         const year = now.getFullYear();
@@ -76,95 +74,91 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
     }
 
-    // Función para generar el PDF
+    // Generate PDF
     async function generatePDF(page, testInfo, print, orientation) {
         await test.step(print.phraseScreenShots, async () => {
             await testInfo.attach(print.desktopMode.screenShotName, {
                 body: await page.screenshot(),
-                contentType: ConfigSettingsAlternative.screenShotsContentType
+                contentType: ConfigSettingsAlternative.screenShotsContentType,
             });
         });
-        await test.step(print.phrasePrintDialog, async () => {
-            const [newPage] = await Promise.all([
-                page.waitForEvent('popup'), // Waits for a new page to open (print dialog)
-                (async () => {
-                    try {
-                        // Intenta hacer clic en el botón en la posición print.positionButton, si está definido, o en la posición 0
-                        const buttonLocator = page.getByLabel(print.buttonName).nth(print.positionButton ?? 0); // Usa print.positionButton o 0 si no está definido
-                        await buttonLocator.click({ timeout: 3000 }); // Clic para abrir el diálogo de impresión
-                        console.log("Clic correctamente en el botón:", buttonLocator);
-                    } catch (error) {
-                        console.log("Intentando basado en su locator:", error);
-                        const buttonLocator = page.locator(print.buttonName).nth(print.positionButton ?? 0); 
-                        await buttonLocator.click({ timeout: 3000 });
-                        console.log("Clic correctamente en el botón:", buttonLocator);
-                    }
-                })()
-            ]);
-            
 
-            // Ensure the newPage has loaded completely
-            await test.step(print.phraseWaitForPrintDialog, async () => {
-                await newPage.waitForLoadState('load');
-            });
-
-            if (newPage && !newPage.isClosed()) {  // Check if newPage is open
+        const [newPage] = await Promise.all([
+            page.waitForEvent('popup'),
+            (async () => {
                 try {
-
-                    // Prepare the PDF save path
-                    await test.step(print.phrasePdfSavePath, async () => {
-                        const basePath = print.basePath;
-                        const fileName = orientation;
-                        const testFolder = path.join(basePath, fileName);
-
-                        if (!fs.existsSync(testFolder)) {
-                            fs.mkdirSync(testFolder, { recursive: true });
-                        }
-
-                        const formattedDate = getFormattedDate();
-                        const pdfPath = path.join(testFolder, `${print.desktopMode.screenShotName}_${fileName}_${formattedDate}.pdf`);
-
-                        // Generate the PDF
-                        await test.step(print.phraseGeneratePdfWithOrientation, async () => {
-                            await newPage.pdf({
-                                path: pdfPath,
-                                format: 'A4',
-                                landscape: orientation === 'horizontal',
-                                printBackground: true,
-                            });
-                            console.log(`PDF saved with orientation ${orientation}: ${pdfPath}`);
-                        });
-
-                        // Attach the PDF to the test report
-                        await test.step(print.phrasePdfAttachment, async () => {
-                            testInfo.attach(`${print.desktopMode.screenShotName}_${fileName}_${formattedDate}.pdf`, {
-                                body: fs.readFileSync(pdfPath),
-                                contentType: 'application/pdf',
-                            });
-                        });
-                    });
-                } catch (error) {
-                    console.error("Error during PDF generation:", error);
-                } finally {
-                    // Ensure the print dialog is closed after handling
-                    await test.step(print.phraseClosePrintDialog, async () => {
-                        if (!newPage.isClosed()) {
-                            await newPage.close();
-                        }
-                    });
+                    const buttonLocator = page.getByLabel(print.buttonName).nth(print.positionButton ?? 0);
+                    await buttonLocator.click({ timeout: 1500 });
+                } catch (error1) {
+                    try {
+                        await page
+                            .locator('md-icon')
+                            .filter({ hasText: print.buttonName })
+                            .locator('slot')
+                            .nth(print.positionButton ?? 0)
+                            .click({ force: true, timeout: 1500 });
+                    } catch (error2) {
+                        console.error("Error clicking print button:", error2);
+                        throw new Error("Unable to open print dialog.");
+                    }
                 }
+            })(),
+        ]);
+
+        await test.step(print.phraseWaitForPrintDialog, async () => {
+            await newPage.waitForLoadState('load');
+        });
+
+        if (newPage && !newPage.isClosed()) {
+            try {
+                const basePath = print.basePath;
+                const fileName = orientation;
+                const testFolder = path.join(basePath, fileName);
+
+                if (!fs.existsSync(testFolder)) {
+                    fs.mkdirSync(testFolder, { recursive: true });
+                }
+
+                const formattedDate = getFormattedDate();
+                const pdfPath = path.join(
+                    testFolder,
+                    `${print.desktopMode.screenShotName}_${fileName}_${formattedDate}.pdf`
+                );
+
+                await test.step(print.phraseGeneratePdfWithOrientation, async () => {
+                    await newPage.pdf({
+                        path: pdfPath,
+                        format: 'A4',
+                        landscape: orientation === 'horizontal',
+                        printBackground: true,
+                    });
+                    console.log(`PDF saved with orientation ${orientation}: ${pdfPath}`);
+                });
+
+                await test.step(print.phrasePdfAttachment, async () => {
+                    testInfo.attach(`${print.desktopMode.screenShotName}_${fileName}_${formattedDate}.pdf`, {
+                        body: fs.readFileSync(pdfPath),
+                        contentType: 'application/pdf',
+                    });
+                });
+            } catch (error) {
+                console.error("Error during PDF generation:", error);
+            } finally {
+                await test.step(print.phraseClosePrintDialog, async () => {
+                    if (!newPage.isClosed()) {
+                        await newPage.close();
+                    }
+                });
+            }
         } else {
-            console.log("New page for print dialog was closed unexpectedly, skipping PDF generation.");
+            console.log("New page for print dialog was closed unexpectedly.");
         }
-    });
-}
+    }
 
-
-    // Llamo a la función generatePDF para generar el PDF en orientación deseada
-    const orientation = print.orientation; // vertical o horizontal
+    const orientation = print.orientation;
     await generatePDF(page, testInfo, print, orientation);
 
-    // Justification Phrase
+    // Handle form fields and interactions
     await fillUserField(page, testInfo);
     await fillPasswordField(page, testInfo);
     await justificationPhrase(page, 30000, testInfo);
@@ -176,23 +170,21 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     await test.step('Si es necesario hago clic en Accept', async () => {
         const acceptButton = page.getByRole('button', { name: 'Accept' }).nth(1);
         if (await acceptButton.isVisible()) {
-            await test.step("Aceptar", async () => {
-                await acceptButton.click();
-            });
+            await acceptButton.click();
         } else {
             console.log("Botón de Aceptar no encontrado, omitiendo paso.");
         }
     });
 
-    // Network response validation
-    await test.step(phraseReport.phraseVerifyNetwork, async () => {
+    // Validate network responses
+    await test.step(print.phraseVerifyNetwork, async () => {
         networkInterceptor.printNetworkData();
         const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
         expect(nullResponsesCount).toBe(0);
     });
 
-    // Response validation
-    await test.step(phraseReport.phraseVerifyNetwork, async () => {
+    // Validate response data
+    await test.step(print.phraseVerifyNetwork, async () => {
         const responseValidator = new ResponseValidator(networkInterceptor.responses);
         try {
             await responseValidator.validateResponses();
@@ -202,9 +194,8 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     });
 
     await page.waitForTimeout(1000);
-
-    
 };
+
 
 
 
@@ -220,10 +211,10 @@ test.describe('Desktop Mode', () => {
         });
   
         const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ProductDailyEntriesPrintHorizontal';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInventoryLotsPrintHorizontal';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'RandD'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'stock'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
