@@ -52,10 +52,12 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     });
 
     // Llamadas a interacciones previas
-    await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, Export);
+    // await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, Export);
 
     // Llamo a la funcion para comprobar si un objectByTabs tiene un search.
     await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, Export);
+    await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, Export);
+
 
     console.log("El resultado fue falso, continuando con el flujo normal...");
 
@@ -129,6 +131,9 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
                 }
             });
         }
+        await test.step('Pauses', async () => {
+            await page.waitForTimeout(2000);
+        });
 
         // Espera a que la descarga termine
         const download = await downloadPromise;
@@ -276,10 +281,10 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsBalancesExport';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
