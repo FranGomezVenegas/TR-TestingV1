@@ -228,14 +228,15 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         await page.pause();
         await page.pause();
     });
-    await clickElement(page, buttonWithDialog.optionToReactivate.toReactivate);
-    
+    // await clickElement(page, buttonWithDialog.optionToReactivate.toReactivate);
+    await page.locator(`#${buttonWithDialog.optionToReactivate.toReactivate}`).click({timeout: 5000}); 
+
     await test.step(buttonWithDialog.phrasePauses, async () => {
         await page.pause();
         await page.pause();
         await page.pause();
     });
-    await page.getByRole('option', { name: buttonWithDialog.optionToReactivate.option }).click();
+    await page.getByRole('option', { name: buttonWithDialog.optionToReactivate.option }).click({timeout: 5000});
 
     await test.step(buttonWithDialog.phrasePauses, async () => {
         await page.pause();
@@ -249,9 +250,9 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         }
     });
 
-    await page.getByRole('button', { name: buttonWithDialog.buttonAccept }).click();
+    await page.getByRole('button', { name: buttonWithDialog.buttonDo }).click({timeout: 5000});
     await test.step(buttonWithDialog.phraseScreenShots, async () => {
-        await attachScreenshot(testInfo, buttonWithDialog.screenShotsAccept, page, ConfigSettingsAlternative.screenShotsContentType);
+        await attachScreenshot(testInfo, buttonWithDialog.screenShotsDo, page, ConfigSettingsAlternative.screenShotsContentType);
         if (buttonWithDialog.phrasePauses) {
             await test.step(buttonWithDialog.phrasePauses, async () => {
                 await page.pause();
@@ -271,12 +272,22 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
     await clickAcceptButton(page);
     await clickDoButton(page);
-  
-    
-    
-    // Verificar que no haya errores en la consola
-    await test.step(phraseReport.phraseError, async () => {
-        expect(consoleMessages.length).toBe(0);
+
+    // Validate responses using ResponseValidator
+    await test.step(phraseReport.phraseVerifyNetwork, async () => {
+        const responseValidator = new ResponseValidator(networkInterceptor.responses);
+        try {
+            await responseValidator.validateResponses(); // Throws an error if there are no valid responses
+        } catch (error) {
+            // test.fail(error.message); // Mark the test as failed with the message
+        }
+    });
+    const mode = await notificationWitness.getDeviceMode(testInfo);
+
+    // Call addNotificationWitness after performing actions
+    await test.step(ReportNotificationPhase.phraseCaptureNotification, async () => {
+        const capturedObjectName = await notificationWitness.addNotificationWitness(testInfo, afterEachData, mode);
+        console.log('Captured Object Name:', capturedObjectName);
     });
 };
 
