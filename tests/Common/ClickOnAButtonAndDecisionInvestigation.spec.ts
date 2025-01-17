@@ -15,7 +15,7 @@ import { esignRequired, clickDoButton, clickElement, justificationPhrase, fillUs
 import { clickButtonById, clickElementByText, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions';
-import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractions';
+import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
 import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
 import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
@@ -57,13 +57,13 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
     const notificationWitness = new NotificationWitness(page);
 
-    // Llamadas a interacciones previas
-    await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, decisionInvestigation);
-
     // Llamo a la funcion para comprobar si un objectByTabs tiene un search. Essta funcion solo controla el search
     // clica en este y añada el campo que se desea buscar.
     await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, decisionInvestigation);
     
+    // Llamadas a interacciones previas
+    await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, decisionInvestigation);
+
     await handleActionNameInteraction(page, testInfo, decisionInvestigation);
 
     await test.step(decisionInvestigation.phrasePauses, async () => {
