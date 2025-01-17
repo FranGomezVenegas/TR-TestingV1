@@ -82,7 +82,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     })
 
     await test.step(addInvestigations.phraseScreenShots, async () => {
-        await attachScreenshot(testInfo, addInvestigations.screenShotsFilled, page, ConfigSettingsAlternative.screenShotsContentType);
+        await attachScreenshot(testInfo, addInvestigations.screenShotsFilledForm, page, ConfigSettingsAlternative.screenShotsContentType);
         if (addInvestigations.phrasePauses) {
             await test.step(addInvestigations.phrasePauses, async () => {
                 await page.pause();
@@ -91,9 +91,9 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
             }
          )}
     });
-    await page.getByRole('button', { name: addInvestigations.buttonAccept }).click();
+    await page.getByRole('button', { name: addInvestigations.buttonDo }).click();
     await test.step(addInvestigations.phraseScreenShots, async () => {
-        await attachScreenshot(testInfo, addInvestigations.screenShotsAccept, page, ConfigSettingsAlternative.screenShotsContentType);
+        await attachScreenshot(testInfo, addInvestigations.screenShotsDo, page, ConfigSettingsAlternative.screenShotsContentType);
         if (addInvestigations.phrasePauses) {
             await test.step(addInvestigations.phrasePauses, async () => {
                 await page.pause();
