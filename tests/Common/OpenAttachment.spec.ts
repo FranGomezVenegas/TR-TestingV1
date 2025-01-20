@@ -19,9 +19,7 @@ import {handleRowActionsInteraction} from '../1TRAZiT-Commons/rowActionsInteract
 import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
 // Función con todas las pruebas.
-const commonTests = async (ConfigSettings, page, testInfo) => { 
-    await handleMenus(page);
-
+const commonTests = async (ConfigSettings, page, testInfo) => {
     // Crear instancias de Logger y NetworkInterceptor
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
@@ -33,7 +31,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         let unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
         try {
             openAttachment = JSON.parse(unescapedString);
-            openAttachment = JSON.parse(openAttachment.testDataGame);  // Parsear JSON anidado
+            openAttachment = JSON.parse(openAttachment.testDataGame); // Parsear JSON anidado
         } catch (error) {
             console.error("Error al analizar el JSON:", error);
         }
@@ -47,78 +45,61 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         networkInterceptor.attachToPage(page);
     });
 
-    
-    // Función de interacción con pestañas
-    await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, openAttachment);
-
-    // Comprueba si un objeto con pestañas tiene un campo de búsqueda, interactuar si es así
-    await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, openAttachment);
-
-    // Llamada a la función para los rowActions
-    const rowActions = await handleRowActionsInteraction(page, openAttachment, testInfo); 
-    console.log("Resultado de handleRowActionsInteraction:", rowActions);
-
-    // Si `handleRowActionsInteraction` se ejecutó correctamente, omitir secciones específicas
-    if (rowActions) {
-        console.log("El resultado fue verdadero, realizando acciones adicionales...");
-        await fillUserField(page, testInfo); // Rellenar campo de usuario
-        await fillPasswordField(page, testInfo); // Rellenar campo de contraseña
-        await justificationPhrase(page, 30000, testInfo); // Continuar con la justificación
-        await clickAcceptButton(page);
-
-        // Verificar respuestas de red capturadas
-        await test.step(phraseReport.phraseVerifyNetwork, async () => {
-            networkInterceptor.printNetworkData();
-            const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-            expect(nullResponsesCount).toBe(0);  // Asegurar que no haya respuestas nulas
-        });
-
-        // Validar respuestas usando ResponseValidator
-        await test.step(phraseReport.phraseVerifyNetwork, async () => {
-            const responseValidator = new ResponseValidator(networkInterceptor.responses);
-            try {
-                await responseValidator.validateResponses(); // Lanzar error si no hay respuestas válidas
-            } catch (error) {
-                console.error("Error al validar respuestas:", error);
+    // Navegar a la URL en `page1`
+    await test.step(openAttachment.phraseNavigation, async () => {
+        const positionURL = openAttachment.positionURL - 1;
+        if (openAttachment.selectName && openAttachment.selectName.trim() !== "") {  
+            await test.step(openAttachment.phraseSelect, async () => {
+                const position = openAttachment.positionSelectElement ?? 0;
+                await page.getByText(openAttachment.selectName).nth(position).click({ timeout: 3000 });
+            });
+        
+            if (openAttachment.screenShotsSelect) {
+                await attachScreenshot(testInfo, openAttachment.screenShotsSelect, page, ConfigSettingsAlternative.screenShotsContentType);
             }
-        });
+        
+            await test.step('Pauses', async () => {
+                await page.pause();
+                await page.pause();
+                await page.pause();
+            });
+        }
 
-       
-        return; // Finaliza si rowActions fue exitoso
-    }
+        try {    
+            await page.getByLabel(openAttachment.labelURL).nth(positionURL).click({ timeout: 3000 });
+        } catch (error) {
+            console.warn("Error al hacer clic en el elemento objetivo, intentando con 'hideActionsPosition'.");
 
-    console.log("El resultado fue falso, continuando con el flujo normal...");
+            const hideActionsPosition = openAttachment.hideActionsButton.position !== undefined
+                ? openAttachment.hideActionsButton.position
+                : 0;
 
-    // Si `handleDragDropBoxesInteraction` no fue exitoso, continuar con el flujo normal
-    await handleActionNameInteraction(page, testInfo, openAttachment);
+            try {
+                await page.locator(openAttachment.hideActionsButton.locator)
+                    .nth(hideActionsPosition)
+                    .click({ force: true, timeout: 1000 });
 
-    // Realizar pausas configuradas en el test
-    await test.step(openAttachment.phrasePauses, async () => {
-        await page.pause();
+                console.log("Intentando nuevamente hacer clic en el elemento objetivo...");
+                await page.getByLabel(openAttachment.labelURL).nth(positionURL).click({ timeout: 3000 });
+            } catch (secondError) {
+                console.error("Error al hacer clic en 'hideActionsPosition' o al reintentar el clic en el elemento objetivo:", secondError);
+                throw secondError; // Relanzar el error si no se puede proceder
+            }
+        }
     });
 
-    // Realizar pausas configuradas en el test
-    await test.step(openAttachment.phrasePauses, async () => {
-        await page.pause();
-    });
-
-    // Crear un nuevo contexto de navegador para `page1`
+    // Continuar con el flujo del test
     const browser = page.context().browser();
     if (browser) {
         const context = await browser.newContext();
         const page1 = await context.newPage();
-        
-        // Navegar a la URL en `page1`
-        await test.step(openAttachment.phraseNavigation, async () => {
-            const positionURL = openAttachment.positionURL - 1;
-            
-            await page.getByLabel(openAttachment.labelURL).nth(positionURL).click({timeout: 30000});
-            await page1.goto(openAttachment.url); // Navegar a la URL en `page1`
-        });
 
-        // Capturar pantalla de `page1` (la nueva página)
+        // Navegar a la URL en `page1`
+        await page1.goto(openAttachment.url);
+
+        // Capturar pantalla de `page1`
         await test.step(openAttachment.phraseScreenShots, async () => {
-            const screenshot = await page1.screenshot(); // Captura en `page1`
+            const screenshot = await page1.screenshot();
             await testInfo.attach(openAttachment.screenShotsUrl, {
                 body: screenshot,
                 contentType: ConfigSettingsAlternative.screenShotsContentType,
@@ -128,18 +109,14 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
             }
         });
 
-        // Continuar con el flujo
-        // Justification Phrase
-        await fillUserField(page1, testInfo); // Rellena el campo de "User"
-        await fillPasswordField(page1, testInfo); // Rellena el campo de "Password"
-
-        // Continuar con la justificación y otras acciones
-        await justificationPhrase(page1, 30000, testInfo);   
+        // Continuar con las acciones en `page1`
+        await fillUserField(page1, testInfo);
+        await fillPasswordField(page1, testInfo);
+        await justificationPhrase(page1, 30000, testInfo);
         await esignRequired(page1, 30000, testInfo);
-
         await clickAcceptButton(page1);
         await clickDoButton(page1);
-        
+
         const acceptButton = page1.getByRole('button', { name: openAttachment.buttonAccept }).nth(1);
         if (await acceptButton.isVisible()) {
             await test.step("Aceptar", async () => {
@@ -153,20 +130,21 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         await test.step(phraseReport.phraseVerifyNetwork, async () => {
             networkInterceptor.printNetworkData();
             const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-            expect(nullResponsesCount).toBe(0);  // Asegurarse de que no haya respuestas nulas
+            expect(nullResponsesCount).toBe(0);
         });
 
         // Validar respuestas usando ResponseValidator
         await test.step(phraseReport.phraseVerifyNetwork, async () => {
             const responseValidator = new ResponseValidator(networkInterceptor.responses);
             try {
-                await responseValidator.validateResponses(); // Lanzar error si no hay respuestas válidas
+                await responseValidator.validateResponses();
             } catch (error) {
                 console.error("Error al validar respuestas:", error);
             }
         });
     }
 };
+
 
 let trazitTestName;
 let procInstanceName;
@@ -180,10 +158,10 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInventoryLotsOpenAttachment';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'stock'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
