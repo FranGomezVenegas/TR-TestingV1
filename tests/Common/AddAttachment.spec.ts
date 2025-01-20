@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickDoButtonJustification, clickDoButton, esignRequired, clickElementByText, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { clickJustificationButton, clickDoButtonJustification, clickDoButton, esignRequired, clickElementByText, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 
@@ -105,20 +105,32 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
                     .getByTitle(addAttachment.buttonName.title, { exact: true })
                     .getByLabel(addAttachment.buttonName.label)
                     .first()
-                    .click({ timeout: 1000 });
+                    .click({ timeout: 3000 });
             } catch (error) {
                 console.log("Primary click method failed, using fallback method:", error);
                 const position = addAttachment.positionButton || 0;
 
                 // Fallback method with force and timeout
-                await page
+                const fallbackButton = page
                     .locator('md-icon')
                     .filter({ hasText: addAttachment.buttonName.label })
                     .locator('slot')
-                    .nth(position) 
-                    .click({ force: true, timeout: 1000 });
+                    .nth(position);
+
+                try {
+                    await fallbackButton.click({ force: true, timeout: 1000 });
+                } catch (fallbackError) {
+                    console.log("Fallback click method failed:", fallbackError);
+                    
+                    // If fallback also fails, click on hideActionsButton
+                    const hideActionsPosition = addAttachment.hideActionsButton.position !== undefined ? addAttachment.hideActionsButton.position : 0;
+                    await page.locator(addAttachment.hideActionsButton.locator).nth(hideActionsPosition).click({ force: true, timeout: 1000 });
+                    await fallbackButton.click({ force: true, timeout: 1000 });
+
+                }
             }
         });
+
         // await page.getByTitle(addAttachment.buttonName.title, { exact: true }).getByLabel(addAttachment.buttonName.label).first().click({timeout: 30000});
         // test.step(addAttachment.phrasePauses, async () => {
         //     await page.pause();
@@ -214,6 +226,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         await clickAcceptButton(page);
         await clickDoButton(page);
         await clickDoButtonJustification(page);
+        await clickJustificationButton(page);
         page.off('dialog', handleDialog);
 
          // Justification Phrase
