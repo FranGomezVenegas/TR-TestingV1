@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickDoButton, esignRequired, clickElementByText, clickElement, fillUserField,fillPasswordField, justificationPhrase, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { clickConfirmDialogButton, clickDoButton, esignRequired, clickElementByText, clickElement, fillUserField,fillPasswordField, justificationPhrase, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog';
@@ -125,6 +125,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
         await test.step(removeAttachment.phraseSelectRemove, async () => {
             await clickElementByText(page, removeAttachment.attachmentToDelete); 
+            await page.getByText(removeAttachment.attachmentToDelete, { exact: true }).nth(removeAttachment.positionAttachmentToDelete).click({timeout: 3000});
             //await page.getByText('https://www.trazit.net/').first().click();
         });
 
@@ -153,7 +154,8 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
         await clickAcceptButton(page);
         await clickDoButton(page);
-        
+        await clickConfirmDialogButton(page);
+
         // await test.step("Accept", async () => {
         //     await page.getByRole('button', { name: removeAttachment.buttonAccept }).nth(1).click();
         // });
