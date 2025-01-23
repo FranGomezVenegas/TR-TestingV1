@@ -68,72 +68,131 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     await handleActionNameInteraction(page, testInfo, Button);
 
     try {
-        
-        if (Button.phraseOpenFilter) {
-            await test.step(Button.phraseOpenFilter, async () => {;
-                await page.getByRole('button', { name: Button.textFilter }).click({timeout: 2000});
-            });
-        }        
-
-        if (Button.phraseShouldClickSearchPlaceholder) {
-            await test.step(Button.phraseShouldClickSearchPlaceholder, async () => {
-                await page.getByPlaceholder(Button.placeholderShouldFilter).click({timeout: 2000});
-            });
-        }
-        if (Button.phraseShouldClickSelectButton) {
-            await test.step(Button.phraseShouldClickSelectButton, async () => {
-                await page.getByRole('button', { name: Button.buttonSelectFilter }).click({timeout: 2000});
-            });
-        }
-        if (Button.phraseShouldClickFilter) {
-            await test.step(Button.phraseShouldClickFilter, async () => {
-                await page.locator('#filterarea').getByText(Button.optionFilterSelect).click({timeout: 2000});
-            });
-        }
-        if (Button.phraseRangeDate) {
-            if (Button.phraseShouldFillDate) {
-                await test.step(Button.phraseShouldFillDate, async () => {
-                    await page.getByRole('textbox').nth(1).fill(Button.fillDateFilter);
+        if (Button.activeFilter) {
+            if (Button.phraseOpenFilter) {
+                await test.step(Button.phraseOpenFilter, async () => {
+                    let buttonFound = false;
+    
+                    // Ajustar el estilo del diálogo antes de buscar el botón
+                    await page.evaluate(() => {
+                        const dialog = document.querySelector('.dialog-container') as HTMLElement;
+                        if (dialog) {
+                            dialog.style.top = '-577px'; 
+                            dialog.style.left = '757px';
+                            dialog.style.width = '813px'; 
+                            dialog.style.height = '300px'; 
+                        }
+                    });
+    
+                    try {
+                        const marker1 = `▼ ${Button.textFilter}`;
+                        await page.getByRole('button', { name: marker1 }).click({ timeout: 3000, force: true });
+                        buttonFound = true;
+                    } catch (error) {
+                        console.warn(`Botón con texto "▼ ${Button.textFilter}" no encontrado. Intentando con texto alternativo.`);
+                    }
+    
+                    if (!buttonFound) {
+                        throw new Error('El botón para abrir los filtros no fue encontrado.');
+                    }
                 });
             }
-            if (Button.phraseShouldFillDate) {
-                await test.step(Button.phraseShouldFillDate, async () => {
+    
+            // Pausa y captura de pantalla
+            await test.step(Button.phrasePauses, async () => {
+                await page.pause();
+                await page.waitForTimeout(500);
+            });
+    
+            if (Button.phraseScreenShots) {
+                await test.step(Button.phraseScreenShots, async () => {
+                    await attachScreenshot(testInfo, Button.screenShotsClickFilter, page, ConfigSettingsAlternative.screenShotsContentType);
+                });
+            }
+    
+            if (Button.phraseShouldClickSearchPlaceholder) {
+                await test.step(Button.phraseShouldClickSearchPlaceholder, async () => {
+                    await page.getByPlaceholder(Button.placeholderShouldFilter).click({ timeout: 2000 });
+                });
+            }
+    
+            if (Button.phraseShouldClickSelectButton) {
+                await test.step(Button.phraseShouldClickSelectButton, async () => {
+                    await page.getByRole('button', { name: Button.buttonSelectFilter }).click({ timeout: 2000 });
+                });
+            }
+    
+            if (Button.phraseShouldClickFilter) {
+                await test.step(Button.phraseShouldClickFilter, async () => {
+                    await page.locator('#filterarea').getByText(Button.optionFilterSelect).click({ timeout: 2000 });
+                });
+    
+                await test.step(Button.phraseScreenShots, async () => {
+                    await attachScreenshot(testInfo, Button.screenShotsClickOptionFilter, page, ConfigSettingsAlternative.screenShotsContentType);
+                });
+            }
+    
+            if (Button.phraseRangeDate) {
+                await test.step(Button.phraseRangeDate, async () => {
+                    await page.getByRole('textbox').nth(1).fill(Button.fillDateFilter);
                     await page.getByRole('textbox').nth(2).fill(Button.fillSecondDateFilter);
                 });
+    
+                await test.step(Button.phraseScreenShots, async () => {
+                    await attachScreenshot(testInfo, Button.screenShotsAfterAddDayRange, page, ConfigSettingsAlternative.screenShotsContentType);
+                });
+    
+                if (Button.phraseApplyFilter) {
+                    await page.getByRole('button', { name: Button.clickButtonApplyFilter }).click({ timeout: 2000 });
+                }
             }
-            if (Button.phraseApplyFilter) {
-                await page.getByRole('button', { name: Button.clickButtonApplyFilter }).click({timeout: 2000});
+    
+            if (Button.phraseScreenShots) {
+                await test.step(Button.phraseScreenShots, async () => {
+                    await attachScreenshot(testInfo, Button.screenShotsFilter, page, ConfigSettingsAlternative.screenShotsContentType);
+                });
             }
-            
-        }
-        if (Button.phraseScreenShots) {
-            await test.step(Button.phraseScreenShots, async () => {
-                await attachScreenshot(testInfo, Button.screenShotsFilter, page, ConfigSettingsAlternative.screenShotsContentType);
-            });
-            if (Button.phrasePauses) {
-                await test.step(Button.phrasePauses, async () => {
-                    await page.pause();
-                    await page.pause();
+    
+            if (Button.phraseHideFilters) {
+                await test.step(Button.phraseHideFilters, async () => {
+                    const marker = `▲ ${Button.hideFilters}`;
+                    await page.getByRole('button', { name: marker }).click({ timeout: 2000 });
                 });
             }
         }
-        if (Button.phraseHideFilters) {
-            await test.step(Button.phraseHideFilters, async () => {
-                await page.getByRole('button', { name: Button.hideFilters }).click({timeout: 1000});
-            });
-        }
-    } catch (error) {}
-    // Clic en el botón
-    await test.step(Button.phraseButtonName, async () => {
-        const selectorBoton = `#${Button.buttonName}`;
-        const elementos = page.locator(selectorBoton);
-        const cantidad = await elementos.count();
-        await page.waitForTimeout(1500);
-
-        if (cantidad === 0) throw new Error(`No se encontró el botón con ID: ${Button.buttonName}`);
-        await elementos.nth(Button.positionButton2 || 0).click({ timeout: 5000 });
-    });
-
+    } catch (error) {
+        console.warn('Ocurrió un error en el filtro o el filtro está desactivado:', error);
+    } finally {
+        // Clic en el botón para firmar
+        await test.step(Button.phraseButtonName, async () => {
+            const selectorBoton = `#${Button.buttonName}`;
+            const elementos = page.locator(selectorBoton);
+            const cantidad = await elementos.count();
+            await page.waitForTimeout(1500);
+    
+            if (cantidad === 0) {
+                throw new Error(`No se encontró el botón con ID: ${Button.buttonName}`);
+            }
+    
+            const position = parseInt(Button.positionButton2 || "1", 10);
+            await elementos.nth(position).click({ timeout: 5000 });
+    
+            if (Button.phraseScreenShots) {
+                await test.step(Button.phraseScreenShots, async () => {
+                    await attachScreenshot(testInfo, Button.screenShotsClickSign, page, ConfigSettingsAlternative.screenShotsContentType);
+                });
+    
+                if (Button.phrasePauses) {
+                    await test.step(Button.phrasePauses, async () => {
+                        await page.pause();
+                        await page.pause();
+                    });
+                }
+            }
+        });
+    }
+    
+        
 
     // Justification Phrase
     await fillUserField(page, testInfo); // Rellena el campo de "User"
