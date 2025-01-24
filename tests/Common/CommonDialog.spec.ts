@@ -6,17 +6,17 @@ import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls.js';
 import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
-import { clickDoButtonUserDialog, clickDoButtonJustification, clickDoButton, clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
+import { clickJustificationButton, clickDoButtonUserDialog, clickDoButtonJustification, clickDoButton, clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
 import { fillUserField, fillPasswordField } from '../1TRAZiT-Commons/actionsHelper.js';
 import { handleTabInteraction } from '../1TRAZiT-Commons/tabsInteractions.js';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions.js';
 import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
 // import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractions.js';
-import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
+import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch.js';
 
 import { processTestData } from '../1TRAZiT-Commons/dialogInteraction.js';
-import { selectElementWithScroll } from '../1TRAZiT-Commons/selectElementWithScroll';
-import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
+import { selectElementWithScroll } from '../1TRAZiT-Commons/selectElementWithScroll.js';
+import { handleMenus } from '../1TRAZiT-Commons/handleMenus.js';
 
 const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     // await handleMenus(page);
@@ -170,6 +170,9 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         await justificationPhrase(page, 30000, testInfo);
         await esignRequired(page, 30000, testInfo);
         await clickAcceptButton(page);
+        await clickDoButton(page);
+        await clickDoButtonJustification(page);
+        await clickJustificationButton(page);
         // Intentar hacer clic en el botón "Accept" en nth(1)
         const acceptButton1 = page.getByRole('button', { name: 'Accept' }).nth(0);
         if (await acceptButton1.isVisible()) {
@@ -437,7 +440,7 @@ test.describe('Desktop Mode', () => {
     });
 
     // Execute tests
-    test('ClickOnAButtonWithGenericDialog', async ({ page }, testInfo) => {
+    test('CommonDialog', async ({ page }, testInfo) => {
         await test.step('Run tests', async () => {
             await commonTests(ConfigSettings, page, testInfo);
         });
@@ -480,7 +483,7 @@ test.describe('Desktop Mode', () => {
 //     });
   
 //     // And I call the tests.
-//     test('ClickOnAButtonWithGenericDialog', async ({ page }, testInfo) => {
+//     test('CommonDialog', async ({ page }, testInfo) => {
 //       await test.step('Run tests', async () => {
 //         await commonTests(ConfigSettings, page, testInfo);
 //       });
@@ -522,7 +525,7 @@ test.describe('Desktop Mode', () => {
 //       });
 //     });
   
-//     test('ClickOnAButtonWithGenericDialog', async ({ page }, testInfo) => {
+//     test('CommonDialog', async ({ page }, testInfo) => {
 //       await test.step('Run tests', async () => {
 //         await commonTests(ConfigSettings, page, testInfo);
 //       });
@@ -565,7 +568,7 @@ test.describe('Desktop Mode', () => {
 //       });
 //     });
   
-//     test('ClickOnAButtonWithGenericDialog', async ({ page }, testInfo) => {
+//     test('CommonDialog', async ({ page }, testInfo) => {
 //       await test.step('Run tests', async () => {
 //         await commonTests(ConfigSettings, page, testInfo);
 //       });
@@ -608,7 +611,7 @@ test.describe('Desktop Mode', () => {
 //     });
   
 //     // And I call the tests.
-//     test('ClickOnAButtonWithGenericDialog', async ({ page }, testInfo) => {
+//     test('CommonDialog', async ({ page }, testInfo) => {
 //       await test.step('Run tests', async () => {
 //         await commonTests(ConfigSettings, page, testInfo);
 //       });
