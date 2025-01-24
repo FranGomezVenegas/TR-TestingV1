@@ -20,9 +20,10 @@ import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
 const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     // await handleMenus(page);
-    await page.waitForTimeout(2000);
-    await page.pause();
-    await page.pause();
+    await test.step("Pauses", async () => {
+        await page.pause();
+        await page.pause();
+    });
 
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
