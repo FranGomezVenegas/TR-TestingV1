@@ -166,7 +166,8 @@ export class OpenProcedureWindow {
                     if (dataForTest.desktopMode.screenShotName) {  
                         await this.tryClickWithVariations(page, dataForTest.desktopMode.screenShotName);  
                         console.log("Successfully clicked screenShotName element");  
-                        await page.mouse.click(10, 20);
+                        await page.mouse.click(15, 20);
+                        // await page.mouse.click(10, 20);
                         return
                         
                         // Cerrar después del click exitoso  
