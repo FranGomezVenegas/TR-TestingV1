@@ -1,20 +1,20 @@
 import { test, expect } from '@playwright/test';
 
-import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config';
-import { LogIntoPlatform } from '../1TRAZiT-Commons/logIntoPlatform.js';
+import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config.js';
+import { LogIntoPlatform } from '../../tests/1TRAZiT-Commons/logIntoPlatform.js';
 
-import { addAttachment as dataForTestFromFile } from '../../trazit-models/test-config-instruments-attachment';
+import { addAttachment as dataForTestFromFile } from '../../trazit-models/test-config-instruments-attachment.js';
 
-import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls';
-import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
+import { callApiRunCompletion } from '../../tests/1TRAZiT-Commons/ApiCalls.js';
+import { OpenProcedureWindow } from '../../tests/1TRAZiT-Commons/openProcedureWindow.js';
 
-import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
-import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickJustificationButton, clickDoButtonJustification, clickDoButton, esignRequired, clickElementByText, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../../tests/1TRAZiT-Commons/consoleAndNetworkMonitor.js';
+import { NotificationWitness, ReportNotificationPhase } from '../../tests/1TRAZiT-Commons/notification.js';
+import { clickJustificationButton, clickDoButtonJustification, clickDoButton, esignRequired, clickElementByText, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, attachScreenshot } from '../../tests/1TRAZiT-Commons/actionsHelper.js';
 
-import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
+import {handleTabInteraction} from '../../tests/1TRAZiT-Commons/tabsInteractions.js';
 
-import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
+import { handleMenus } from '../../tests/1TRAZiT-Commons/handleMenus.js';
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => { 
