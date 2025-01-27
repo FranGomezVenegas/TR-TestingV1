@@ -20,7 +20,7 @@ import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => { 
-        await handleMenus(page);
+        // await handleMenus(page);
 
         // Create instances of Logger and NetworkInterceptor
         const logger = new Logger();
@@ -124,7 +124,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         // });
 
         await test.step(removeAttachment.phraseSelectRemove, async () => {
-            await clickElementByText(page, removeAttachment.attachmentToDelete); 
+            // await clickElementByText(page, removeAttachment.attachmentToDelete); 
             await page.getByText(removeAttachment.attachmentToDelete, { exact: true }).nth(removeAttachment.positionAttachmentToDelete).click({timeout: 3000});
             //await page.getByText('https://www.trazit.net/').first().click();
         });
