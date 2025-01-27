@@ -14,3 +14,24 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+# Ignorar archivos y carpetas exportados
+export/
+
+# Ignorar reportes en htmlreport
+htmlreport/filename/testname/data/
+htmlreport/filename/testname/index.html
+htmlreport/test_names.log
+
+# Ignorar scripts específicos
+# rename_and_upload.sh
+# run_test.sh
+
+# tests/Common/TR-TestingV1/
+# tests/test-*.spec.ts
+
+# # Ignorar modelos específicos
+print/horizontal/*
+print/vertical/*
+
+tests/ProcDefinition/
+tests/PlatformAdmin/
