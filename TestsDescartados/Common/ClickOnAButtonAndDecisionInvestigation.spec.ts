@@ -1,23 +1,23 @@
 import { test, expect } from '@playwright/test';
 
-import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config';
-import { LogIntoPlatform } from '../1TRAZiT-Commons/logIntoPlatform';
+import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config.js';
+import { LogIntoPlatform } from '../../tests/1TRAZiT-Commons/logIntoPlatform.js';
 
 import { decisionInvestigation as dataForTestFromFile } from '../../trazit-models/test-config-instruments-newInstrument.js';
 
-import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls';
-import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
+import { callApiRunCompletion } from '../../tests/1TRAZiT-Commons/ApiCalls.js';
+import { OpenProcedureWindow } from '../../tests/1TRAZiT-Commons/openProcedureWindow.js';
 
-import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
-import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { esignRequired, clickDoButton, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper';
+import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../../tests/1TRAZiT-Commons/consoleAndNetworkMonitor.js';
+import { NotificationWitness, ReportNotificationPhase } from '../../tests/1TRAZiT-Commons/notification.js';
+import { esignRequired, clickDoButton, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../../tests/1TRAZiT-Commons/actionsHelper.js';
 
-import { clickButtonById, clickElementByText, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
-import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
-import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions';
-import {handleActionNameInteraction} from '../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
-import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
-import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
+import { clickButtonById, clickElementByText, attachScreenshot } from '../../tests/1TRAZiT-Commons/actionsHelper.js';
+import {handleTabInteraction} from '../../tests/1TRAZiT-Commons/tabsInteractions.js';
+import { handleRowActionsInteraction } from '../../tests/1TRAZiT-Commons/rowActionsInteractions.js';
+import {handleActionNameInteraction} from '../../tests/1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
+import {handleObjectByTabsWithSearchInteraction} from '../../tests/1TRAZiT-Commons/objectByTabsWithSearch.js';
+import { handleMenus } from '../../tests/1TRAZiT-Commons/handleMenus.js';
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
