@@ -338,6 +338,7 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     await clickDoButton(page);
     await clickDoButtonJustification(page);
     await clickDoButtonUserDialog(page);
+    await clickJustificationButton(page);
     
     // Array de índices para los botones
     const buttonIndices = [0, 1, 2]; // Índices a verificar
