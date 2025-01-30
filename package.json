@@ -8,18 +8,23 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.42.1",
+    "@playwright/test": "^1.50.0",
     "@types/jquery": "^3.5.30",
-    "@types/node": "^20.11.5",
+    "@types/node": "^20.16.10",
     "eslint": "^9.10.0"
   },
   "dependencies": {
     "alert": "^6.0.1",
     "axios": "^1.6.8",
     "csv-parse": "^5.5.6",
+    "csv-parser": "^3.0.0",
+    "exceljs": "^4.4.0",
     "ffmpeg-static": "^5.2.0",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
-    "readline-sync": "^1.4.10"
+    "playwright": "^1.48.0",
+    "readline-sync": "^1.4.10",
+    "screenshot-desktop": "^1.15.0",
+    "systeminformation": "^5.23.5"
   }
 }

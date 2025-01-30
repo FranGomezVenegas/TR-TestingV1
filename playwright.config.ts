@@ -3,29 +3,29 @@ import { defineConfig } from '@playwright/test';
 const FileNameTestReporter = require.resolve('./tests/reporters/FileNameTestReporter');
 
 export default defineConfig({
-  testDir: 'tests', // Directorio donde se encuentran los tests
-  fullyParallel: false, // Ejecutar pruebas en paralelo
-  forbidOnly: !!process.env.CI, // Prohibir .only en CI
-  retries: process.env.CI ? 2 : 0, // Reintentar pruebas fallidas en CI
-  workers: process.env.CI ? 1 : undefined, // Número de trabajadores en CI
-  reporter: [
-    [FileNameTestReporter],
-    ['html', { outputFolder: 'htmlreport/filename/testname', open: 'never' }],
-    ['list', { printSteps: true }], // Reporte en lista con pasos
-  ],
-  timeout: 90000, // Timeout de 90 segundos (1 minuto y 30 segundos)
-
+  testDir: 'tests',
+  fullyParallel: false,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: process.env.NO_HTML_REPORT === 'true' 
+    ? [['list']]  // Usamos el arreglo de reportes correctamente
+    : [
+        ['html', { outputFolder: 'htmlreport/filename/testname', open: 'never' }],
+        ['list', { printSteps: true }],
+      ],
+  timeout: 90000,
   use: {
-    trace: 'on-first-retry', // Traza en el primer reintento
-    video: 'on', // Grabar video en todas las ejecuciones de prueba
+    trace: 'on-first-retry',
+    video: 'on'
   },
-
   projects: [
     {
-      name: 'Chrome', // Configuración para Chrome
+      name: 'Chrome',
       use: {
-        browserName: 'chromium', // Usar Chromium para Chrome
-        channel: 'chrome', // Especificar el canal de Chrome
+        browserName: 'chromium',
+        channel: 'chrome',
+        headless: true,
         video: 'on'
       },
     },
