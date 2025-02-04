@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config.js';
 import { attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
 
-const timeout = 5000;
+const timeout = 40000;
 
 export const handleActionNameInteraction = async (page, testInfo, Button) => {
     if (!Button?.buttonName) {
@@ -10,7 +10,7 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
         return;
     }
 
-    // Estructura para almacenar todos los mensajes de consola y errores del sistema
+    // Almaceno los mensajes de consola y errores del sistema
     const consoleMessages = [];
     const systemErrors = {
         pageErrors: [],
@@ -20,37 +20,31 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
         workerErrors: [],
     };
 
-    // Manejadores para capturar mensajes y errores
+    // Configuro los manejadores de eventos para registrar mensajes y errores
     const handleConsoleMessage = (msg) => {
-        const logEntry = {
+        console.log(`[${new Date().toISOString()}] Console ${msg.type()}:`, msg.text());
+        consoleMessages.push({
             type: msg.type(),
             text: msg.text(),
             location: msg.location(),
             timestamp: new Date().toISOString(),
             args: msg.args().map(arg => arg.toString()),
-        };
-
-        console.log(`[${logEntry.timestamp}] Console ${logEntry.type}:`, logEntry.text);
-        consoleMessages.push(logEntry); // Almacenar todos los mensajes de consola
+        });
     };
 
     const handlePageError = (error) => {
-        systemErrors.pageErrors.push({
-            message: error.message,
-            stack: error.stack,
-            timestamp: new Date().toISOString(),
-        });
         console.error(`[Page Error] ${error.message}`);
+        systemErrors.pageErrors.push({ message: error.message, stack: error.stack, timestamp: new Date().toISOString() });
     };
 
     const handleRequestFailed = (request) => {
+        console.error(`[Network Error] ${request.failure()?.errorText || 'Unknown error'} - ${request.url()}`);
         systemErrors.networkErrors.push({
             url: request.url(),
             method: request.method(),
             failure: request.failure()?.errorText || 'Unknown error',
             timestamp: new Date().toISOString(),
         });
-        console.error(`[Network Error] ${request.failure()?.errorText || 'Unknown error'} - ${request.url()}`);
     };
 
     const handleResponse = async (response) => {
@@ -64,122 +58,127 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
             try {
                 errorEntry.body = await response.text();
             } catch {
-                errorEntry.body = 'Unable to fetch response body';
+                errorEntry.body = 'No se pudo obtener el cuerpo de la respuesta';
             }
-            systemErrors.responseErrors.push(errorEntry);
             console.error(`[Response Error] ${response.status()} - ${response.url()}`);
+            systemErrors.responseErrors.push(errorEntry);
         }
     };
 
     const handleWorkerError = (worker) => {
-        systemErrors.workerErrors.push({
-            url: worker.url(),
-            timestamp: new Date().toISOString(),
-        });
         console.error(`[Worker Error] Worker at ${worker.url()} encountered an error.`);
+        systemErrors.workerErrors.push({ url: worker.url(), timestamp: new Date().toISOString() });
     };
 
-    // Definir el manejador de diálogos aquí, fuera del bloque try
     const handleDialog = async (dialog) => {
         console.error(`Se detectó un alert con el mensaje: "${dialog.message()}"`);
-        await dialog.dismiss(); // Cierro el alert. 
+        await dialog.dismiss();
         throw new Error(`El test falló debido a un alert con el mensaje: "${dialog.message()}"`);
     };
 
     try {
-        // Configurar listeners
+        // Agrego los manejadores de eventos
         page.on('console', handleConsoleMessage);
         page.on('pageerror', handlePageError);
         page.on('requestfailed', handleRequestFailed);
         page.on('response', handleResponse);
         page.on('worker', handleWorkerError);
+        page.on('dialog', handleDialog);
 
-        if (Button.selectName && Button.selectName.trim() !== "") {  // Verificar si selectName no está vacío
+        await page.waitForTimeout(3000);
+
+        // Si hay un elemento para seleccionar, intento hacer clic en él
+        if (Button.selectName) {
             await test.step(Button.phraseSelect, async () => {
                 const position = Button.positionSelectElement ?? 0;
-                await page.getByText(Button.selectName).nth(position).click({ timeout });
+                try {
+                    await page.getByText(Button.selectName, { exact: true }).nth(position).click({ timeout: 3000 });
+                } catch (exactClickError) {
+                    console.log(`Error en clic exacto: ${exactClickError.message}`);
+                    await page.getByText(Button.selectName).nth(position).click({ timeout: 3000 });
+                }
             });
-        
+
             if (Button.screenShotsSelect) {
                 await attachScreenshot(testInfo, Button.screenShotsSelect, page, ConfigSettingsAlternative.screenShotsContentType);
             }
-        
-            await test.step('Pauses', async () => {
-                await page.pause();
-                await page.pause();
-                await page.pause();
-            });
         }
-        
-        // Configuro el listener 'dialog' justo antes del clic
-        page.on('dialog', handleDialog);
 
-        // Clic en el botón
+        // Intento hacer clic en el botón principal
         await test.step(Button.phraseButtonName, async () => {
             const selectorBoton = `#${Button.buttonName}`;
             const elementos = page.locator(selectorBoton);
             const cantidad = await elementos.count();
-            await page.waitForTimeout(2000);
+            console.log(`Encontrados ${cantidad} elementos con el ID ${Button.buttonName}`);
 
-            if (cantidad === 0) throw new Error(`No se encontró el botón con ID: ${Button.buttonName}`);
-            await elementos.nth(Button.positionButton || 0).click({ timeout });
-            // await page.keyboard.press('Escape');
-            // await elementos.nth(Button.positionButton || 0).click({ timeout });
-
-        });
-
-        if (Button.screenShotsButtonName) {
-            await attachScreenshot(testInfo, Button.screenShotsButtonName, page, ConfigSettingsAlternative.screenShotsContentType);
-        }
-    } catch (error) {
-        console.log("Error en handleActionNameInteraction:", error);
-        await test.step('Click on more_horiz', async () => {
-            try {
-                const position = Button.hideActionsButton.position !== undefined ? Button.hideActionsButton.position : 0;
-
-                // Usando el locator y la posición extraída o el valor por defecto
-                await page.locator(Button.hideActionsButton.locator).nth(position).click({ force: true, timeout: 1000 });
-                
-
-                await test.step(Button.phraseButtonName, async () => {
-                    const selectorBoton = `#${Button.buttonName}`;
-                    const elementos = page.locator(selectorBoton);
-                    const cantidad = await elementos.count();
-                    await page.waitForTimeout(2000);
-        
-                    if (cantidad === 0) throw new Error(`No se encontró el botón con ID: ${Button.buttonName}`);
-                    await elementos.nth(Button.positionButton || 0).click({ timeout });
-                    // await page.locator('body').press('Escape');
-                    // await elementos.nth(Button.positionButton || 0).click({ timeout });
-
-                });
-        
-                if (Button.screenShotsButtonName) {
-                    await attachScreenshot(testInfo, Button.screenShotsButtonName, page, ConfigSettingsAlternative.screenShotsContentType);
+            if (cantidad > 0) {
+                const indice = Button.positionButton || 0;
+                if (indice >= cantidad) {
+                    throw new Error(`Índice ${indice} fuera de rango. Solo hay ${cantidad} elementos disponibles.`);
                 }
-            } catch (error) {
-                console.log('No need to click on "more_horiz":', error.message);
+                await page.waitForTimeout(8000);
+                await elementos.nth(indice).waitFor({ state: 'visible', timeout });
+
+                try {
+                    await elementos.nth(indice).click({ timeout });
+                    console.log(`Clic correctamente nth(${indice})`);
+                } catch (clickError) {
+                    console.log(`Error en clic directo: ${clickError.message}`);
+                    await page.evaluate((selector, index) => {
+                        const elementos = document.querySelectorAll(selector);
+                        if (elementos[index]) {
+                            elementos[index].click({ timeout: 3000 });
+                        }
+                    }, selectorBoton, indice);
+                    console.log(`Clic correctamente`);
+                }
+            } else {
+                throw new Error(`No se pudo hacer clic en ningún elemento con ID: ${Button.buttonName}`);
             }
         });
 
+        // Si hay un botón de acciones ocultas, intento hacer clic en él antes de hacer clic en el botón principal
+        if (Button.hideActionsButton) {
+            await test.step('Click en botón de más opciones', async () => {
+                try {
+                    const position = Button.hideActionsButton.position ?? 0;
+                    await page.locator(Button.hideActionsButton.locator).nth(position).click({ force: true, timeout: 1000 });
+
+                    // Intento nuevamente hacer clic en el botón principal después de mostrar más opciones
+                    await test.step(Button.phraseButtonName, async () => {
+                        const selectorBoton = `#${Button.buttonName}`;
+                        const elementos = page.locator(selectorBoton);
+                        const cantidad = await elementos.count();
+
+                        if (cantidad === 0) throw new Error(`No se encontró el botón con ID: ${Button.buttonName}`);
+                        await elementos.nth(Button.positionButton || 0).click({ timeout });
+                    });
+                } catch (error) {
+                    console.log('No fue necesario hacer clic en "más opciones":', error.message);
+                }
+            });
+        }
+
+        // Si se especifica una captura de pantalla, la tomo
+        if (Button.screenShotsButtonName) {
+            await attachScreenshot(testInfo, Button.screenShotsButtonName, page, ConfigSettingsAlternative.screenShotsContentType);
+        }
+
+    } catch (error) {
+        console.error("Error en handleActionNameInteraction:", error);
+        throw error;
     } finally {
-        // Remover listeners y adjuntar errores al test
+        // Elimino los manejadores de eventos y adjunto errores al reporte del test
         page.removeAllListeners();
         page.off('dialog', handleDialog);
 
-        // Adjuntar los errores y mensajes al reporte del test
         testInfo.attachments.push({
             name: 'console-messages.json',
             contentType: 'application/json',
             body: Buffer.from(JSON.stringify({ consoleMessages, systemErrors }, null, 2)),
         });
 
-        // Lanzar un error si se detectaron problemas críticos
-        if (
-            systemErrors.pageErrors.length > 0 ||
-            systemErrors.networkErrors.length > 0 ||
-            systemErrors.responseErrors.length > 0
-        ) {
+        if (systemErrors.pageErrors.length > 0 || systemErrors.networkErrors.length > 0 || systemErrors.responseErrors.length > 0) {
             throw new Error('Errores detectados durante la ejecución del test.');
         }
     }

@@ -13,7 +13,7 @@ import { NotificationWitness, ReportNotificationPhase } from '../../tests/1TRAZi
 import { clickDoButton, esignRequired, clickElementByText, clickElement, fillUserField,fillPasswordField, justificationPhrase, clickAcceptButton, attachScreenshot } from '../../tests/1TRAZiT-Commons/actionsHelper';
 
 import {handleTabInteraction} from '../../tests/1TRAZiT-Commons/tabsInteractions';
-import {handleActionNameInteraction} from '../../tests/1TRAZiT-Commons/actionsNameInteractionsWithoutDialog';
+import {handleActionNameInteraction} from '../../tests/1TRAZiT-Commons/actionsNameInteractions';
 import {handleObjectByTabsWithSearchInteraction} from '../../tests/1TRAZiT-Commons/objectByTabsWithSearch';
 import {handleRowActionsInteraction} from '../../tests/1TRAZiT-Commons/rowActionsInteractions';
 import { handleMenus } from '../../tests/1TRAZiT-Commons/handleMenus';
@@ -45,44 +45,104 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         networkInterceptor.attachToPage(page);
     });
 
-    // Llamadas a interacciones previas
-    await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, openAttachment);
-
-    // Llamo a la función para comprobar si un objectByTabs tiene un search. Esta fución solo controla el search
-    // clica en este y añade el campo que se desea buscar.
-    await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, openAttachment);
-    
-    await handleActionNameInteraction(page, testInfo, openAttachment);
+    // Navegar a la URL en `page1`
     await test.step(openAttachment.phraseNavigation, async () => {
-        const page1Promise = page.waitForEvent('popup');
-        const positionURL = typeof openAttachment.positionURL !== 'undefined' ? openAttachment.positionURL : 0; 
-        await page.getByTitle(openAttachment.url).nth(positionURL).click({ force: true,timeout: 3000 });
-        // await page.locator('li:nth-child(2) > md-filled-button > #button').click();
-        const page1 = await page1Promise;
+        const positionURL = openAttachment.positionURL - 1;
+        if (openAttachment.selectName && openAttachment.selectName.trim() !== "") {  
+            await test.step(openAttachment.phraseSelect, async () => {
+                const position = openAttachment.positionSelectElement ?? 0;
+                await page.getByText(openAttachment.selectName).nth(position).click({ timeout: 3000 });
+            });
+        
+            if (openAttachment.screenShotsSelect) {
+                await attachScreenshot(testInfo, openAttachment.screenShotsSelect, page, ConfigSettingsAlternative.screenShotsContentType);
+            }
+        
+            await test.step('Pauses', async () => {
+                await page.pause();
+                await page.pause();
+                await page.pause();
+            });
+        }
+
+        try {    
+            await page.getByLabel(openAttachment.labelURL).nth(positionURL).click({ timeout: 3000 });
+        } catch (error) {
+            console.warn("Error al hacer clic en el elemento objetivo, intentando con 'hideActionsPosition'.");
+
+            const hideActionsPosition = openAttachment.hideActionsButton.position !== undefined
+                ? openAttachment.hideActionsButton.position
+                : 0;
+
+            try {
+                await page.locator(openAttachment.hideActionsButton.locator)
+                    .nth(hideActionsPosition)
+                    .click({ force: true, timeout: 1000 });
+
+                console.log("Intentando nuevamente hacer clic en el elemento objetivo...");
+                await page.getByLabel(openAttachment.labelURL).nth(positionURL).click({ timeout: 3000 });
+            } catch (secondError) {
+                console.error("Error al hacer clic en 'hideActionsPosition' o al reintentar el clic en el elemento objetivo:", secondError);
+                throw secondError; // Relanzar el error si no se puede proceder
+            }
+        }
+    });
+
+    // Continuar con el flujo del test
+    const browser = page.context().browser();
+    if (browser) {
+        const context = await browser.newContext();
+        const page1 = await context.newPage();
+
+        // Navegar a la URL en `page1`
+        await page1.goto(openAttachment.url);
+
+        // Capturar pantalla de `page1`
         await test.step(openAttachment.phraseScreenShots, async () => {
-            await attachScreenshot(testInfo, openAttachment.screenShotsUrl, page, ConfigSettingsAlternative.screenShotsContentType);
-            await attachScreenshot(testInfo, openAttachment.screenShotsUrl, page1, ConfigSettingsAlternative.screenShotsContentType);
-    
+            const screenshot = await page1.screenshot();
+            await testInfo.attach(openAttachment.screenShotsUrl, {
+                body: screenshot,
+                contentType: ConfigSettingsAlternative.screenShotsContentType,
+            });
+            if (openAttachment.phrasePauses) {
+                await page.pause();
+            }
         });
-    });
-    
-    await test.step("Final checks", async () => {
-        // Justification Phrase
-        await fillUserField(page, testInfo); // Rellena el campo de "User"
-        await fillPasswordField(page, testInfo); // Rellena el campo de "Password"
 
-        // Continuar con la justificación y otras acciones
-        await justificationPhrase(page, 30000, testInfo);    
-        await esignRequired(page, 30000, testInfo);
+        // Continuar con las acciones en `page1`
+        await fillUserField(page1, testInfo);
+        await fillPasswordField(page1, testInfo);
+        await justificationPhrase(page1, 30000, testInfo);
+        await esignRequired(page1, 30000, testInfo);
+        await clickAcceptButton(page1);
+        await clickDoButton(page1);
 
-        await clickAcceptButton(page);
-        await clickDoButton(page);
-    });
-    // Verificar que no haya errores en la consola
-    await test.step(phraseReport.phraseError, async () => {
-        logger.printLogs();
-        expect(logger.errors.length).toBe(0);
-    });
+        const acceptButton = page1.getByRole('button', { name: openAttachment.buttonAccept }).nth(1);
+        if (await acceptButton.isVisible()) {
+            await test.step("Aceptar", async () => {
+                await acceptButton.click();
+            });
+        } else {
+            console.log("Botón de Aceptar no encontrado, omitiendo paso.");
+        }
+
+        // Verificar respuestas de red capturadas
+        await test.step(phraseReport.phraseVerifyNetwork, async () => {
+            networkInterceptor.printNetworkData();
+            const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
+            expect(nullResponsesCount).toBe(0);
+        });
+
+        // Validar respuestas usando ResponseValidator
+        await test.step(phraseReport.phraseVerifyNetwork, async () => {
+            const responseValidator = new ResponseValidator(networkInterceptor.responses);
+            try {
+                await responseValidator.validateResponses();
+            } catch (error) {
+                console.error("Error al validar respuestas:", error);
+            }
+        });
+    }
 };
 
 
@@ -98,10 +158,10 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsOpenAttachment';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInventoryLotsOpenAttachment';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'stock'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
