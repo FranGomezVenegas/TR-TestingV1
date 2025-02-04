@@ -161,49 +161,106 @@ export class OpenProcedureWindow {
             });
 
             // Intentar click en screenShotName con todas las variaciones  
+            // await test.step("Try clicking screenShotName with variations", async () => {  
+            //     try {  
+
+            //         if (dataForTest.desktopMode.screenShotName) {  
+            //             // await this.tryClickWithVariations(page, dataForTest.desktopMode.screenShotName);  
+            //             // await page.locator('#desktopMenu').getByText(dataForTest.desktopMode.screenShotName, { exact: true }).click({force: true, timeout: 2000});
+            //             await page.locator('#desktopMenu').getByText(dataForTest.desktopMode.screenShotName).nth(1).click();
+            //             console.log("Successfully clicked screenShotName element");  
+            //             await page.mouse.click(15, 20);
+            //             // await page.mouse.click(10, 20);
+            //             return
+                         
+            //         }  
+                    
+            //     } catch (error) {  
+            //         console.log("Click fallido en screenShotName, intentando alternativa...");  
+                                            
+            //         if (dataForTest.desktopMode.pageElement) {  
+            //             const baseUrl = ConfigSettings.platformUrl.replace(/\/+$/, '');  
+            //             const pageUrl = dataForTest.desktopMode.pageElement.replace(/^\/+/, '');  
+            //             const fullPagrUrl = `${baseUrl}/${pageUrl}`;  
+                        
+            //             console.log("URL construida: ", fullPagrUrl);  
+            //             await page.goto(fullPagrUrl);  
+            //             console.log("Navegación a window page element completada");  
+            //             await page.waitForTimeout(200);
+            //             await page.mouse.click(10, 20);  
+                        
+            //             const currentUrl = page.url();
+            //             if (currentUrl !== fullPagrUrl) {
+            //                 throw new Error(`Navegación fallida. Esperada: ${fullPagrUrl}, obtenida: ${currentUrl}`);
+            //             }
+            //             return
+            //         } else if (dataForTest.desktopMode.pageElementImg) {
+            //             await page.locator(dataForTest.desktopMode.pageElementImg).first().click();
+            //             await this.tryClickWithVariations(page, dataForTest.desktopMode.label);
+            //             await page.mouse.click(10, 20);
+            //             await page.waitForTimeout(500);  
+            //             return
+            //         }  
+            //     }    
+            // });  
+
             await test.step("Try clicking screenShotName with variations", async () => {  
                 try {  
-                    if (dataForTest.desktopMode.screenShotName) {  
-                        await this.tryClickWithVariations(page, dataForTest.desktopMode.screenShotName);  
-                        console.log("Successfully clicked screenShotName element");  
-                        await page.mouse.click(15, 20);
-                        // await page.mouse.click(10, 20);
-                        return
-                        
-                        // Cerrar después del click exitoso  
-                        await this.tryClickWithVariations(page, dataForTest.desktopMode.label);  
-                        await page.mouse.click(10, 20);
-                        return  
+                    const screenShotName = dataForTest.desktopMode.screenShotName;
+            
+                    if (["Deviation", "Deviations", "Deviation view"].includes(screenShotName)) {  
+                        // Intentar hacer clic desde el índice 0 hasta 6
+                        for (let i = 0; i <= 6; i++) {
+                            try {
+                                await page.locator('#desktopMenu').getByText(screenShotName).nth(i).click({timeout: 500});
+                                console.log(`Successfully clicked 'Deviations' at index ${i}`);
+                                await page.mouse.click(15, 20);
+                                return;
+                            } catch (error) {
+                                console.log(`Failed to click 'Deviations' at index ${i}, trying next...`);
+                            }
+                        }
+                    } else {  
+                        // Intentar hacer clic con el nombre original
+                        try {
+                            await page.locator('#desktopMenu').getByText(screenShotName, { exact: true }).click({ force: true, timeout: 2000 });
+                            console.log("Successfully clicked screenShotName element");
+                            await page.mouse.click(15, 20);
+                            return;
+                        } catch (error) {
+                            console.log(`Failed to click '${screenShotName}', entering catch block...`);
+                            throw error; // Lanzar el error para que entre en el catch global
+                        }
                     }  
                 } catch (error) {  
                     console.log("Click fallido en screenShotName, intentando alternativa...");  
-                                            
+            
                     if (dataForTest.desktopMode.pageElement) {  
                         const baseUrl = ConfigSettings.platformUrl.replace(/\/+$/, '');  
                         const pageUrl = dataForTest.desktopMode.pageElement.replace(/^\/+/, '');  
-                        const fullPagrUrl = `${baseUrl}/${pageUrl}`;  
-                        
-                        console.log("URL construida: ", fullPagrUrl);  
-                        await page.goto(fullPagrUrl);  
+                        const fullPageUrl = `${baseUrl}/${pageUrl}`;  
+            
+                        console.log("URL construida: ", fullPageUrl);  
+                        await page.goto(fullPageUrl);  
                         console.log("Navegación a window page element completada");  
                         await page.waitForTimeout(200);
                         await page.mouse.click(10, 20);  
-                        
+            
                         const currentUrl = page.url();
-                        if (currentUrl !== fullPagrUrl) {
-                            throw new Error(`Navegación fallida. Esperada: ${fullPagrUrl}, obtenida: ${currentUrl}`);
+                        if (currentUrl !== fullPageUrl) {
+                            throw new Error(`Navegación fallida. Esperada: ${fullPageUrl}, obtenida: ${currentUrl}`);
                         }
-                        return
+                        return;
                     } else if (dataForTest.desktopMode.pageElementImg) {
                         await page.locator(dataForTest.desktopMode.pageElementImg).first().click();
                         await this.tryClickWithVariations(page, dataForTest.desktopMode.label);
                         await page.mouse.click(10, 20);
                         await page.waitForTimeout(500);  
-                        return
+                        return;
                     }  
                 }    
-            });  
-
+            });
+            
             await page.pause();
             page.off('dialog', handleDialog);
 
