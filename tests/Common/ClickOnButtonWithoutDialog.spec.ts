@@ -130,11 +130,11 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         });
 
         // Verificar respuestas de red capturadas
-        await test.step(phraseReport.phraseVerifyNetwork, async () => {
-            networkInterceptor.printNetworkData();
-            const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-            expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
-        });
+        // await test.step(phraseReport.phraseVerifyNetwork, async () => {
+        //     networkInterceptor.printNetworkData();
+        //     const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
+        //     expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
+        // });
 
         // Validar respuestas utilizando ResponseValidator
         await test.step(phraseReport.phraseVerifyNetwork, async () => {

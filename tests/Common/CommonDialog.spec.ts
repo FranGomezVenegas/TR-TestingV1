@@ -318,72 +318,73 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
             await page.pause();
         }
     });
-    // Justification Phrase
-    await fillUserField(page, testInfo);
-    await fillPasswordField(page, testInfo);
-    // await test.step(buttonWithDialog.phrasePauses, async () => {
-    //     await page.waitForTimeout(100);
-    // });
-    await justificationPhrase(page, 30000, testInfo);
-    await clickAcceptButton(page);
-    await esignRequired(page, 30000, testInfo);
-    await clickDoButton(page);
+    await test.step("Final checks", async () => {
+        // Justification Phrase
+        await fillUserField(page, testInfo);
+        await fillPasswordField(page, testInfo);
+        // await test.step(buttonWithDialog.phrasePauses, async () => {
+        //     await page.waitForTimeout(100);
+        // });
+        await justificationPhrase(page, 30000, testInfo);
+        await clickAcceptButton(page);
+        await esignRequired(page, 30000, testInfo);
+        await clickDoButton(page);
 
-    // Justification Phrase
-    await fillUserField(page, testInfo);
-    await fillPasswordField(page, testInfo);
-    await justificationPhrase(page, 30000, testInfo);
-    await clickAcceptButton(page);
-    await esignRequired(page, 30000, testInfo);
-    await clickDoButton(page);
-    await clickDoButtonJustification(page);
-    await clickDoButtonUserDialog(page);
-    await clickJustificationButton(page);
-    
-    // Array de índices para los botones
-    const buttonIndices = [0, 1, 2]; // Índices a verificar
-    let clicked = false;
+        // Justification Phrase
+        await fillUserField(page, testInfo);
+        await fillPasswordField(page, testInfo);
+        await justificationPhrase(page, 30000, testInfo);
+        await clickAcceptButton(page);
+        await esignRequired(page, 30000, testInfo);
+        await clickDoButton(page);
+        await clickDoButtonJustification(page);
+        await clickDoButtonUserDialog(page);
+        await clickJustificationButton(page);
+        
+        // Array de índices para los botones
+        const buttonIndices = [0, 1, 2]; // Índices a verificar
+        let clicked = false;
 
-    // Intentar hacer clic en el primer botón visible
-    const firstButton = page.getByRole('button', { name: 'Accept' }).first();
+        // Intentar hacer clic en el primer botón visible
+        const firstButton = page.getByRole('button', { name: 'Accept' }).first();
 
-    if (await firstButton.isVisible()) {
-        await test.step("Click 'Accept' button using .first()", async () => {
-            try {
-                await firstButton.click({ timeout: 1000 }); // Timeout reducido a 1 segundo
-                clicked = true; // Marcar como true si se hizo clic
-            } catch (error) {
-                console.log("Error clicking 'Accept' button with .first():", error);
-            }
-        });
-    }
+        if (await firstButton.isVisible()) {
+            await test.step("Click 'Accept' button using .first()", async () => {
+                try {
+                    await firstButton.click({ timeout: 1000 }); // Timeout reducido a 1 segundo
+                    clicked = true; // Marcar como true si se hizo clic
+                } catch (error) {
+                    console.log("Error clicking 'Accept' button with .first():", error);
+                }
+            });
+        }
 
-    // Si no se pudo hacer clic con .first(), intentar con los índices
-    if (!clicked) {
-        for (const index of buttonIndices) {
-            const button = page.getByRole('button', { name: 'Accept' }).nth(index);
+        // Si no se pudo hacer clic con .first(), intentar con los índices
+        if (!clicked) {
+            for (const index of buttonIndices) {
+                const button = page.getByRole('button', { name: 'Accept' }).nth(index);
 
-            if (await button.isVisible()) {
-                await test.step(`Click 'Accept' button at index ${index}`, async () => {
-                    try {
-                        await button.click({ timeout: 1000 }); // Timeout reducido a 1 segundo
-                        clicked = true; // Si se hizo clic, marcar como true
-                    } catch (error) {
-                        console.log(`Error clicking 'Accept' button at index ${index}:`, error);
-                    }
-                });
-                break; // Salir del bucle después de hacer clic
+                if (await button.isVisible()) {
+                    await test.step(`Click 'Accept' button at index ${index}`, async () => {
+                        try {
+                            await button.click({ timeout: 1000 }); // Timeout reducido a 1 segundo
+                            clicked = true; // Si se hizo clic, marcar como true
+                        } catch (error) {
+                            console.log(`Error clicking 'Accept' button at index ${index}:`, error);
+                        }
+                    });
+                    break; // Salir del bucle después de hacer clic
+                }
             }
         }
-    }
 
-    // Verificar si se hizo clic en algún botón
-    if (!clicked) {
-        console.log("No 'Accept' button was clicked. Ensure the buttons are visible.");
-    }
-    page.off('dialog', handleDialog);
+        // Verificar si se hizo clic en algún botón
+        if (!clicked) {
+            console.log("No 'Accept' button was clicked. Ensure the buttons are visible.");
+        }
+        page.off('dialog', handleDialog);
 
-  
+    });
     // Network response validation
     await test.step(phraseReport.phraseVerifyNetwork, async () => {
         const responseValidator = new ResponseValidator(networkInterceptor.responses);
@@ -416,10 +417,10 @@ test.describe('Desktop Mode', () => {
         });
   
         const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsNewInstrument';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach

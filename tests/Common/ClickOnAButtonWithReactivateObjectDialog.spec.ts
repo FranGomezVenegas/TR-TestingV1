@@ -250,17 +250,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         }
     });
 
-    await page.getByRole('button', { name: buttonWithDialog.buttonDo }).click({timeout: 5000});
-    await test.step(buttonWithDialog.phraseScreenShots, async () => {
-        await attachScreenshot(testInfo, buttonWithDialog.screenShotsDo, page, ConfigSettingsAlternative.screenShotsContentType);
-        if (buttonWithDialog.phrasePauses) {
-            await test.step(buttonWithDialog.phrasePauses, async () => {
-                await page.pause();
-                await page.pause();
-                await page.pause();
-            });
-        }
-    });
+    await clickDoButton(page);
 
     // Justificación
     await fillUserField(page, testInfo);
