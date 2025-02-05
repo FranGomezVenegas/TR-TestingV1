@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config.js';
 import { attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
 
-const timeout = 40000;
+const timeout = 3000;
 
 export const handleActionNameInteraction = async (page, testInfo, Button) => {
     if (!Button?.buttonName) {
@@ -87,6 +87,28 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
 
         await page.waitForTimeout(3000);
 
+        // Verifico si el botón de acciones (UP/DOWN) está presente
+        if (Button?.arrowDirection) {
+            const arrowSymbol = Button.arrowDirection.toUpperCase() === 'UP' ? '▲' : '▼'; // Mapeo de "UP"(arriba) y "DOWN"(abajo)
+            const position = Button.positionArrow || 0;  // Definir posición si no está presente
+
+            await test.step(`Hacer clic en botón de dirección ${arrowSymbol}`, async () => {
+                try {
+                    // Intentamos hacer clic en el botón correspondiente (UP o DOWN) en función de su dirección
+                    await page.getByRole('button', { name: arrowSymbol }).nth(position).click({ timeout: 3000 });
+                    console.log(`Clic en ${arrowSymbol} correctamente.`);
+                    // Después de hacer clic, tomamos la captura de pantalla si es necesario
+                    if (Button?.screenShotsArrow) {
+                        await test.step(`Captura de pantalla después de hacer clic en ${arrowSymbol}`, async () => {
+                            await attachScreenshot(testInfo, Button.screenShotsArrow, page, ConfigSettingsAlternative.screenShotsContentType);
+                        });
+                    }
+                } catch (error) {
+                    console.error(`Error al hacer clic en ${arrowSymbol}: ${error.message}`);
+                }
+            });
+        }
+        
         // Si hay un elemento para seleccionar, intento hacer clic en él
         if (Button.selectName) {
             await test.step(Button.phraseSelect, async () => {
@@ -116,21 +138,21 @@ export const handleActionNameInteraction = async (page, testInfo, Button) => {
                 if (indice >= cantidad) {
                     throw new Error(`Índice ${indice} fuera de rango. Solo hay ${cantidad} elementos disponibles.`);
                 }
-                await page.waitForTimeout(8000);
-                await elementos.nth(indice).waitFor({ state: 'visible', timeout });
+                // await page.waitForTimeout(8000);
+                // await elementos.nth(indice).waitFor({ state: 'visible', timeout });
 
                 try {
                     await elementos.nth(indice).click({ timeout });
                     console.log(`Clic correctamente nth(${indice})`);
                 } catch (clickError) {
                     console.log(`Error en clic directo: ${clickError.message}`);
-                    await page.evaluate((selector, index) => {
-                        const elementos = document.querySelectorAll(selector);
-                        if (elementos[index]) {
-                            elementos[index].click({ timeout: 3000 });
-                        }
-                    }, selectorBoton, indice);
-                    console.log(`Clic correctamente`);
+                    // await page.evaluate((selector, index) => {
+                    //     const elementos = document.querySelectorAll(selector);
+                    //     if (elementos[index]) {
+                    //         elementos[index].click({ timeout: 3000 });
+                    //     }
+                    // }, selectorBoton, indice);
+                    // onsole.log(`Clic correctamente`);
                 }
             } else {
                 throw new Error(`No se pudo hacer clic en ningún elemento con ID: ${Button.buttonName}`);

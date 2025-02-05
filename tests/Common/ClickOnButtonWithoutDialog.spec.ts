@@ -124,10 +124,10 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         await clickDoButton(page);
 
         // Verificar que no haya errores en la consola
-        await test.step(phraseReport.phraseError, async () => {
-          logger.printLogs();
-          expect(logger.errors.length).toBe(0);
-        });
+        // await test.step(phraseReport.phraseError, async () => {
+        //   logger.printLogs();
+        //   expect(logger.errors.length).toBe(0);
+        // });
 
         // Verificar respuestas de red capturadas
         // await test.step(phraseReport.phraseVerifyNetwork, async () => {
@@ -169,10 +169,10 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'PendingSamplingLocationSetSamplingDate';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'mb_em'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach

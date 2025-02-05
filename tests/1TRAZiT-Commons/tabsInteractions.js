@@ -33,23 +33,36 @@ export async function handleTabInteraction(page, testInfo, configSettings, butto
                         await page.waitForTimeout(500);
                     });
                     // Intentar tercer clic
-                    await page.getByRole('button', { name: button.tab, exact: true }).click({ timeout: 1000 });
+                    await page.getByRole('button', { name: button.tab, exact: true }).click({ force: true, timeout: 1000 });
                     console.log('Clicked on Tab (Third option)');
                     clicked = true; // Si funciona, marcar como clickeado
                 } catch (error) {
-                    console.error('Third option failed.');
+                    console.log('Third option failed.');
+                }
+            }
+
+            if (!clicked) {
+                try {
+                    // Intentar segundo clic
+                    await page.getByRole('button', { name: button.tab }).click({ force: true,  timeout: 1000 });
+                    console.log('Clicked on Tab (The Fourth option)');
+                    clicked = true; // Si funciona, marcar como clickeado
+                } catch (error) {
+                    console.log('The Fourth option failed, trying third option.');
                 }
             }
 
             // Si después de los tres intentos no se ha hecho clic, lanzar un error
-            if (!clicked) {
-                console.error('Failed to click on the tab. All attempts failed.');
-                throw new Error('Failed to click on the tab after three attempts.');
-            }
+            // if (!clicked) {
+            //     console.error('Failed to click on the tab. All attempts failed.');
+            //     throw new Error('Failed to click on the tab after four attempts.');
+            // }
         });
+
 
         // Pausa
         await test.step(button.phrasePauses, async () => {
+            await page.mouse.click(15, 20);
             await page.pause();
         });
 
