@@ -91,7 +91,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
             }
          )}
     });
-    await page.getByRole('button', { name: addInvestigations.buttonDo }).click();
+    await page.getByRole('button', { name: addInvestigations.buttonDo }).click({timeout: 3000});
     await test.step(addInvestigations.phraseScreenShots, async () => {
         await attachScreenshot(testInfo, addInvestigations.screenShotsDo, page, ConfigSettingsAlternative.screenShotsContentType);
         if (addInvestigations.phrasePauses) {
