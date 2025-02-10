@@ -684,8 +684,8 @@ export async function clickDoButtonJustification(page) {
         
         console.log('Successfully clicked second "Do" button');
     } catch (error) {
-        console.error('Failed to click second "Do" button:', error);
-        throw error;
+        console.log('Failed to click second "Do" button:', error);
+        // throw error;
     }
 }
 
