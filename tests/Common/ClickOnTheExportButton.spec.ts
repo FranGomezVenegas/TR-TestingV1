@@ -15,7 +15,7 @@ import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls.js';
 import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
-import { clickDoButton, esignRequired, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper.js';
+import { attachScreenshot, clickDoButton, esignRequired, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper.js';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
@@ -135,15 +135,65 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
             await page.waitForTimeout(2000);
         });
 
+        // Obtengo las columnas del JSON si existen, o asigno un array vacío si no están definidas  
+        const columnsToSelect = Export.columnsToPrint ?? [];
+
+        // Si no hay columnas definidas, salto este paso
+        if (columnsToSelect.length > 0) {
+            // Capturo la pantalla después de seleccionar las columnas
+            await test.step(Export.phraseScreenShots, async () => {
+                await attachScreenshot(testInfo, Export.screenBeforeSelection, page, ConfigSettingsAlternative.screenShotsContentType); 
+            });
+
+            console.log("Selecting columns...");
+            
+            // Iniciar el paso de test para seleccionar las columnas
+            await test.step('Selecting columns', async () => {
+                // Itero sobre las columnas y hago clic en cada una si es visible
+                for (const column of columnsToSelect) {
+                    const element = page.getByText(column);
+
+                    if (await element.isVisible()) {
+                        await element.click({timeout: 3000});
+                        console.log(`Clicked on column: ${column}`);
+                    } else {
+                        console.log(`Column not found: ${column}`);
+                    }
+                }
+            });
+
+            // Capturo la pantalla después de seleccionar las columnas
+            await test.step(Export.phraseScreenShots, async () => {
+                await attachScreenshot(testInfo, Export.screenShotsSelectedColumnsExport, page, ConfigSettingsAlternative.screenShotsContentType); 
+
+                // Pausar si es necesario según la configuración
+                if (Export.phrasePauses) {
+                    await test.step(Export.phrasePauses, async () => {
+                        await page.pause();
+                        await page.pause();
+                        await page.pause();
+                    });
+                }
+            });
+            // await clickDoButton(page);
+            // await page.getByTitle('option', { name: "OK" }).click({force: true, timeout: 3000}); 
+            await page.locator('button', { hasText: Export.buttonOk }).click({force: true, timeout: 3000});  
+        } else {
+            console.log("No columns to select. Skipping this step.");
+        }
+
         // Espera a que la descarga termine
         const download = await downloadPromise;
 
-        // Captura de pantalla de la página web y adjuntarla al reporte
-        await test.step('Captura de pantalla antes de la descarga', async () => {
-            await testInfo.attach(Export.screenShotsDownload, {
-                body: await page.screenshot(),
-                contentType: 'image/png'
-            });
+        await test.step(Export.phraseScreenShots, async () => {
+            await attachScreenshot(testInfo, Export.screenShotsDownload, page, ConfigSettingsAlternative.screenShotsContentType); 
+            if (Export.phrasePauses) {
+                await test.step(Export.phrasePauses, async () => {
+                    await page.pause();
+                    await page.pause();
+                    await page.pause();
+                }
+             )}
         });
 
         // Formatear la fecha y hora
@@ -281,10 +331,10 @@ test.describe('Desktop Mode', () => {
       });
   
       const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'SamplesReviewExport';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'mon_water'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
