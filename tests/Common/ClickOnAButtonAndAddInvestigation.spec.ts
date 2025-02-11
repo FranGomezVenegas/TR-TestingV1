@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton, esignRequired } from '../1TRAZiT-Commons/actionsHelper';
+import { clickDoButtonUserDialog, clickDoButtonJustification, clickJustificationButton, clickConfirmDialogButton, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton, esignRequired } from '../1TRAZiT-Commons/actionsHelper';
 
 import { clickButtonById, clickElementByText, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
@@ -91,7 +91,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
             }
          )}
     });
-    await page.getByRole('button', { name: addInvestigations.buttonDo }).click({timeout: 3000});
+    await page.getByRole('button', { name: addInvestigations.buttonDo }).first().click({force: true, timeout: 3000});
     await test.step(addInvestigations.phraseScreenShots, async () => {
         await attachScreenshot(testInfo, addInvestigations.screenShotsDo, page, ConfigSettingsAlternative.screenShotsContentType);
         if (addInvestigations.phrasePauses) {
@@ -113,6 +113,10 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     await esignRequired(page, 30000, testInfo);
     await clickAcceptButton(page);
     await clickDoButton(page);
+    await clickDoButtonJustification(page);
+    await clickDoButtonUserDialog(page);
+    await clickJustificationButton(page);
+    await clickConfirmDialogButton(page);
     
     const acceptButton1 = page.getByRole('button', { name: 'Accept' }).nth(1);
     if (await acceptButton1.isVisible()) {

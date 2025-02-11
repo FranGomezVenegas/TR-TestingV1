@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton, esignRequired } from '../1TRAZiT-Commons/actionsHelper';
+import { clickDoButtonJustification, clickDoButtonUserDialog, clickJustificationButton, clickConfirmDialogButton, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton, esignRequired } from '../1TRAZiT-Commons/actionsHelper';
 
 import { clickButtonById, clickElementByText, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
@@ -262,6 +262,10 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
     await clickAcceptButton(page);
     await clickDoButton(page);
+    await clickDoButtonJustification(page);
+    await clickDoButtonUserDialog(page);
+    await clickJustificationButton(page);
+    await clickConfirmDialogButton(page);
 
     // Validate responses using ResponseValidator
     await test.step(phraseReport.phraseVerifyNetwork, async () => {

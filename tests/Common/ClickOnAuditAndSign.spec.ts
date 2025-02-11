@@ -10,7 +10,7 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
-import { attachScreenshot, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
+import { clickConfirmDialogButton, clickDoButtonJustification, clickDoButtonUserDialog, clickJustificationButton, attachScreenshot, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions';
@@ -204,6 +204,10 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
     await clickAcceptButton(page);
     await clickDoButton(page);
+    await clickDoButtonJustification(page);
+    await clickDoButtonUserDialog(page);
+    await clickJustificationButton(page);
+    await clickConfirmDialogButton(page);
 
     // Verificar que no haya errores en la consola
     await test.step(phraseReport.phraseError, async () => {
