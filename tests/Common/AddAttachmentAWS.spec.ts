@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test';
 
 import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config';
 import { LogIntoPlatform } from '../1TRAZiT-Commons/logIntoPlatform';
-
 import { addAttachmentAWS as dataForTestFromFile } from '../../trazit-models/test-config-instruments-newInstrument.js';
 
 import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls';
@@ -10,21 +9,22 @@ import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification';
-import { clickConfirmDialogButton, clickDoButton, esignRequired, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper';
+import { clickDo_Button_Justification, clickConfirmDialogButton, clickDoButton, esignRequired, clickElement, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper';
 
-import { clickButtonById, clickElementByText, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
-import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
-import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions';
+import { clickDoButtonJustification, clickDoButtonUserDialog, clickJustificationButton, clickButtonById, clickElementByText, attachScreenshot } from '../1TRAZiT-Commons/actionsHelper';
+import { handleTabInteraction } from '../1TRAZiT-Commons/tabsInteractions';
 import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
-import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
-import { handleMenus } from '../1TRAZiT-Commons/handleMenus';
-
+import { handleObjectByTabsWithSearchInteraction } from '../1TRAZiT-Commons/objectByTabsWithSearch';
 const fs = require('fs').promises;
+const path = require('path');
+const { exec } = require('child_process');
+import screenshot from 'screenshot-desktop';
+import { fileURLToPath } from 'url';
+// import { promises as fs } from 'fs';
 
-//Function with all tests.
+
+// Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
-    // await handleMenus(page);
-
     // Create instances of Logger and NetworkInterceptor
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
@@ -59,147 +59,484 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
 
     const notificationWitness = new NotificationWitness(page);
 
-    // Llamadas a interacciones previas
+    // Handle previous interactions
     await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, addAttachmentAWS);
-
-    // Llamo a la funcion para comprobar si un objectByTabs tiene un search. Essta funcion solo controla el search
-    // clica en este y añada el campo que se desea buscar.
     await handleObjectByTabsWithSearchInteraction(page, testInfo, ConfigSettingsAlternative, addAttachmentAWS);
 
-    
     await test.step(addAttachmentAWS.phrasePauses, async () => {
       await page.waitForTimeout(1000);
     });
     
     await handleActionNameInteraction(page, testInfo, addAttachmentAWS);
 
-  
+    // Handle file-related steps
     await test.step(addAttachmentAWS.phraseFileContent, async () => {
-    const filePath = addAttachmentAWS.filePath;
+        const filePath = addAttachmentAWS.filePath;
+        // const filePath = 'C:\\Users\\paula\\Documents\\TRAZiT\\Playwright\\TR-TestingV1\\testingAWS.txt';
+        await test.step(addAttachmentAWS.phraseFileExists, async () => {
+            try {
+                await fs.access(filePath); // This checks if the file exists
+            } catch (error) {
+                throw new Error(`File at path ${filePath} does not exist.`);
+            }
+        });
 
-    await test.step(addAttachmentAWS.phraseFileExists, async () => {
-      try {
-        await fs.access(filePath); // This checks if the file exists
-      } catch (error) {
-        throw new Error(`File at path ${filePath} does not exist.`);
-      }
+        await test.step(addAttachmentAWS.phraseReadFileContent, async () => {
+            try {
+                const fileContent = await fs.readFile(filePath, 'utf-8');
+                expect(fileContent).not.toBe(''); // Ensure file content is not empty
+            } catch (error) {
+                throw new Error(`Failed to read file content from ${filePath}: ${error.message}`);
+            }
+        });
+        
+        await test.step(addAttachmentAWS.phraseTextFileContent, async () => {
+            try {
+                const fileContent = await fs.readFile(filePath, 'utf-8');
+                console.log('\nContenido del archivo:\n', fileContent);  // Log the content for verification
+            } catch (error) {
+                console.error('Failed to log file content:', error);
+            }
+        });
     });
 
-    await test.step(addAttachmentAWS.phraseReadFileContent, async () => {
-      try {
-        const fileContent = await fs.readFile(filePath, 'utf-8');
-        expect(fileContent).not.toBe(''); // Ensure file content is not empty
-      } catch (error) {
-        throw new Error(`Failed to read file content from ${filePath}: ${error.message}`);
-      }
-    });
-    
-    await test.step(addAttachmentAWS.phraseTextFileContent, async () => {
-      try {
-        const fileContent = await fs.readFile(filePath, 'utf-8');
-        console.log('\nContenido del archivo:\n', fileContent);  // Log the content for verification
-      } catch (error) {
-        console.error('Failed to log file content:', error);
-      }
-    });
-  });
+    // Handle file upload
+    await test.step(addAttachmentAWS.phraseUploadArchivo, async () => {
+        const filePath = addAttachmentAWS.filePath;
 
-  await test.step(addAttachmentAWS.phraseUploadArchivo, async () => {
-    const filePath = addAttachmentAWS.filePath;
+        // Sub-step 1: Locate the file input field
+        await test.step(addAttachmentAWS.phraseLocateFileInput, async () => {
+            const input = await page.locator(addAttachmentAWS.inputField);
+            expect(input).toBeTruthy(); // Check if the file input is present
+        });
 
-    // Sub-step 1: Locate the file input field
-    await test.step(addAttachmentAWS.phraseLocateFileInput, async () => {
-      const input = await page.locator(addAttachmentAWS.inputField);
-      expect(input).toBeTruthy(); // Check if the file input is present
+        // Sub-step 2: Upload the file
+        await test.step(addAttachmentAWS.phraseSetFileForUpload, async () => {
+            const input = await page.locator(addAttachmentAWS.inputField);
+            await input.setInputFiles(filePath);
+        });
     });
 
-    // Sub-step 2: Upload the file
-    await test.step(addAttachmentAWS.phraseSetFileForUpload, async () => {
-      const input = await page.locator(addAttachmentAWS.inputField);
-      await input.setInputFiles(filePath);
+    // Capture screenshot after file upload
+    await test.step(addAttachmentAWS.phraseScreenShots, async () => {
+        await attachScreenshot(testInfo, addAttachmentAWS.screenShotsFilled, page, ConfigSettingsAlternative.screenShotsContentType);
+        await test.step(addAttachmentAWS.phasePauses, async () => {
+            await page.pause();
+        });
     });
-  });
+   
 
-  await test.step(addAttachmentAWS.phraseScreenShots, async () => {
-    await attachScreenshot(testInfo, addAttachmentAWS.screenShotsFilled, page, ConfigSettingsAlternative.screenShotsContentType);
-    await test.step(addAttachmentAWS.phasePauses, async () => {
-        await page.pause();
+    // Step 11: Wait for 5 seconds
+    await test.step(addAttachmentAWS.phrasePauses, async () => {
+        await page.waitForTimeout(2000);
     });
-  });
+    await test.step("Final checks", async () => {
+        // Perform other actions as needed (justification, e-signing, etc.)
+        await fillUserField(page, testInfo); 
+        await fillPasswordField(page, testInfo); 
+        await justificationPhrase(page, 30000, testInfo);  
+        await esignRequired(page, 30000, testInfo);
+        await clickAcceptButton(page);
+        await clickDoButton(page);
+        await clickConfirmDialogButton(page);
+        await clickDoButton(page);
+        await clickDoButtonJustification(page);
+        await clickDoButtonUserDialog(page);
+        await clickJustificationButton(page);
+        await clickDo_Button_Justification(page);
+    });
 
-  // try {
-  // // Step 9: Click on the "Upload File" button
-  //   await test.step(addAttachmentAWS.phraseClickUploadButton, async () => {
-  //     await page.getByLabel(addAttachmentAWS.labelUploadButton).click({ timeout: 1000 });
-  //   });
-  // } catch (error) {
-  //   try {
-  //   await page.getByTitle('Click to upload the file').locator('#button').click({ timeout: 1000 });
-  //     } catch (error) {
-  //       console.error('Failed to click on the "Upload File" button.');
-  //       throw new Error('Failed to click on the "Upload File" button.');
-  //     }
-  // }
-
-  // Step 10: Close the popup dialog
-  // await test.step(addAttachmentAWS.phraseCloseDialog, async () => {
-  //   const closeButton = page.locator(addAttachmentAWS.closeDialog);
-  //   await closeButton.click({ force: true, timeout: 5000 });
-  // });
-
-  // await test.step(addAttachmentAWS.phraseScreenShots, async () => {
-  //   await attachScreenshot(testInfo, addAttachmentAWS.screenShotsAccept, page, ConfigSettingsAlternative.screenShotsContentType);
-  //   await test.step(addAttachmentAWS.phasePauses, async () => {
-  //       await page.pause();
-  //   });
-  // });
-
-  // Step 11: Wait for 5 seconds
-  await test.step(addAttachmentAWS.phrasePauses, async () => {
-    await page.waitForTimeout(5000);
-  });
-
-    // Justification Phrase
-    await fillUserField(page, testInfo); 
-    await fillPasswordField(page, testInfo); 
-
-    // Continuar con la justificación y otras acciones
-    await justificationPhrase(page, 30000, testInfo);  
-    await esignRequired(page, 30000, testInfo);
-    await clickAcceptButton(page);
-    await clickDoButton(page);
-    await clickConfirmDialogButton(page);
-  
-    // Verificar que no haya errores en la consola
+    // Verify there are no errors in the console
     await test.step(phraseReport.phraseError, async () => {
-      logger.printLogs();
-      expect(logger.errors.length).toBe(0);
+        logger.printLogs();
+        expect(logger.errors.length).toBe(0);
     });
 
-    // Verificar respuestas de red capturadas
+    // Verify network responses
     await test.step(phraseReport.phraseVerifyNetwork, async () => {
         networkInterceptor.printNetworkData();
         const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-        expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
+        expect(nullResponsesCount).toBe(0);  // Ensure no null responses
     });
 
-    // Validar respuestas utilizando ResponseValidator
+    // Validate network responses
     await test.step(phraseReport.phraseVerifyNetwork, async () => {
         const responseValidator = new ResponseValidator(networkInterceptor.responses);
         try {
-            await responseValidator.validateResponses(); // Lanza un error si no hay respuestas válidas
+            await responseValidator.validateResponses();
         } catch (error) {
-            // test.fail(error.message); // Marca la prueba como fallida con el mensaje
+            // test.fail(error.message); // Uncomment to fail the test on invalid responses
         }
     });
 
     const mode = await notificationWitness.getDeviceMode(testInfo);
 
-    // Llamar a addNotificationWitness después de realizar acciones
+    // Capture notification witness after actions
     await test.step(ReportNotificationPhase.phraseCaptureNotification, async () => {
         const capturedObjectName = await notificationWitness.addNotificationWitness(testInfo, afterEachData, mode);
         console.log('Captured Object Name:', capturedObjectName);
     });
+
+    // File-specific actions (e.g., opening Excel files)
+    const fileExtension = path.extname(addAttachmentAWS.filePath).toLowerCase();
+
+    await test.step('Verifications after the action', async () => {
+        await fillUserField(page, testInfo);
+        await fillPasswordField(page, testInfo);
+        await justificationPhrase(page, 30000, testInfo);
+        await clickAcceptButton(page);
+        await esignRequired(page, 30000, testInfo);
+        await clickDoButton(page);
+        await clickDoButtonJustification(page);
+        await clickDoButtonUserDialog(page);
+        await clickJustificationButton(page);
+        await clickConfirmDialogButton(page);
+        await clickDo_Button_Justification(page);
+    });
+
+    // Open and capture screenshots for different file types
+    // excel
+    if (fileExtension === '.xlsx' || fileExtension === '.xls' || fileExtension === '.csv') {
+        await test.step('Open the Excel file and capture the screen', async () => {
+            await new Promise<void>((resolve, reject) => {
+                // Open the Excel file
+                exec(`cmd /c start "" "${addAttachmentAWS.filePath}"`, async (err) => {
+                    if (err) {
+                        console.error('Error al abrir el archivo en Excel:', err);
+                        reject(err);
+                        return;
+                    }
+
+                    // Wait for Excel to open
+                    await new Promise(resolve => setTimeout(resolve, 3500)); 
+
+                    // Execute VBS script to maximize Excel
+                    exec(`cscript //nologo MaximizeExcel.vbs`, (err) => {
+                        if (err) {
+                            console.error('Error maximizando Excel:', err);
+                            reject(err);
+                            return;
+                        }
+                    });
+
+                    try {
+                        // Take screenshot after a delay to ensure window is visible
+                        const img = await screenshot();
+
+                        // Create screenshot filename
+                        const imgPath = path.join(
+                            path.dirname(addAttachmentAWS.filePath),
+                            'excel.png'
+                        );
+
+                        // Save the screenshot using fs.writeFile from promises
+                        await fs.writeFile(imgPath, img);
+
+                        // Attach both the screenshot and the Excel file content to the report
+                        await testInfo.attach('Excel Screenshot', {
+                            path: imgPath,
+                            contentType: 'image/png'
+                        });
+
+                        // Also attach the original Excel file
+                        const excelContent = await fs.readFile(addAttachmentAWS.filePath);
+                        console.log('\nExcel file content:', excelContent);
+                        await testInfo.attach('Excel File', {
+                            path: addAttachmentAWS.filePath,
+                            contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        });
+
+                        resolve();
+                    } catch (error) {
+                        console.error('Error capturing Excel screenshot:', error);
+                        reject(error);
+                    } finally {
+                        // Close Excel
+                        exec('taskkill /im excel.exe /f', (err) => {
+                            if (err) {
+                                console.error('Error closing Excel:', err);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
+    // bloc de notas
+    if (fileExtension === '.txt') {
+        await test.step('Open the file in Notepad and capture the screen', async () => {
+            await new Promise<void>((resolve, reject) => {
+                // Open the text file
+                exec(`cmd /c start "" "${addAttachmentAWS.filePath}"`, async (err) => {
+                    if (err) {
+                        console.error('Error al abrir el archivo en Notepad:', err);
+                        reject(err);
+                        return;
+                    }
+    
+                    // Wait for Notepad to open
+                    await new Promise(resolve => setTimeout(resolve, 3500)); 
+
+                    // Execute VBS script to maximize Word
+                    exec(`cscript //nologo MaximizeNotepad.vbs`, (err) => {
+                        if (err) {
+                            console.error('Error maximizing Notepad:', err);
+                            reject(err);
+                            return;
+                        }
+                    });
+    
+                    try {
+                        // Take screenshot after a delay to ensure window is visible
+                        const img = await screenshot();
+    
+                        // Create screenshot filename
+                        const imgPath = path.join(
+                            path.dirname(addAttachmentAWS.filePath),
+                            'notepad.png'
+                        );
+    
+                        
+                        // Save the screenshot using fs.writeFile from promises
+                        await fs.writeFile(imgPath, img);
+    
+                        // Attach both the screenshot and the text file content to the report
+                        await testInfo.attach('Notepad Screenshot', {
+                            path: imgPath,
+                            contentType: 'image/png'
+                        });
+    
+                        // Also attach the original text file
+                        const textContent = await fs.readFile(addAttachmentAWS.filePath, 'utf-8');
+                        console.log('\nText content:', textContent);
+                        await testInfo.attach('Text File', {
+                            path: addAttachmentAWS.filePath,
+                            contentType: 'text/plain'
+                        });
+                        
+                        resolve();
+                    } catch (error) {
+                        console.error('Error capturing Notepad screenshot:', error);
+                        reject(error);
+                    } finally {
+                        // Close Notepad
+                        exec('taskkill /im notepad.exe /f', (err) => {
+                            if (err) {
+                                console.error('Error closing Notepad:', err);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
+    // word
+    if (fileExtension === '.docx' || fileExtension === '.doc') {
+        await test.step('Open the Word file and capture the screen', async () => {
+            await new Promise<void>((resolve, reject) => {
+                // Open the Word file
+                exec(`cmd /c start "" "${addAttachmentAWS.filePath}"`, async (err) => {
+                    if (err) {
+                        console.error('Error al abrir el archivo en Word:', err);
+                        reject(err);
+                        return;
+                    }
+    
+                    // Wait for Word to open
+                    await new Promise(resolve => setTimeout(resolve, 3500)); 
+    
+                    // Execute VBS script to maximize Word
+                    exec(`cscript //nologo MaximizeWord.vbs`, (err) => {
+                        if (err) {
+                            console.error('Error maximizando Word:', err);
+                            reject(err);
+                            return;
+                        }
+                    });
+    
+                    try {
+                        // Take screenshot after a delay to ensure window is visible
+                        const img = await screenshot();
+    
+                        // Create screenshot filename
+                        const imgPath = path.join(
+                            path.dirname(addAttachmentAWS.filePath),
+                            'word.png'
+                        );
+    
+                        // Save the screenshot using fs.writeFile from promises
+                        await fs.writeFile(imgPath, img);
+    
+                        // Attach both the screenshot and the Word file content to the report
+                        await testInfo.attach('Word Screenshot', {
+                            path: imgPath,
+                            contentType: 'image/png'
+                        });
+    
+                        // Also attach the original Word file
+                        const wordContent = await fs.readFile(addAttachmentAWS.filePath);
+                        console.log('\nWord file content:', wordContent);
+                        await testInfo.attach('Word File', {
+                            path: addAttachmentAWS.filePath,
+                            contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                        });
+    
+                        resolve();
+                    } catch (error) {
+                        console.error('Error capturing Word screenshot:', error);
+                        reject(error);
+                    } finally {
+                        // Close Word
+                        exec('taskkill /im winword.exe /f', (err) => {
+                            if (err) {
+                                console.error('Error closing Word:', err);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
+    // powerPoint
+    if (fileExtension === '.pptx' || fileExtension === '.ppt') {
+        await test.step('Open the PowerPoint file and capture the screen', async () => {
+            await new Promise<void>((resolve, reject) => {
+                // Abrir el archivo de PowerPoint
+                exec(`cmd /c start "" "${addAttachmentAWS.filePath}"`, async (err) => {
+                    if (err) {
+                        console.error('Error al abrir el archivo PowerPoint:', err);
+                        reject(err);
+                        return;
+                    }
+    
+                    // Esperar a que PowerPoint abra el archivo
+                    await new Promise(resolve => setTimeout(resolve, 3500));
+    
+                    // Ejecutar un script para maximizar la ventana de PowerPoint
+                    exec(`cscript //nologo MaximizePowerPoint.vbs`, (err) => {
+                        if (err) {
+                            console.error('Error maximizando PowerPoint:', err);
+                            reject(err);
+                            return;
+                        }
+                    });
+    
+                    try {
+                        // Capturar captura de pantalla
+                        const img = await screenshot();
+    
+                        // Ruta donde se guardará la captura
+                        const imgPath = path.join(
+                            path.dirname(addAttachmentAWS.filePath),
+                            'powerpoint.png'
+                        );
+    
+                        // Guardar la captura de pantalla
+                        await fs.writeFile(imgPath, img);
+    
+                        // Adjuntar la captura de pantalla al reporte
+                        await testInfo.attach('PowerPoint Screenshot', {
+                            path: imgPath,
+                            contentType: 'image/png'
+                        });
+    
+                        // Adjuntar el archivo PowerPoint
+                        const pptContent = await fs.readFile(addAttachmentAWS.filePath);
+                        console.log('\nPowerPoint file content:', pptContent);
+                        await testInfo.attach('PowerPoint File', {
+                            path: addAttachmentAWS.filePath,
+                            contentType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+                        });
+    
+                        resolve();
+                    } catch (error) {
+                        console.error('Error capturando la pantalla de PowerPoint:', error);
+                        reject(error);
+                    } finally {
+                        // Cerrar PowerPoint
+                        exec('taskkill /im POWERPNT.EXE /f', (err) => {
+                            if (err) {
+                                console.error('Error cerrando PowerPoint:', err);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
+    // pdf
+    if (fileExtension === '.pdf') {
+        await test.step('Open the PDF file and capture the screen', async () => {
+            await new Promise<void>((resolve, reject) => {
+                // Abrir el archivo PDF con el visor predeterminado
+                exec(`cmd /c start "" "${addAttachmentAWS.filePath}"`, async (err) => {
+                    if (err) {
+                        console.error('Error al abrir el archivo PDF:', err);
+                        reject(err);
+                        return;
+                    }
+    
+                    // Esperar más tiempo para que el PDF se abra completamente
+                    await new Promise(resolve => setTimeout(resolve, 4000)); // Ajusta si es necesario
+    
+                    // Ejecutar un script para maximizar la ventana del visor PDF
+                    exec(`cscript //nologo MaximizePDF.vbs`, (err) => {
+                        if (err) {
+                            console.error('Error maximizando el visor de PDF:', err);
+                            reject(err);
+                            return;
+                        }
+                    });
+    
+                    try {
+                        // Capturar captura de pantalla
+                        const img = await screenshot();
+    
+                        // Ruta donde se guardará la captura
+                        const imgPath = path.join(
+                            path.dirname(addAttachmentAWS.filePath),
+                            'pdf.png'
+                        );
+    
+                        // Guardar la captura de pantalla
+                        await fs.writeFile(imgPath, img);
+    
+                        // Adjuntar la captura de pantalla al reporte
+                        await testInfo.attach('PDF Screenshot', {
+                            path: imgPath,
+                            contentType: 'image/png'
+                        });
+    
+                        // Adjuntar el archivo PDF
+                        const pdfContent = await fs.readFile(addAttachmentAWS.filePath);
+                        console.log('\nPDF file content:', pdfContent);
+                        await testInfo.attach('PDF File', {
+                            path: addAttachmentAWS.filePath,
+                            contentType: 'application/pdf'
+                        });
+    
+                        resolve();
+                    } catch (error) {
+                        console.error('Error capturando la pantalla del PDF:', error);
+                        reject(error);
+                    } finally {
+                        // Cerrar el visor de PDF (para Adobe Reader o Edge)
+                        exec('taskkill /im AcroRd32.exe /f', (err) => {
+                            if (err) {
+                                console.log('Error cerrando Adobe Reader:', err);
+                            }
+                        });
+    
+                        exec('taskkill /im msedge.exe /f', (err) => {
+                            if (err) {
+                                console.log('Error cerrando Edge:', err);
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
 };
 
 
