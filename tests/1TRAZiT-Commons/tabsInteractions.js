@@ -70,5 +70,9 @@ export async function handleTabInteraction(page, testInfo, configSettings, butto
         await test.step(button.phraseScreenShots, async () => {
             await attachScreenshot(testInfo, button.screenShotTab, page, configSettings.screenShotsContentType);
         });
+
+        await test.step(button.phrasePauses, async () => {
+            await page.waitForTimeout(1500);
+        });
     }
 }
