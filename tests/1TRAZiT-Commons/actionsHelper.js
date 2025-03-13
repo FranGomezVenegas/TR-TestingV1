@@ -53,19 +53,31 @@ export const clickElementByText1 = async (page, text, position = 0, timeout = 30
         throw error; // Propagar el error si falla
     }
 };
-// Clic a un elemento para luego escribir o hacer click a un botón.
-export const clickElement = async (page, selector, timeout = 1000) => {
+
+// Clic Elemento
+export const clickElement = async (page, selector, timeout = 350) => {
     try {
         await page.getByLabel(selector, { exact: true }).click({ timeout });
+        return; // Si el clic tiene éxito, sale de la función
     } catch (error) {
         console.log(`Primer intento fallido para hacer clic en el elemento: '${selector}'. Intentando con el primer elemento.`);
+        
         try {
             await page.getByLabel(selector, { exact: true }).first().click({ timeout });
-        } catch (secondError) {
-            console.log(`Error al hacer clic en el primer elemento: '${selector}'. Detalles del error:`, secondError);
-            throw secondError;
+            return; // Sale si tiene éxito
+        } catch (error) {
+            console.log(`Segundo intento fallido para hacer clic en el elemento: '${selector}'. Probando con nth(0).`);
+            try {
+                await page.getByLabel(selector).nth(0).click({ timeout });
+            } catch (error) {
+                console.log(`Detalles del error:`, error);
+                throw error;
+            }
         }
+
+       
     }
+
 };
 
 
@@ -86,13 +98,15 @@ export const clickButtonById = async (page, id, timeout = 30000) => {
 // Escribe el texto en un elemento.
 export const fillField = async (page, label, value) => {
     try {
-        //await page.getByLabel(label).fill(value);
-        await page.getByLabel(label, { exact: true }).fill(value);
+        await page.getByLabel(label).fill(value);
+        // await page.getByLabel(label, { exact: true }).first({timeout: 500}).fill(value);
     } catch (error) {
         console.error(`Error al llenar el campo: '${label}' con valor: '${value}'. Detalles del error:`, error);
         throw error;
     }
 };
+
+
 
 // Selecciona un elemento de una lista. 
 export const clickOption = async (page, optionName, timeout = 30000) => {
@@ -447,72 +461,6 @@ export const fillUserField = async (page, testInfo, timeout = 30000) => {
     }
 };
 
-// export const fillPasswordField = async (page, testInfo, timeout = 30000) => {
-//     const userCredentialSettings = {
-//         fldPss: { label: "Password", value: "trazit" },
-//         fldPss1: { label: "Contraseña", value: "trazit" }
-//     };
-
-//     console.log("Intentando ejecutar fillPasswordField...");
-
-//     try {
-//         let visibleField = null;
-
-//         // Comprobar si el campo 'Password' es visible
-//         await test.step("Check visibility of 'Password' field", async () => {
-//             const isPasswordVisible = await page.getByLabel(userCredentialSettings.fldPss.label)
-//                 .isVisible({ timeout })
-//                 .catch(() => false);
-
-//             if (isPasswordVisible) {
-//                 visibleField = userCredentialSettings.fldPss;
-//                 console.log("'Password' field is visible.");
-//             }
-//         });
-
-//         // Si no se encontró 'Password', comprobar 'Contraseña'
-//         if (!visibleField) {
-//             await test.step("Check visibility of 'Contraseña' field", async () => {
-//                 const isPassword1Visible = await page.getByLabel(userCredentialSettings.fldPss1.label)
-//                     .isVisible({ timeout })
-//                     .catch(() => false);
-
-//                 if (isPassword1Visible) {
-//                     visibleField = userCredentialSettings.fldPss1;
-//                     console.log("'Contraseña' field is visible.");
-//                 }
-//             });
-//         }
-
-//         // Si no se encontró ninguno de los campos, salir de la función
-//         if (!visibleField) {
-//             console.log("Neither 'Password' nor 'Contraseña' fields are visible.");
-//             return;
-//         }
-
-//         // Interactuar con el campo visible
-//         await test.step(`Start - Fill '${visibleField.label}' field`, async () => {
-//             await test.step(`Click on '${visibleField.label}' field`, async () => {
-//                 await page.getByLabel(visibleField.label).click();
-//                 await page.pause(); // Pausa después de hacer clic para ver la acción en tiempo real (opcional)
-//             });
-
-//             await test.step(`Fill in '${visibleField.label}' field`, async () => {
-//                 await page.getByLabel(visibleField.label).fill(visibleField.value);
-//             });
-
-//             await test.step("Pause after filling the field", async () => {
-//                 await page.pause(); // Pausa opcional después de rellenar el campo
-//             });
-
-//             console.log(`Successfully filled the '${visibleField.label}' field.`);
-//         });
-
-//     } catch (error) {
-//         console.log("An unexpected error occurred while trying to fill the 'Password' or 'Contraseña' field:", error);
-//         throw error;
-//     }
-// };
 
 export const fillPasswordField = async (page, testInfo, timeout = 30000) => {
     const userCredentialSettings = {
@@ -656,6 +604,7 @@ export const clickDoButton = async (page, timeout = 3000) => {
                 return;
             });
         });
+        await page.waitForTimeout(1500);
     } catch (error) {
         console.log("Error while attempting to click 'Do' button:", error);
         throw error; // Lanzar el error para que el test falle explícitamente
@@ -681,13 +630,56 @@ export async function clickDoButtonJustification(page) {
             timeout: 2000,
             force: true
         });
-        
+        await page.waitForTimeout(1500);
         console.log('Successfully clicked second "Do" button');
     } catch (error) {
         console.log('Failed to click second "Do" button:', error);
         // throw error;
     }
 }
+
+export async function clickDo_Button_Justification(page) {
+    try {
+        // Intentar hacer clic en el botón usando el atributo value
+        const buttonLocator = page.locator('md-filled-button[value=""]');
+
+        await buttonLocator.waitFor({
+            state: 'visible',
+            timeout: 1000
+        });
+
+        await buttonLocator.click({
+            timeout: 2000,
+            force: true
+        });
+
+        console.log('Successfully clicked the "Do" button using [value=""]');
+        await page.waitForTimeout(1500);
+    } catch (error) {
+        console.log('Failed to click using [value=""], trying with hasText "Do"');
+
+        try {
+            // Intentar hacer clic en el botón que contiene el texto "Do"
+            const buttonByText = page.locator('md-filled-button', { hasText: 'Do' });
+
+            await buttonByText.waitFor({
+                state: 'visible',
+                timeout: 1000
+            });
+
+            await buttonByText.click({
+                timeout: 2000,
+                force: true
+            });
+
+            console.log('Successfully clicked the "Do" button using hasText "Do"');
+            await page.waitForTimeout(1500);
+        } catch (finalError) {
+            console.log('Failed to click the "Do" button:', finalError);
+        }
+    }
+}
+
 
 
 
@@ -728,6 +720,7 @@ export const clickDoButtonUserDialog = async (page, timeout = 3000) => {
                 return;
             });
         });
+        await page.waitForTimeout(100);
     } catch (error) {
         console.log("Error while attempting to click 'Do' button:", error);
         throw error; // Lanzar el error para que el test falle explícitamente
@@ -755,6 +748,7 @@ export async function clickConfirmDialogButton(page) {
         });
 
         console.log('Successfully clicked the "Do" button in the confirm dialog.');
+        await page.waitForTimeout(1500);
     } catch (error) {
         console.error('Error while trying to click the "Do" button in the confirm dialog:', error);
         throw error;
@@ -781,8 +775,52 @@ export async function clickJustificationButton(page) {
         });
 
         console.log('Successfully clicked the "Do" button in the confirm dialog.');
+        await page.waitForTimeout(1500);
     } catch (error) {
         console.error('Error while trying to click the "Do" button in the confirm dialog:', error);
         throw error;
     }
 }
+
+export const saveButton = async (page, label, position, timeout = 3000) => {
+    await test.step(`Clicking the "${label}" button at position ${position}`, async () => {
+        try {        
+            const save = await page.getByText(label);
+
+            if (!save || (await save.count()) === 0) {  
+                console.log(`Button with label "${label}" is not available. Continuing...`);
+                return; 
+            }
+
+            if (save.nth(position)) {
+                await save.nth(position).click({timeout});
+            }
+        } catch (error) {
+            console.log(`Error clicking the button: ${error.message}`);
+        }
+    });
+};
+
+
+export async function clickButton(page, buttonNameLabel) {
+    try {
+        // Espero que sea visible el botón.
+        const button = await page.getByRole('button', { name: buttonNameLabel, exact: true });        
+        // Verifico su visibilidad.
+        const isVisible = await button.isVisible();
+        if (isVisible) {
+            // Si el botón es visible, hago clic
+            await button.click();
+            console.log(`✅ El botón '${buttonNameLabel}' fue clickeado correctamente.`);
+        } else {
+            // Si el botón no es visible, salgo de la función
+            console.log(`⚠️ El botón '${buttonNameLabel}' no es visible, saliendo de la función.`);
+            return;
+        }
+    } catch (error) {
+        // Manejo de error si no se encuentra el botón o algo falla
+        console.error(`❌ Error al intentar hacer clic en el botón '${buttonNameLabel}':`, error.message);
+    }
+}
+
+
