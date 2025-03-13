@@ -6,17 +6,14 @@ import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls.js';
 import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../1TRAZiT-Commons/notification.js';
-import { clickJustificationButton, clickDoButtonUserDialog, clickDoButtonJustification, clickDoButton, clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
+import { clickButton, clickDo_Button_Justification, clickConfirmDialogButton, clickJustificationButton, clickDoButtonUserDialog, clickDoButtonJustification, clickDoButton, clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot, esignRequired } from '../1TRAZiT-Commons/actionsHelper.js';
 import { fillUserField, fillPasswordField } from '../1TRAZiT-Commons/actionsHelper.js';
 import { handleTabInteraction } from '../1TRAZiT-Commons/tabsInteractions.js';
 import { handleRowActionsInteraction } from '../1TRAZiT-Commons/rowActionsInteractions.js';
 import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
-// import { handleActionNameInteraction } from '../1TRAZiT-Commons/actionsNameInteractions.js';
 import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch.js';
 
 import { processTestData } from '../1TRAZiT-Commons/dialogInteraction.js';
-import { selectElementWithScroll } from '../1TRAZiT-Commons/selectElementWithScroll.js';
-import { handleMenus } from '../1TRAZiT-Commons/handleMenus.js';
 
 const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     // await handleMenus(page);
@@ -250,7 +247,6 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         await dialog.dismiss(); // Cierro el alert. 
         throw new Error(`El test falló debido a un alert con el mensaje: "${dialog.message()}"`);
     };
-    page.on('dialog', handleDialog);
 
     // Check for fields in the dialog
     const dialogInfo = buttonWithDialog.dialogInfo;
@@ -319,17 +315,7 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         }
     });
     await test.step("Final checks", async () => {
-        // Justification Phrase
-        await fillUserField(page, testInfo);
-        await fillPasswordField(page, testInfo);
-        // await test.step(buttonWithDialog.phrasePauses, async () => {
-        //     await page.waitForTimeout(100);
-        // });
-        await justificationPhrase(page, 30000, testInfo);
-        await clickAcceptButton(page);
-        await esignRequired(page, 30000, testInfo);
-        await clickDoButton(page);
-
+        await clickButton(page, buttonWithDialog.buttonLabel);         
         // Justification Phrase
         await fillUserField(page, testInfo);
         await fillPasswordField(page, testInfo);
@@ -340,6 +326,8 @@ const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
         await clickDoButtonJustification(page);
         await clickDoButtonUserDialog(page);
         await clickJustificationButton(page);
+        await clickConfirmDialogButton(page);
+        await clickDo_Button_Justification(page);
         
         // Array de índices para los botones
         const buttonIndices = [0, 1, 2]; // Índices a verificar
@@ -417,10 +405,10 @@ test.describe('Desktop Mode', () => {
         });
   
         const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'ActiveInstrumentsNewInstrument';
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'IncubatorsListCardSimpleAddTemperature';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'instruments'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'mb_em'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
