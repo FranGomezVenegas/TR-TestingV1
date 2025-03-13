@@ -25,6 +25,23 @@ export async function handleObjectByTabsWithSearchInteraction(page, testInfo, co
                 
                 await fillFieldWithWildcard(page, button.search.label, button.search.value, true); // useWildcard en true
                 console.log('Escribiendo en el buscador...');
+                await test.step(button.phraseSearch, async () => {
+                    try {
+                        await page.getByRole('button', { name: button.search.press }).click({ timeout: 1000 });
+                        console.log('Búsqueda realizada.');
+                    } catch (error) {
+                        await page.getByText(button.search.press, { exact: true }).click({ force: true, timeout: 1000 });
+                        console.log('Búsqueda Realizada.');
+                    }
+                });
+        
+                await test.step(button.phrasePauses, async () => {
+                    await page.pause();
+                    await page.pause();
+                    await page.pause();
+                    await page.pause();
+                });
+        
             } else {
                 // Si `label` o `value` no están definidos, hacer clic en el botón en la opcion 
                 console.log('No se encontraron label o value. Haciendo clic en el botón');
@@ -36,25 +53,13 @@ export async function handleObjectByTabsWithSearchInteraction(page, testInfo, co
             await page.pause();
         });
 
-        await test.step(button.phraseSearch, async () => {
-            try {
-                await page.getByRole('button', { name: button.search.press }).click({ timeout: 1000 });
-                console.log('Búsqueda realizada.');
-            } catch (error) {
-                await page.getByText(button.search.press, { exact: true }).click({ force: true, timeout: 1000 });
-                console.log('Búsqueda Realizada.');
-            }
-        });
-
-        await test.step(button.phrasePauses, async () => {
-            await page.pause();
-            await page.pause();
-            await page.pause();
-            await page.pause();
-        });
-
+       
         await test.step(button.phraseScreenShots, async () => {
             await attachScreenshot(testInfo, button.screenShotSearch, page, configSettings.screenShotsContentType);
+        });
+        
+        await test.step(button.phrasePauses, async () => {
+            await page.waitForTimeout(1000);
         });
     }
 }
