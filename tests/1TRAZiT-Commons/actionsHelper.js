@@ -35,7 +35,6 @@ export const clickElementByText = async (page, text, timeout = 30000) => {
 };
 
 
-// Función para hacer clic en un elemento de texto en la posición dada (por defecto 0)
 export const clickElementByText1 = async (page, text, position = 0, timeout = 30000) => {
     try {
         let element = page.getByText(text, { exact: true }).nth(position);
@@ -45,12 +44,25 @@ export const clickElementByText1 = async (page, text, position = 0, timeout = 30
             await element.scrollIntoViewIfNeeded({ timeout });
         }
 
-        // Intentar hacer clic en el elemento encontrado
+        // Intentar hacer doble clic en el elemento encontrado
         await element.dblclick({ timeout });
 
     } catch (error) {
-        console.log(`Error al hacer clic en el elemento con texto: '${text}' en la posición ${position}. Detalles del error:`, error);
-        throw error; // Propagar el error si falla
+        console.log(`Error al hacer clic en el elemento con texto: '${text}'. Intentando con '* ${text}'...`);
+
+        try {
+            let wildcardElement = page.getByText(`* ${text}`, { exact: true }).nth(position);
+
+            if (!(await wildcardElement.isVisible())) {
+                await wildcardElement.scrollIntoViewIfNeeded({ timeout });
+            }
+
+            await wildcardElement.dblclick({ timeout });
+
+        } catch (secondError) {
+            console.log(`Error también con '* ${text}'. Detalles:`, secondError);
+            throw secondError; // Propagar el error final
+        }
     }
 };
 
