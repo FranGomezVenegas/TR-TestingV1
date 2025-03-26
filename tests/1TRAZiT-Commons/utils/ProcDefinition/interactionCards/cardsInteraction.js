@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config.js';
-import { attachScreenshot } from './actionsHelper.js';
+import { ConfigSettings as ConfigSettingsAlternative } from '../../../../../trazit-config.js';
+import { attachScreenshot } from '../../../actionsHelper.js';
 
 export const handleCardsInteraction = async (page, testInfo, Button) => {
     if (!Button?.card) {
