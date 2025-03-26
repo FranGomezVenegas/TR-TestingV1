@@ -3,7 +3,7 @@ import { ConfigSettings as ConfigSettingsAlternative } from '../../trazit-config
 import { getTestConfigSettings } from './ApiCalls';
 import { test } from '@playwright/test';
 
-export class LogIntoPlatform {
+export class LogIntoPlatformProcDefinition {
     constructor(page) {
         //this.page = page;
     }
@@ -57,11 +57,6 @@ export class LogIntoPlatform {
             // Pausa para esperar el procesamiento
             await test.step('Pause the test execution', async () => {
                 await page.pause();
-            });
-
-            // Espera 3 segundos para la carga completa
-            await test.step('Wait 1 second for the page to load completely.', async () => {
-                await page.waitForTimeout(1000);
             });
 
             // Adjunta la captura de pantalla después del login
