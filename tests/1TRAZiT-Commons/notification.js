@@ -19,7 +19,6 @@ export class NotificationWitness {
             notificationElementOldPlatform = await this.page.locator(platformMenuNames.Notification.main.pageElement);
             // Si no se encuentra, intentamos con la notificación para la plataforma nueva.
             notificationElementNewPlatform = await this.page.locator('sp-action-menu#dashboardnotifications');
-    
             // Verificar visibilidad y hacer hover o clic
             if (await notificationElementOldPlatform.isVisible()) {
                 try {
