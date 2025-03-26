@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { ConfigSettings as ConfigSettingsAlternative } from '../../../trazit-config.js';
-import { LogIntoPlatform } from '../../1TRAZiT-Commons/logIntoProcDefinition';
+import { LogIntoPlatformProcDefinition } from '../../1TRAZiT-Commons/logIntoProcDefinition';
 import { buttonWithDialog as dataForTestFromFile } from '../../../trazit-models/test-config-instruments-newInstrument.js';
 import { callApiRunCompletion } from '../../1TRAZiT-Commons/ApiCalls.js';
 
@@ -13,7 +13,8 @@ import {validateNotificationTexts} from '../../1TRAZiT-Commons/notificationProcs
 import { handleActionNameInteraction } from '../../1TRAZiT-Commons/actionsNameInteractions.js';
 import { handleCardsInteraction } from '../../1TRAZiT-Commons/cardsInteraction.js';
 import { handleTabInteraction} from '../../1TRAZiT-Commons/tabsInteractions.js';
-import { handleSelectCard } from '../../1TRAZiT-Commons/selectCard.js';
+// import { handleSelectCard } from '../../1TRAZiT-Commons/utils/selectCard.js';
+import { handleSelectCard } from '../../1TRAZiT-Commons/utils/selectCard/selectCard.js';
 import { handleRowActionsInteraction } from '../../1TRAZiT-Commons/rowActionsInteractions.js';
 
 import { processTestData } from '../../1TRAZiT-Commons/dialogInteraction.js';
@@ -394,7 +395,7 @@ test.describe('Desktop Mode', () => {
             await page.setViewportSize({ width: 1365, height: 821 });
         });
   
-        const logPlat = new LogIntoPlatform({ page });
+        const logPlat = new LogIntoPlatformProcDefinition({ page });
         trazitTestName = process.env.TRAZIT_TEST_NAME || 'DefinitionSOPsRenameSop';
   
         // Define procInstanceName antes de pasarlo

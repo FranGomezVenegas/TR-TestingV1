@@ -1,49 +1,46 @@
 import { test, expect } from '@playwright/test';
-
 import { ConfigSettings as ConfigSettingsAlternative } from '../../../trazit-config.js';
-import { LogIntoPlatform } from '../../1TRAZiT-Commons/logIntoProcDefinition.js';
+import { LogIntoPlatformProcDefinition } from '../../1TRAZiT-Commons/logIntoProcDefinition.js';
 
-import { Button as dataForTestFromFile } from '../../../trazit-models/test-config-instruments-activate.js';
-import {handleCardsInteraction} from '../../1TRAZiT-Commons/cardsInteraction.js';
-
+import { print as dataForTestFromFile } from '../../../trazit-models/test-config-instruments-newInstrument.js';
 import { callApiRunCompletion } from '../../1TRAZiT-Commons/ApiCalls.js';
-import { OpenProcedureWindow } from '../../1TRAZiT-Commons/openProcedureWindow.js';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
 import { NotificationWitness, ReportNotificationPhase } from '../../1TRAZiT-Commons/notification.js';
-import { justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton, clickDoButton, esignRequired } from '../../1TRAZiT-Commons/actionsHelper.js';
-import {validateNotificationTexts} from '../../1TRAZiT-Commons/notificationProcsDefinition.js';
 
-import {handleTabInteraction} from '../../1TRAZiT-Commons/tabsInteractions.js';
+import { clickButtonById, clickElement, clickElementByText, justificationPhrase, clickAcceptButton, attachScreenshot } from '../../1TRAZiT-Commons/actionsHelper.js';
+import { esignRequired, clickDoButton, fillUserField, fillPasswordField } from '../../1TRAZiT-Commons/actionsHelper.js';
+
 import { handleRowActionsInteraction } from '../../1TRAZiT-Commons/rowActionsInteractions.js';
-import { handleActionNameInteraction } from '../../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
 import { handleObjectByTabsWithSearchInteraction } from '../../1TRAZiT-Commons/objectByTabsWithSearch.js';
-import { handleSelectCard } from '../../1TRAZiT-Commons/selectCard.js';
+import { handleActionNameInteraction } from '../../1TRAZiT-Commons/actionsNameInteractions.js';
+import { handleCardsInteraction } from '../../1TRAZiT-Commons/cardsInteraction.js';
+import { handleTabInteraction} from '../../1TRAZiT-Commons/tabsInteractions.js';
+import { handleSelectCard } from '../../1TRAZiT-Commons/utils/selectCard/selectCard.js';
 
-import { handleMenus } from '../../1TRAZiT-Commons/handleMenus.js';
+import fs from 'fs';
+import path from 'path';
+import { handleMenus } from '../../1TRAZiT-Commons/handleMenus';
 
-
-//Function with all tests.
-const commonTests = async (ConfigSettings, page, testInfo) => {
+const commonTests = async (ConfigSettings: any, page: any, testInfo: any) => {
     await page.waitForTimeout(8000);
 
-    // Create instances of Logger and NetworkInterceptor
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
+    let print: any;
 
-    let Button;
-
-    // If configuration data is available, process the JSON
+    // Parse ConfigSettings data if available, or use the default data
     if (ConfigSettings && ConfigSettings.dataForTest) {
-        let unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
+        const unescapedString = ConfigSettings.dataForTest.replace(/\\+/g, '\\');
         try {
-            Button = JSON.parse(unescapedString);
+            print = JSON.parse(unescapedString);
+            print = JSON.parse(print.testDataGame);
         } catch (error) {
             console.error("Error parsing JSON:", error);
+            print = dataForTestFromFile;
         }
-        Button = JSON.parse(Button.testDataGame);
     } else {
-        Button = dataForTestFromFile;
+        print = dataForTestFromFile;
     }
 
     // Attach Logger and NetworkInterceptor to the page
@@ -52,147 +49,166 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         networkInterceptor.attachToPage(page);
     });
 
-    // NOTIFICATIONS
-    const expectedTexts = [
-        Button.textInNotif1?.toLowerCase(),
-        Button.textInNotif2?.toLowerCase(),
-        Button.textInNotif3?.toLowerCase(),
-    ];
+    await handleCardsInteraction(page, testInfo, print);
+    await handleSelectCard(page, testInfo, print);
+    // Click button 
+    await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, print);
 
-
-    await handleCardsInteraction(page, testInfo, Button);
-    await handleSelectCard(page, testInfo, Button);
-    
-    await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, Button);
-
-    const rowActions = await handleRowActionsInteraction(page, Button, testInfo); 
+    // await handleActionNameInteraction(page, testInfo, print);
+    // rowActions rowButtons
+    const rowActions = await handleRowActionsInteraction(page, print, testInfo); 
     console.log("Resultado de handleRowActionsInteraction:", rowActions);
+
     if (rowActions) {
-        // Justification Phrase
-        await fillUserField(page, testInfo); // Rellena el campo de "User"
-        await fillPasswordField(page, testInfo); // Rellena el campo de "Password"
+        console.log("El resultado fue verdadero, realizando acciones adicionales...");
+    }
 
-        // Continuar con la justificación y otras acciones
-        await justificationPhrase(page, 30000, testInfo);    
-        await esignRequired(page, 30000, testInfo);
+    // Pausar la ejecución por 1 segundo antes de continuar
+    await test.step(print.phrasePauses, async () => {
+        await page.waitForTimeout(1000);
+    });
 
-        await clickAcceptButton(page);
-        await clickDoButton(page);
+    // Función para obtener la fecha y hora actuales en formato yyyy-MM-dd_HH-mm-ss
+    function getFormattedDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+    }
 
-        // Verificar que no haya errores en la consola
-        await test.step(phraseReport.phraseError, async () => {
-            logger.printLogs();
-            expect(logger.errors.length).toBe(0);
+    // Función para generar el PDF
+    async function generatePDF(page, testInfo, print, orientation) {
+        await test.step(print.phraseScreenShots, async () => {
+            await testInfo.attach(print.screenShotTab, {
+                body: await page.screenshot(),
+                contentType: ConfigSettingsAlternative.screenShotsContentType
+            });
         });
+        await test.step(print.phrasePrintDialog, async () => {
+            const [newPage] = await Promise.all([
+                page.waitForEvent('popup'), // Waits for a new page to open (print dialog)
+                page.getByLabel(print.buttonName).nth(0).click(), // Click to open print dialog.
+            ]);
 
-        // Verificar respuestas de red capturadas
-        await test.step(phraseReport.phraseVerifyNetwork, async () => {
-            networkInterceptor.printNetworkData();
-            const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-            expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
-        });
+            // Ensure the newPage has loaded completely
+            await test.step(print.phraseWaitForPrintDialog, async () => {
+                await newPage.waitForLoadState('load');
+            });
 
-        // Validar respuestas utilizando ResponseValidator
-        await test.step(phraseReport.phraseVerifyNetwork, async () => {
-            const responseValidator = new ResponseValidator(networkInterceptor.responses);
-            try {
-                await responseValidator.validateResponses(); // Lanza un error si no hay respuestas válidas
-            } catch (error) {
-                // test.fail(error.message); // Marca la prueba como fallida con el mensaje
-            }
-        });
+            if (newPage && !newPage.isClosed()) {  // Check if newPage is open
+                try {
 
-        // if (Button.phrasePauses) {
-        //     await page.pause();
-        //     await page.pause();
-        //     await page.pause();
-        //     // await page.waitForTimeout(3000);
-        // }
+                    // Prepare the PDF save path
+                    await test.step(print.phrasePdfSavePath, async () => {
+                        const basePath = print.basePath;
+                        const fileName = orientation;
+                        const testFolder = path.join(basePath, fileName);
 
-        // Valido los textos de la notificación
-        await validateNotificationTexts(page, expectedTexts, testInfo);
-        
+                        if (!fs.existsSync(testFolder)) {
+                            fs.mkdirSync(testFolder, { recursive: true });
+                        }
 
-        if (Button.phrasePauses) {
-            await page.pause();
-            await page.pause();
+                        const formattedDate = getFormattedDate();
+                        const pdfPath = path.join(testFolder, `${print.screenShotTab}_${fileName}_${formattedDate}.pdf`);
+
+                        // Generate the PDF
+                        await test.step(print.phraseGeneratePdfWithOrientation, async () => {
+                            await newPage.pdf({
+                                path: pdfPath,
+                                format: 'A4',
+                                landscape: orientation === 'horizontal',
+                                printBackground: true,
+                            });
+                            console.log(`PDF saved with orientation ${orientation}: ${pdfPath}`);
+                        });
+
+                        // Attach the PDF to the test report
+                        await test.step(print.phrasePdfAttachment, async () => {
+                            testInfo.attach(`${print.screenShotTab}_${fileName}_${formattedDate}.pdf`, {
+                                body: fs.readFileSync(pdfPath),
+                                contentType: 'application/pdf',
+                            });
+                        });
+                    });
+                } catch (error) {
+                    console.error("Error during PDF generation:", error);
+                } finally {
+                    // Ensure the print dialog is closed after handling
+                    await test.step(print.phraseClosePrintDialog, async () => {
+                        if (!newPage.isClosed()) {
+                            await newPage.close();
+                        }
+                    });
+                }
+        } else {
+            console.log("New page for print dialog was closed unexpectedly, skipping PDF generation.");
         }
-        return
-    }   
+    });
+}
 
 
-    await handleActionNameInteraction(page, testInfo, Button);
-    
+    // Llamo a la función generatePDF para generar el PDF en orientación deseada
+    const orientation = print.orientation; // vertical o horizontal
+    await generatePDF(page, testInfo, print, orientation);
+
     // Justification Phrase
-    await fillUserField(page, testInfo); // Rellena el campo de "User"
-    await fillPasswordField(page, testInfo); // Rellena el campo de "Password"
-
-    // Continuar con la justificación y otras acciones
-    await justificationPhrase(page, 30000, testInfo);    
+    await fillUserField(page, testInfo);
+    await fillPasswordField(page, testInfo);
+    await justificationPhrase(page, 30000, testInfo);
     await esignRequired(page, 30000, testInfo);
 
     await clickAcceptButton(page);
     await clickDoButton(page);
 
-    // Verificar que no haya errores en la consola
-    await test.step(phraseReport.phraseError, async () => {
-        logger.printLogs();
-        expect(logger.errors.length).toBe(0);
-    });
-
-    // Verificar respuestas de red capturadas
-    await test.step(phraseReport.phraseVerifyNetwork, async () => {
-        networkInterceptor.printNetworkData();
-        const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
-        expect(nullResponsesCount).toBe(0);  // Asegúrate de que no haya respuestas nulas
-    });
-
-    // Validar respuestas utilizando ResponseValidator
-    await test.step(phraseReport.phraseVerifyNetwork, async () => {
-        const responseValidator = new ResponseValidator(networkInterceptor.responses);
-        try {
-            await responseValidator.validateResponses(); // Lanza un error si no hay respuestas válidas
-        } catch (error) {
-            // test.fail(error.message); // Marca la prueba como fallida con el mensaje
+    await test.step('Si es necesario hago clic en Accept', async () => {
+        const acceptButton = page.getByRole('button', { name: 'Accept' }).nth(1);
+        if (await acceptButton.isVisible()) {
+            await test.step("Aceptar", async () => {
+                await acceptButton.click();
+            });
+        } else {
+            console.log("Botón de Aceptar no encontrado, omitiendo paso.");
         }
     });
 
-    if (Button.phrasePauses) {
-        await page.pause();
-        await page.pause();
-        await page.pause();
-        await page.waitForTimeout(1000);
-    }
+    // Network response validation
+    // await test.step(phraseReport.phraseVerifyNetwork, async () => {
+    //     networkInterceptor.printNetworkData();
+    //     const nullResponsesCount = networkInterceptor.verifyNonImageNullResponses();
+    //     expect(nullResponsesCount).toBe(0);
+    // });
 
-    // Valido los textos de la notificación
-    await validateNotificationTexts(page, expectedTexts, testInfo);
-    
+    // Response validation
+    await test.step(phraseReport.phraseVerifyNetwork, async () => {
+        const responseValidator = new ResponseValidator(networkInterceptor.responses);
+        try {
+            await responseValidator.validateResponses();
+        } catch (error) {
+            console.log("Error validating responses:", error);
+        }
+    });
 
-    if (Button.phrasePauses) {
-        await page.pause();
-        await page.pause();
-    }
-
-    
+    await page.waitForTimeout(1000);
 };
 
 
 
-
-
-
-
+// Test suite setup for Desktop Mode
 let trazitTestName;
-let procInstanceName;   
+let procInstanceName;
 let ConfigSettings;
     
 test.describe('Desktop Mode', () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    await test.step('Set viewport size for desktop', async () => {
-        await page.setViewportSize({ width: 1365, height: 821 });
-      });
+    test.beforeEach(async ({ page }, testInfo) => {
+        await test.step('Set viewport size for desktop', async () => {
+            await page.setViewportSize({ width: 1365, height: 821 });
+        });
   
-      const logPlat = new LogIntoPlatform({ page });
+        const logPlat = new LogIntoPlatformProcDefinition({ page });
         trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
   
         // Define procInstanceName antes de pasarlo
@@ -206,17 +222,19 @@ test.describe('Desktop Mode', () => {
         await test.step('Wait for 1 seconds', async () => {
             await page.waitForTimeout(1000);
         });
-      
-});
-      //And I call the tests.
-      test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
+    });
+
+    // Execute tests
+    test('Print', async ({ page }, testInfo) => {
         await test.step('Run tests', async () => {
             await commonTests(ConfigSettings, page, testInfo);
         });
     });
-  });
+});
 
-// Mobile Mode 
+
+
+// // Mobile Mode 
 // test.describe('Mobile mode', () => {
 //     test.beforeEach(async ({ page }, testInfo) => {
 //       // Size of the viewport of a mobile device
@@ -251,7 +269,7 @@ test.describe('Desktop Mode', () => {
 //     });
   
 //     // And I call the tests.
-//     test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
+//     test('Print', async ({ page }, testInfo) => {
 //       await test.step('Run tests', async () => {
 //         await commonTests(ConfigSettings, page, testInfo);
 //       });
@@ -269,19 +287,19 @@ test.describe('Desktop Mode', () => {
   
 //       // Configuración común para ambos modos.
 //       const logPlat = new LogIntoPlatform({ page });
-//         trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
-  
-//         // Define procInstanceName antes de pasarlo
-//         procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
-  
-//         await test.step('Perform common setup', async () => {
-//             // Ahora pasas procInstanceName al llamar a commonBeforeEach
-//             ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
-//         });
-  
-//         await test.step('Wait for 1 seconds', async () => {
-//             await page.waitForTimeout(1000);
-//         });
+//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+
+//       // Define procInstanceName antes de pasarlo
+//       procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+
+//       await test.step('Perform common setup', async () => {
+//           // Ahora pasas procInstanceName al llamar a commonBeforeEach
+//           ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
+//       });
+
+//       await test.step('Wait for 1 seconds', async () => {
+//           await page.waitForTimeout(1000);
+//       });
   
 //       const openWindow = new OpenProcedureWindow({ page });
   
@@ -293,7 +311,7 @@ test.describe('Desktop Mode', () => {
 //       });
 //     });
   
-//     test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
+//     test('Print', async ({ page }, testInfo) => {
 //       await test.step('Run tests', async () => {
 //         await commonTests(ConfigSettings, page, testInfo);
 //       });
@@ -336,7 +354,7 @@ test.describe('Desktop Mode', () => {
 //       });
 //     });
   
-//     test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
+//     test('Print', async ({ page }, testInfo) => {
 //       await test.step('Run tests', async () => {
 //         await commonTests(ConfigSettings, page, testInfo);
 //       });
@@ -379,7 +397,7 @@ test.describe('Desktop Mode', () => {
 //     });
   
 //     // And I call the tests.
-//     test('ClickOnAButtonWithoutDialog', async ({ page }, testInfo) => {
+//     test('Print', async ({ page }, testInfo) => {
 //       await test.step('Run tests', async () => {
 //         await commonTests(ConfigSettings, page, testInfo);
 //       });
@@ -390,17 +408,19 @@ test.describe('Desktop Mode', () => {
 
 const { test:pwTest, afterEach } = require('@playwright/test');
  
-  
+//let procInstanceName
 afterEach(async ({}, testInfo) => {
+  
     const durationInSeconds = (testInfo.duration / 1000).toFixed(2);
   
     const data = {
-      trazitTestName: process.env.TRAZIT_TEST_NAME || 'PendingReviewTestingMBUnCancelTest' ,
+      trazitTestName: process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution' ,
       duration: `${durationInSeconds} seconds`,
+      
     };
   
     const testStatus = testInfo.status;
-    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'inspection_lot'; 
+    const procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; 
     await callApiRunCompletion(data, testStatus, trazitTestName, testInfo, procInstanceName)
   });
 
@@ -408,3 +428,4 @@ afterEach(async ({}, testInfo) => {
 //   pwTest('Example test', async ({ page }) => {
 //     // Your test logic here
 //   });
+

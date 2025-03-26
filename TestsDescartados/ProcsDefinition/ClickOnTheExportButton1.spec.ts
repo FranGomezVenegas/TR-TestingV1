@@ -7,24 +7,25 @@ import { exec } from 'child_process';
 import screenshot from 'screenshot-desktop';
 
 import { ConfigSettings as ConfigSettingsAlternative } from '../../../trazit-config.js';
-import { LogIntoPlatform } from '../../1TRAZiT-Commons/logIntoProcDefinition.js';
-import {handleActionNameInteraction} from '../../1TRAZiT-Commons/actionsNameInteractionsWithoutDialog.js';
+import { LogIntoPlatformProcDefinition } from '../../1TRAZiT-Commons/logIntoProcDefinition.js';
 
-import { Export as dataForTestFromFile } from '../../../trazit-models/test-config-instruments-activate.js';
+import { Export as dataForTestFromFile } from '../../../trazit-models/test-config-instruments-activate';
 
 import { callApiRunCompletion } from '../../1TRAZiT-Commons/ApiCalls.js';
 import { OpenProcedureWindow } from '../../1TRAZiT-Commons/openProcedureWindow.js';
 
 import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
-import { clickDoButton, esignRequired, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../../1TRAZiT-Commons/actionsHelper.js';
+import { attachScreenshot, clickDoButton, esignRequired, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../../1TRAZiT-Commons/actionsHelper.js';
+
+import {handleTabInteraction} from '../../1TRAZiT-Commons/tabsInteractions';
+import {handleObjectByTabsWithSearchInteraction} from '../../1TRAZiT-Commons/objectByTabsWithSearch';
+import { handleMenus } from '../../1TRAZiT-Commons/handleMenus';
+import { time } from 'console';
 
 import { handleCardsInteraction } from '../../1TRAZiT-Commons/cardsInteraction.js';
+import { handleSelectCard } from '../../1TRAZiT-Commons/utils/selectCard/selectCard.js';
 
-import {handleTabInteraction} from '../../1TRAZiT-Commons/tabsInteractions.js';
-import {handleObjectByTabsWithSearchInteraction} from '../../1TRAZiT-Commons/objectByTabsWithSearch.js';
-import { handleMenus } from '../../1TRAZiT-Commons/handleMenus.js';
-import { execArgv } from 'process';
-import { handleSelectCard } from '../../1TRAZiT-Commons/selectCard.js';
+
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
@@ -257,11 +258,11 @@ test.describe('Desktop Mode', () => {
         await page.setViewportSize({ width: 1365, height: 821 });
       });
   
-      const logPlat = new LogIntoPlatform({ page });
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+      const logPlat = new LogIntoPlatformProcDefinition({ page });
+        trazitTestName = process.env.TRAZIT_TEST_NAME || 'DefinitionUsersAndRolesExport';
   
         // Define procInstanceName antes de pasarlo
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default'; // Valor predeterminado o el valor de tu entorno
+        procInstanceName = process.env.PROC_INSTANCE_NAME || 'proc_management'; // Valor predeterminado o el valor de tu entorno
   
         await test.step('Perform common setup', async () => {
             // Ahora pasas procInstanceName al llamar a commonBeforeEach
