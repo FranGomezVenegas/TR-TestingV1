@@ -26,7 +26,7 @@ export class OpenProcedureWindow {
     }
 
     // Función auxiliar para intentar clicks con diferentes estrategias
-    async tryClickWithVariations(page, text, timeout = 100) {
+    async tryClickWithVariations(page, text, timeout = 315) {
         const variations = await this.generateCaseVariations(text);
         let lastError = null;
         
@@ -51,8 +51,8 @@ export class OpenProcedureWindow {
                     async () => await page.locator('#desktopMenu').getByText(variation,  { exact: true }).nth(4).click({ timeout }), 
                     async () => await page.locator('#desktopMenu').getByText(variation,  { exact: true }).nth(5).click({ timeout }), 
                     async () => await page.getByText(variation).first().click({ timeout }),
-                    async () => await page.locator(`text="${variation}"`).click({ timeout }),
-                    async () => await page.locator(`text=${variation}`).click({ timeout })
+                    // async () => await page.locator(`text="${variation}"`).click({ timeout }),
+                    // async () => await page.locator(`text=${variation}`).click({ timeout })
                 ];
 
                 for (const strategy of strategies) {
@@ -160,64 +160,20 @@ export class OpenProcedureWindow {
                 }); 
             });
 
-            // Intentar click en screenShotName con todas las variaciones  
-            // await test.step("Try clicking screenShotName with variations", async () => {  
-            //     try {  
-
-            //         if (dataForTest.desktopMode.screenShotName) {  
-            //             // await this.tryClickWithVariations(page, dataForTest.desktopMode.screenShotName);  
-            //             // await page.locator('#desktopMenu').getByText(dataForTest.desktopMode.screenShotName, { exact: true }).click({force: true, timeout: 2000});
-            //             await page.locator('#desktopMenu').getByText(dataForTest.desktopMode.screenShotName).nth(1).click();
-            //             console.log("Successfully clicked screenShotName element");  
-            //             await page.mouse.click(15, 20);
-            //             // await page.mouse.click(10, 20);
-            //             return
-                         
-            //         }  
-                    
-            //     } catch (error) {  
-            //         console.log("Click fallido en screenShotName, intentando alternativa...");  
-                                            
-            //         if (dataForTest.desktopMode.pageElement) {  
-            //             const baseUrl = ConfigSettings.platformUrl.replace(/\/+$/, '');  
-            //             const pageUrl = dataForTest.desktopMode.pageElement.replace(/^\/+/, '');  
-            //             const fullPagrUrl = `${baseUrl}/${pageUrl}`;  
-                        
-            //             console.log("URL construida: ", fullPagrUrl);  
-            //             await page.goto(fullPagrUrl);  
-            //             console.log("Navegación a window page element completada");  
-            //             await page.waitForTimeout(200);
-            //             await page.mouse.click(10, 20);  
-                        
-            //             const currentUrl = page.url();
-            //             if (currentUrl !== fullPagrUrl) {
-            //                 throw new Error(`Navegación fallida. Esperada: ${fullPagrUrl}, obtenida: ${currentUrl}`);
-            //             }
-            //             return
-            //         } else if (dataForTest.desktopMode.pageElementImg) {
-            //             await page.locator(dataForTest.desktopMode.pageElementImg).first().click();
-            //             await this.tryClickWithVariations(page, dataForTest.desktopMode.label);
-            //             await page.mouse.click(10, 20);
-            //             await page.waitForTimeout(500);  
-            //             return
-            //         }  
-            //     }    
-            // });  
-
             await test.step("Try clicking screenShotName with variations", async () => {  
                 try {  
                     const screenShotName = dataForTest.desktopMode.screenShotName;
             
-                    if (["Deviation", "Deviations", "Deviation view"].includes(screenShotName)) {  
+                    if (["Anaysis designer", "Deviation", "Deviations", "Deviation view", "Deviations view", "Pending Sampling", "Login New Samples", "Samples Review"].includes(screenShotName)) {  
                         // Intentar hacer clic desde el índice 0 hasta 6
                         for (let i = 0; i <= 6; i++) {
                             try {
                                 await page.locator('#desktopMenu').getByText(screenShotName).nth(i).click({timeout: 500});
-                                console.log(`Successfully clicked 'Deviations' at index ${i}`);
+                                console.log(`Successfully clicked at index ${i}`);
                                 await page.mouse.click(15, 20);
                                 return;
                             } catch (error) {
-                                console.log(`Failed to click 'Deviations' at index ${i}, trying next...`);
+                                console.log(`Failed to click '${screenShotName}' at index ${i}, trying next...`);
                             }
                         }
                     } else {  
@@ -244,7 +200,7 @@ export class OpenProcedureWindow {
                         await page.goto(fullPageUrl);  
                         console.log("Navegación a window page element completada");  
                         await page.waitForTimeout(200);
-                        await page.mouse.click(10, 20);  
+                        await page.mouse.click(15, 20);
             
                         const currentUrl = page.url();
                         if (currentUrl !== fullPageUrl) {
@@ -254,7 +210,7 @@ export class OpenProcedureWindow {
                     } else if (dataForTest.desktopMode.pageElementImg) {
                         await page.locator(dataForTest.desktopMode.pageElementImg).first().click();
                         await this.tryClickWithVariations(page, dataForTest.desktopMode.label);
-                        await page.mouse.click(10, 20);
+                        await page.mouse.click(15, 20);
                         await page.waitForTimeout(500);  
                         return;
                     }  
