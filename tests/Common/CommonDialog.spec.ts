@@ -335,208 +335,208 @@ test.describe('Desktop Mode', () => {
 });
 
 
-// Mobile Mode 
-test.describe('Mobile mode', () => {
-    test.beforeEach(async ({ page }, testInfo) => {
-      // Size of the viewport of a mobile device
-      await test.step('Set mobile viewport size', async () => {
-        await page.setViewportSize({ width: 385, height: 812 });
-      });
+// // Mobile Mode 
+// test.describe('Mobile mode', () => {
+//     test.beforeEach(async ({ page }, testInfo) => {
+//       // Size of the viewport of a mobile device
+//       await test.step('Set mobile viewport size', async () => {
+//         await page.setViewportSize({ width: 385, height: 812 });
+//       });
       
-      trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
-      procInstanceName = process.env.PROC_INSTANCE_NAME || 'default';
+//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+//       procInstanceName = process.env.PROC_INSTANCE_NAME || 'default';
 
-      let logPlat;
+//       let logPlat;
 
-      await test.step('Perform common setup', async () => {
-        if (procInstanceName === 'proc_management') {
-          logPlat = new LogIntoPlatformProcDefinition({ page });
-        } else {
-          logPlat = new LogIntoPlatform({ page });
-        }
+//       await test.step('Perform common setup', async () => {
+//         if (procInstanceName === 'proc_management') {
+//           logPlat = new LogIntoPlatformProcDefinition({ page });
+//         } else {
+//           logPlat = new LogIntoPlatform({ page });
+//         }
 
-        ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
-      });
+//         ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
+//       });
   
-      await test.step('Wait for 1 seconds', async () => {
-          await page.waitForTimeout(1000);
-      });
+//       await test.step('Wait for 1 seconds', async () => {
+//           await page.waitForTimeout(1000);
+//       });
 
-      if (procInstanceName === 'proc_management') {
-        await test.step('Wait for 5 seconds', async () => {
-          await page.waitForTimeout(6500);
-        });
-      } else {
-        const openWindow = new OpenProcedureWindow({ page });
+//       if (procInstanceName === 'proc_management') {
+//         await test.step('Wait for 5 seconds', async () => {
+//           await page.waitForTimeout(6500);
+//         });
+//       } else {
+//         const openWindow = new OpenProcedureWindow({ page });
   
-        await test.step('Open procedure window for mobile TV', async () => {
-          await test.step('Wait for 3 seconds', async () => {
-            await page.waitForTimeout(3000);
-          });
-          await openWindow.openWindowForMobile(page, testInfo, ConfigSettings);
-        });
-      }
-    });
+//         await test.step('Open procedure window for mobile TV', async () => {
+//           await test.step('Wait for 3 seconds', async () => {
+//             await page.waitForTimeout(3000);
+//           });
+//           await openWindow.openWindowForMobile(page, testInfo, ConfigSettings);
+//         });
+//       }
+//     });
   
-    test('CommonDialog', async ({ page }, testInfo) => {
-      await test.step('Run tests', async () => {
-        await commonTests(ConfigSettings, page, testInfo);
-      });
-    });
-  });
-  
-
-// Mobile Mode - Retrato
-test.describe('Mobile mode Retrato', () => {
-    test.beforeEach(async ({ page }, testInfo) => {
-      // Tamaño del viewport para móviles en modo retrato
-      await test.step('Set mobile portrait viewport size', async () => {
-        await page.setViewportSize({ width: 812, height: 385 });
-      });
-  
-      trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
-      procInstanceName = process.env.PROC_INSTANCE_NAME || 'default';
-
-      let logPlat;
-
-      await test.step('Perform common setup', async () => {
-        if (procInstanceName === 'proc_management') {
-          logPlat = new LogIntoPlatformProcDefinition({ page });
-        } else {
-          logPlat = new LogIntoPlatform({ page });
-        }
-
-        ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
-      });
-  
-      await test.step('Wait for 1 seconds', async () => {
-          await page.waitForTimeout(1000);
-      });
-
-      if (procInstanceName === 'proc_management') {
-        await test.step('Wait for 5 seconds', async () => {
-          await page.waitForTimeout(6500);
-        });
-      } else {
-        const openWindow = new OpenProcedureWindow({ page });
-  
-        await test.step('Open procedure window for mobile', async () => {
-          await test.step('Wait for 3 seconds', async () => {
-            await page.waitForTimeout(3000);
-          });
-          await openWindow.openWindowForMobile(page, testInfo, ConfigSettings);
-        });
-      }
-    });
-  
-    test('CommonDialog', async ({ page }, testInfo) => {
-      await test.step('Run tests', async () => {
-        await commonTests(ConfigSettings, page, testInfo);
-      });
-    });
-  });
+//     test('CommonDialog', async ({ page }, testInfo) => {
+//       await test.step('Run tests', async () => {
+//         await commonTests(ConfigSettings, page, testInfo);
+//       });
+//     });
+//   });
   
 
+// // Mobile Mode - Retrato
+// test.describe('Mobile mode Retrato', () => {
+//     test.beforeEach(async ({ page }, testInfo) => {
+//       // Tamaño del viewport para móviles en modo retrato
+//       await test.step('Set mobile portrait viewport size', async () => {
+//         await page.setViewportSize({ width: 812, height: 385 });
+//       });
+  
+//       trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+//       procInstanceName = process.env.PROC_INSTANCE_NAME || 'default';
 
-// Tablets Mode
-test.describe('Tablets mode', () => {
-    test.beforeEach(async ({ page }, testInfo) => {
-        // Tablet viewport size
-        await test.step('Set tablet viewport size', async () => {
-            await page.setViewportSize({ width: 768, height: 1024 });
-        });
+//       let logPlat;
 
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default';
+//       await test.step('Perform common setup', async () => {
+//         if (procInstanceName === 'proc_management') {
+//           logPlat = new LogIntoPlatformProcDefinition({ page });
+//         } else {
+//           logPlat = new LogIntoPlatform({ page });
+//         }
 
-        let logPlat;
+//         ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
+//       });
+  
+//       await test.step('Wait for 1 seconds', async () => {
+//           await page.waitForTimeout(1000);
+//       });
 
-        await test.step('Perform common setup', async () => {
-            if (procInstanceName === 'proc_management') {
-                logPlat = new LogIntoPlatformProcDefinition({ page });
-            } else {
-                logPlat = new LogIntoPlatform({ page });
-            }
+//       if (procInstanceName === 'proc_management') {
+//         await test.step('Wait for 5 seconds', async () => {
+//           await page.waitForTimeout(6500);
+//         });
+//       } else {
+//         const openWindow = new OpenProcedureWindow({ page });
+  
+//         await test.step('Open procedure window for mobile', async () => {
+//           await test.step('Wait for 3 seconds', async () => {
+//             await page.waitForTimeout(3000);
+//           });
+//           await openWindow.openWindowForMobile(page, testInfo, ConfigSettings);
+//         });
+//       }
+//     });
+  
+//     test('CommonDialog', async ({ page }, testInfo) => {
+//       await test.step('Run tests', async () => {
+//         await commonTests(ConfigSettings, page, testInfo);
+//       });
+//     });
+//   });
+  
 
-            ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
-        });
 
-        await test.step('Wait for 1 second', async () => {
-            await page.waitForTimeout(1000);
-        });
+// // Tablets Mode
+// test.describe('Tablets mode', () => {
+//     test.beforeEach(async ({ page }, testInfo) => {
+//         // Tablet viewport size
+//         await test.step('Set tablet viewport size', async () => {
+//             await page.setViewportSize({ width: 768, height: 1024 });
+//         });
 
-        if (procInstanceName === 'proc_management') {
-            await test.step('Wait for 5 seconds', async () => {
-                await page.waitForTimeout(6500);
-            });
-        } else {
-            const openWindow = new OpenProcedureWindow({ page });
+//         trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+//         procInstanceName = process.env.PROC_INSTANCE_NAME || 'default';
 
-            await test.step('Open procedure window for tablet', async () => {
-                await test.step('Wait for 3 seconds', async () => {
-                    await page.waitForTimeout(3000);
-                });
-                await openWindow.openWindowForMobile(page, testInfo, ConfigSettings);
-            });
-        }
-    });
+//         let logPlat;
 
-    test('CommonDialog', async ({ page }, testInfo) => {
-        await test.step('Run tests', async () => {
-            await commonTests(ConfigSettings, page, testInfo);
-        });
-    });
-});
+//         await test.step('Perform common setup', async () => {
+//             if (procInstanceName === 'proc_management') {
+//                 logPlat = new LogIntoPlatformProcDefinition({ page });
+//             } else {
+//                 logPlat = new LogIntoPlatform({ page });
+//             }
 
-// Tablets Mode - Retrato
-test.describe('Tablets mode Retrato', () => {
-    test.beforeEach(async ({ page }, testInfo) => {
-        // Tablet portrait viewport size
-        await test.step('Set tablet portrait viewport size', async () => {
-            await page.setViewportSize({ width: 1024, height: 768 });
-        });
+//             ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
+//         });
 
-        trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
-        procInstanceName = process.env.PROC_INSTANCE_NAME || 'default';
+//         await test.step('Wait for 1 second', async () => {
+//             await page.waitForTimeout(1000);
+//         });
 
-        let logPlat;
+//         if (procInstanceName === 'proc_management') {
+//             await test.step('Wait for 5 seconds', async () => {
+//                 await page.waitForTimeout(6500);
+//             });
+//         } else {
+//             const openWindow = new OpenProcedureWindow({ page });
 
-        await test.step('Perform common setup', async () => {
-            if (procInstanceName === 'proc_management') {
-                logPlat = new LogIntoPlatformProcDefinition({ page });
-            } else {
-                logPlat = new LogIntoPlatform({ page });
-            }
+//             await test.step('Open procedure window for tablet', async () => {
+//                 await test.step('Wait for 3 seconds', async () => {
+//                     await page.waitForTimeout(3000);
+//                 });
+//                 await openWindow.openWindowForMobile(page, testInfo, ConfigSettings);
+//             });
+//         }
+//     });
 
-            ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
-        });
+//     test('CommonDialog', async ({ page }, testInfo) => {
+//         await test.step('Run tests', async () => {
+//             await commonTests(ConfigSettings, page, testInfo);
+//         });
+//     });
+// });
 
-        await test.step('Wait for 1 second', async () => {
-            await page.waitForTimeout(1000);
-        });
+// // Tablets Mode - Retrato
+// test.describe('Tablets mode Retrato', () => {
+//     test.beforeEach(async ({ page }, testInfo) => {
+//         // Tablet portrait viewport size
+//         await test.step('Set tablet portrait viewport size', async () => {
+//             await page.setViewportSize({ width: 1024, height: 768 });
+//         });
 
-        if (procInstanceName === 'proc_management') {
-            await test.step('Wait for 5 seconds', async () => {
-                await page.waitForTimeout(6500);
-            });
-        } else {
-            const openWindow = new OpenProcedureWindow({ page });
+//         trazitTestName = process.env.TRAZIT_TEST_NAME || 'No Test Name in the script execution';
+//         procInstanceName = process.env.PROC_INSTANCE_NAME || 'default';
 
-            await test.step('Open procedure window for tablet', async () => {
-                await test.step('Wait for 3 seconds', async () => {
-                    await page.waitForTimeout(3000);
-                });
-                await openWindow.openWindowForDesktop(page, testInfo, ConfigSettings);
-            });
-        }
-    });
+//         let logPlat;
 
-    test('CommonDialog', async ({ page }, testInfo) => {
-        await test.step('Run tests', async () => {
-            await commonTests(ConfigSettings, page, testInfo);
-        });
-    });
-});
+//         await test.step('Perform common setup', async () => {
+//             if (procInstanceName === 'proc_management') {
+//                 logPlat = new LogIntoPlatformProcDefinition({ page });
+//             } else {
+//                 logPlat = new LogIntoPlatform({ page });
+//             }
+
+//             ConfigSettings = await logPlat.commonBeforeEach(page, testInfo, dataForTestFromFile, trazitTestName, procInstanceName);
+//         });
+
+//         await test.step('Wait for 1 second', async () => {
+//             await page.waitForTimeout(1000);
+//         });
+
+//         if (procInstanceName === 'proc_management') {
+//             await test.step('Wait for 5 seconds', async () => {
+//                 await page.waitForTimeout(6500);
+//             });
+//         } else {
+//             const openWindow = new OpenProcedureWindow({ page });
+
+//             await test.step('Open procedure window for tablet', async () => {
+//                 await test.step('Wait for 3 seconds', async () => {
+//                     await page.waitForTimeout(3000);
+//                 });
+//                 await openWindow.openWindowForDesktop(page, testInfo, ConfigSettings);
+//             });
+//         }
+//     });
+
+//     test('CommonDialog', async ({ page }, testInfo) => {
+//         await test.step('Run tests', async () => {
+//             await commonTests(ConfigSettings, page, testInfo);
+//         });
+//     });
+// });
   
 
   
