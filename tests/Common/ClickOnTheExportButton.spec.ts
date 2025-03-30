@@ -15,8 +15,8 @@ import { Export as dataForTestFromFile } from '../../trazit-models/test-config-i
 import { callApiRunCompletion } from '../1TRAZiT-Commons/ApiCalls.js';
 import { OpenProcedureWindow } from '../1TRAZiT-Commons/openProcedureWindow.js';
 
-import { Logger, NetworkInterceptor, ResponseValidator, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
-import { attachScreenshot, clickDoButton, esignRequired, justificationPhrase, fillUserField, fillPasswordField, clickAcceptButton } from '../1TRAZiT-Commons/actionsHelper.js';
+import { Logger, NetworkInterceptor, phraseReport } from '../1TRAZiT-Commons/consoleAndNetworkMonitor.js';
+import { attachScreenshot } from '../1TRAZiT-Commons/actionsHelper.js';
 
 import {handleTabInteraction} from '../1TRAZiT-Commons/tabsInteractions';
 import {handleObjectByTabsWithSearchInteraction} from '../1TRAZiT-Commons/objectByTabsWithSearch';
@@ -26,8 +26,6 @@ import { handleSelectCard } from '../1TRAZiT-Commons/utils/ProcDefinition/select
 
 //Function with all tests.
 const commonTests = async (ConfigSettings, page, testInfo) => {
-    // await handleMenus(page);
-
     // Create instances of Logger and NetworkInterceptor
     const logger = new Logger();
     const networkInterceptor = new NetworkInterceptor();
@@ -53,9 +51,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         networkInterceptor.attachToPage(page);
     });
 
-    // Llamadas a interacciones previas
-    // await handleTabInteraction(page, testInfo, ConfigSettingsAlternative, Export);
-
+    
     // Proc Management
     await handleCardsInteraction(page, testInfo, Export);
     await handleSelectCard(page, testInfo, Export);
@@ -102,7 +98,7 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
         if (!clickedExport) {
             await test.step('Click on more_horiz', async () => {
                 try {
-                    const moreHorizButton = page.locator('md-icon:has-text("more_horiz")').first();
+                    const moreHorizButton = page.locator(Export.hideActionsButton.locator).nth(Export.hideActionsButton.position);
 
                     // Verifica si el botón more_horiz está visible antes de hacer clic
                     // const moreHorizButton = await page.locator('text=more_horiz', {exact: true}); 
@@ -181,8 +177,6 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
                     });
                 }
             });
-            // await clickDoButton(page);
-            // await page.getByTitle('option', { name: "OK" }).click({force: true, timeout: 3000}); 
             await page.locator('button', { hasText: Export.buttonOk }).click({force: true, timeout: 3000});  
         } else {
             console.log("No columns to select. Skipping this step.");
