@@ -102,13 +102,13 @@ export const processListField = async (page, consoleData, testDataGame, listFiel
     for (const searchLabel of searchAttempts) {
         try {
             await test.step(`Trying to click on list field: ${searchLabel}`, async () => {
-                await clickElement(page, searchLabel, 50);
-                await clickOption(page, listField.option, 50);
+                await clickElement(page, searchLabel, 250);
+                await clickOption(page, listField.option, 250);
                 console.log(`Selected list field: ${searchLabel}`);
             });
             return;
         } catch (attemptError) {
-            await clickOption(page, listField.option, 50);
+            await clickOption(page, listField.option, 250);
             console.log(`Selected list field: ${searchLabel}`);
         }
     }
