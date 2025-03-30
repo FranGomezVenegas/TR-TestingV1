@@ -116,18 +116,37 @@ const commonTests = async (ConfigSettings, page, testInfo) => {
     });
 
     // Handle file upload
+    // await test.step(addAttachmentAWS.phraseUploadArchivo, async () => {
+    //     const filePath = addAttachmentAWS.filePath;
+
+    //     // Sub-step 1: Locate the file input field
+    //     await test.step(addAttachmentAWS.phraseLocateFileInput, async () => {
+    //         const input = await page.locator(addAttachmentAWS.inputField);
+    //         expect(input).toBeTruthy(); // Check if the file input is present
+    //     });
+
+    //     // Sub-step 2: Upload the file
+    //     await test.step(addAttachmentAWS.phraseSetFileForUpload, async () => {
+    //         const input = await page.locator(addAttachmentAWS.inputField);
+    //         await input.setInputFiles(filePath);
+    //     });
+    // });
+
+    // Handle file upload
     await test.step(addAttachmentAWS.phraseUploadArchivo, async () => {
         const filePath = addAttachmentAWS.filePath;
 
         // Sub-step 1: Locate the file input field
         await test.step(addAttachmentAWS.phraseLocateFileInput, async () => {
-            const input = await page.locator(addAttachmentAWS.inputField);
+            const position = addAttachmentAWS.positionInputField || 0; // Default to 0 (first element) if no position is provided
+            const input = page.locator(addAttachmentAWS.inputField).nth(position); // Use nth() to get the element at the specified position
             expect(input).toBeTruthy(); // Check if the file input is present
         });
 
         // Sub-step 2: Upload the file
         await test.step(addAttachmentAWS.phraseSetFileForUpload, async () => {
-            const input = await page.locator(addAttachmentAWS.inputField);
+            const position = addAttachmentAWS.positionInputField || 0; // Default to 0 (first element) if no position is provided
+            const input = page.locator(addAttachmentAWS.inputField).nth(position); // Use nth() to select the correct input field
             await input.setInputFiles(filePath);
         });
     });
