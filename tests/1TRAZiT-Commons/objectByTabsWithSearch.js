@@ -43,9 +43,10 @@ export async function handleObjectByTabsWithSearchInteraction(page, testInfo, co
                 });
         
             } else {
+                const position = button.search.positionSelectObjectSearch ?? 0;
                 // Si `label` o `value` no están definidos, hacer clic en el botón en la opcion 
                 console.log('No se encontraron label o value. Haciendo clic en el botón');
-                await page.getByRole('button', { name: button.search.selectObjectSearch }).click({ force: true, timeout: 2000 });
+                await page.getByRole('button', { name: button.search.selectObjectSearch }).nth(position).click({ force: false, timeout: 5000 });
             }
         });
 
